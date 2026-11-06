@@ -1,0 +1,205 @@
+<!-- TAB 1: TỔNG QUAN HỒ SƠ SỰ KIỆN -->
+<div class="overview-grid">
+    <!-- KHỐI 1: THÔNG TIN CƠ BẢN & ĐỊNH DANH -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                <span>Thông tin cơ bản</span>
+            </h2>
+            <span class="badge {{ event.StateCode | status_badge_class }}">{{ event.StateName }}</span>
+        </div>
+        <div class="card-body">
+            <div class="info-kv-grid">
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Mã định danh hồ sơ</span>
+                    <span class="info-kv-value font-monospace" style="color: var(--due-blue-primary); font-weight: 700;">{{ event.TicketCode }}</span>
+                </div>
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Đơn vị chủ trì / tổ chức</span>
+                    <span class="info-kv-value" style="font-weight: 600;">{{ event.DepartmentName }}</span>
+                </div>
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Thời gian bắt đầu</span>
+                    <span class="info-kv-value">{{ event.StartsAt | datetime_vn }}</span>
+                </div>
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Thời gian kết thúc</span>
+                    <span class="info-kv-value">{{ event.EndsAt | datetime_vn }}</span>
+                </div>
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Quy mô người tham dự</span>
+                    <span class="info-kv-value"><strong>{{ event.ExpectedAttendees or 'Chưa xác định' }}</strong> người</span>
+                </div>
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Người phụ trách lập hồ sơ</span>
+                    <span class="info-kv-value">{{ event.CreatedByName }} ({{ event.CreatedByEmail }})</span>
+                </div>
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Ngày khởi tạo trên hệ thống</span>
+                    <span class="info-kv-value">{{ event.CreatedAt | datetime_vn }}</span>
+                </div>
+                <div class="info-kv-item">
+                    <span class="info-kv-label">Cập nhật lần cuối</span>
+                    <span class="info-kv-value">{{ event.UpdatedAt | datetime_vn if event.UpdatedAt else 'Chưa chỉnh sửa' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHỐI 2: TÓM TẮT TRẠNG THÁI XỬ LÝ QUY TRÌNH (BPMN CURRENT STAGE) -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>Trạng thái xử lý hiện tại</span>
+            </h2>
+            <a href="{{ url_for('events.detail', event_id=event.EventId, tab='workflow') }}" class="subnav-link-btn">
+                <span>Xem lịch sử xét duyệt</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+        </div>
+        <div class="card-body">
+            <div style="display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px;">
+                <div class="stage-icon-box">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div>
+                    <div style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+                        {{ event.StateName }}
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                        {% if event.StateCode == 'DRAFT' %}
+                            Hồ sơ đang trong giai đoạn soạn thảo ban đầu bởi BCH Liên Chi Đoàn. Cần hoàn thiện Kế hoạch chi tiết và Dự trù kinh phí trước khi nộp.
+                        {% elif event.StateCode == 'PENDING_FACULTY' %}
+                            Hồ sơ đã được nộp và đang chờ Ban Chủ nhiệm Khoa thẩm định tính phù hợp và mục tiêu hoạt động.
+                        {% elif event.StateCode == 'REVISION_FACULTY' %}
+                            Ban Chủ nhiệm Khoa đã thẩm định và yêu cầu BCH Liên Chi Đoàn điều chỉnh, bổ sung nội dung hồ sơ.
+                        {% elif event.StateCode == 'PENDING_UNION' %}
+                            Khoa đã thông qua. Hồ sơ đang chờ Ban Thường vụ Đoàn Trường phê duyệt cấp phép tổ chức.
+                        {% elif event.StateCode == 'REVISION_UNION' %}
+                            Đoàn Trường đã xem xét và yêu cầu làm rõ thêm một số nội dung kế hoạch hoặc dự trù.
+                        {% elif event.StateCode == 'PENDING_FACILITY' %}
+                            Đã được Đoàn Trường phê duyệt. Hồ sơ chuyển sang Phòng Cơ sở vật chất để bố trí phòng và trang thiết bị.
+                        {% elif event.StateCode == 'EVENT_APPROVED' %}
+                            Đã hoàn tất phê duyệt và cấp cơ sở vật chất. Đơn vị sẵn sàng triển khai tổ chức sự kiện theo kế hoạch.
+                        {% elif event.StateCode == 'EVENT_HELD' %}
+                            Sự kiện đã diễn ra. Đang trong giai đoạn hoàn trả cơ sở vật chất và chuẩn bị nghiệm thu.
+                        {% elif event.StateCode == 'REPORT_PENDING' %}
+                            Chờ Đoàn Trường nghiệm thu báo cáo tổng kết và đánh giá kết quả sự kiện.
+                        {% elif event.StateCode == 'FINANCE_PENDING' %}
+                            Chờ Phòng Kế hoạch - Tài chính thẩm định hóa đơn chứng từ và đề xuất quyết toán.
+                        {% elif event.StateCode == 'COMPLETED' or event.StateCode == 'CLOSED' %}
+                            Sự kiện đã kết thúc toàn diện, lưu trữ hồ sơ và hoàn tất quyết toán tài chính.
+                        {% else %}
+                            Hồ sơ đang trong quy trình xử lý luân chuyển nghiệp vụ.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bước luân chuyển gần nhất -->
+            {% if history and history|length > 0 %}
+            {% set last_h = history[-1] %}
+            <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 10px 14px; font-size: 12.5px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                    <span style="color: var(--text-muted);">Thao tác gần nhất: <strong>{{ last_h.ActorName }}</strong></span>
+                    <span style="color: var(--text-muted);">{{ last_h.PerformedAt | datetime_vn }}</span>
+                </div>
+                {% if last_h.Comment %}
+                <div style="color: var(--due-blue-primary); font-style: italic; margin-top: 4px;">"{{ last_h.Comment }}"</div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- CÁC THẺ TÓM TẮT PHÂN HỆ VÀ LIÊN KẾT NHANH -->
+<div class="summary-cards-row">
+    <!-- TÓM TẮT KẾ HOẠCH -->
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 14px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <span>Tóm tắt kế hoạch</span>
+            </h3>
+            <a href="{{ url_for('events.detail', event_id=event.EventId, tab='plan') }}" class="subnav-link-btn">
+                <span>Xem kế hoạch chi tiết</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+        </div>
+        <div class="card-body">
+            <div style="font-size: 13px; line-height: 1.5; color: var(--text-main); margin-bottom: 8px;">
+                <strong>Mục tiêu:</strong> {{ (event.Objectives or 'Chưa cập nhật mục tiêu cụ thể.') | truncate(140) }}
+            </div>
+            <div style="font-size: 13px; line-height: 1.5; color: var(--text-muted);">
+                <strong>Kịch bản:</strong> {{ (event.ProgramContent or 'Chưa cập nhật kịch bản chi tiết.') | truncate(140) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- TÓM TẮT DỰ TOÁN KINH PHÍ -->
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 14px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span>Tóm tắt dự toán kinh phí</span>
+            </h3>
+            <a href="{{ url_for('events.detail', event_id=event.EventId, tab='budget') }}" class="subnav-link-btn">
+                <span>Xem dự toán</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+        </div>
+        <div class="card-body">
+            <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px;">
+                <div style="font-size: 24px; font-weight: 800; color: var(--due-blue-primary);" class="font-monospace">
+                    {{ total_budget | currency }}
+                </div>
+                <div style="font-size: 12.5px; color: var(--text-muted);">
+                    ({{ budget_items|length }} khoản mục chi)
+                </div>
+            </div>
+            <div style="font-size: 12.5px; color: var(--text-muted);">
+                {% if budget_items|length > 0 %}
+                    Khoản mục lớn nhất: <strong>{{ budget_items[0].ItemName }}</strong> ({{ budget_items[0].EstimatedAmount | currency }})
+                {% else %}
+                    Chưa thiết lập danh mục chi tiêu dự toán cho sự kiện này.
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TÓM TẮT CƠ SỞ VẬT CHẤT -->
+    <div class="card summary-card">
+        <div class="card-header">
+            <h3 class="card-title" style="font-size: 14px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+                <span>Tóm tắt cơ sở vật chất</span>
+            </h3>
+            <a href="{{ url_for('events.detail', event_id=event.EventId, tab='facilities') }}" class="subnav-link-btn">
+                <span>Xem CSVC</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </a>
+        </div>
+        <div class="card-body">
+            {% if facility_req %}
+                <div style="font-size: 13px; margin-bottom: 6px;">
+                    Trạng thái yêu cầu: <span class="badge badge-info">{{ facility_req.Status }}</span>
+                </div>
+                <div style="font-size: 12.5px; color: var(--text-muted);">
+                    {% if reservations and reservations|length > 0 %}
+                        Phòng đăng ký: <strong>{{ reservations[0].FacilityName }}</strong> {% if reservations|length > 1 %}(+{{ reservations|length - 1 }} phòng khác){% endif %}
+                    {% else %}
+                        Chưa chọn phòng hội trường cụ thể.
+                    {% endif %}
+                    &bull; Thiết bị mượn: <strong>{{ equipment|length }}</strong> loại
+                </div>
+            {% else %}
+                <div style="font-size: 13px; color: var(--text-muted);">
+                    Chưa phát sinh yêu cầu mượn cơ sở vật chất hoặc hội trường.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

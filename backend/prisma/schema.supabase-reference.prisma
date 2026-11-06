@@ -1,0 +1,332 @@
+// Offline reference from supplied SQL, NOT introspected live.
+// Relations and unique constraints mapped from supplied SQL; live indexes/defaults still require reconciliation.
+// Do not migrate or db push this reference schema.
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/supabase-reference"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("SUPABASE_INSPECT_URL")
+}
+model Roles {
+  RoleId Int @id @default(autoincrement())
+  Code String @db.VarChar(60)
+  Name String @db.VarChar(150)
+  @@map("Roles")
+  @@unique([Code])
+  back_RolePermissions_RoleId RolePermissions[] @relation("fk_RolePermissions_RoleId")
+  back_UserRoles_RoleId UserRoles[] @relation("fk_UserRoles_RoleId")
+}
+
+model Permissions {
+  PermissionId Int @id @default(autoincrement())
+  Code String @db.VarChar(100)
+  Description String? @db.VarChar(240)
+  @@map("Permissions")
+  @@unique([Code])
+  back_RolePermissions_PermissionId RolePermissions[] @relation("fk_RolePermissions_PermissionId")
+  back_WorkflowTransitions_RequiredPermission WorkflowTransitions[] @relation("fk_WorkflowTransitions_RequiredPermission")
+}
+
+model RolePermissions {
+  RoleId Int
+  PermissionId Int
+  @@id([RoleId, PermissionId])
+  @@map("RolePermissions")
+  relation_PermissionId Permissions @relation("fk_RolePermissions_PermissionId", fields: [PermissionId], references: [PermissionId], onDelete: NoAction, onUpdate: NoAction)
+  relation_RoleId Roles @relation("fk_RolePermissions_RoleId", fields: [RoleId], references: [RoleId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Users {
+  UserId BigInt @id @default(autoincrement())
+  Username String @db.VarChar(80)
+  PasswordHash String @db.VarChar(255)
+  DisplayName String @db.VarChar(160)
+  DepartmentId Int?
+  IsActive Boolean
+  CreatedAt DateTime @db.Timestamp(6)
+  UpdatedAt DateTime @db.Timestamp(6)
+  @@map("Users")
+  @@unique([Username])
+  back_AuditLogs_ActorId AuditLogs[] @relation("fk_AuditLogs_ActorId")
+  back_EquipmentHandovers_RecordedBy EquipmentHandovers[] @relation("fk_EquipmentHandovers_RecordedBy")
+  back_EventDocuments_UploadedBy EventDocuments[] @relation("fk_EventDocuments_UploadedBy")
+  back_EventReports_ConfirmedBy EventReports[] @relation("fk_EventReports_ConfirmedBy")
+  back_Events_CreatedBy Events[] @relation("fk_Events_CreatedBy")
+  back_FacilityRequests_RequestedBy FacilityRequests[] @relation("fk_FacilityRequests_RequestedBy")
+  back_Notifications_RecipientUserId Notifications[] @relation("fk_Notifications_RecipientUserId")
+  back_PaymentRequests_ApprovedBy PaymentRequests[] @relation("fk_PaymentRequests_ApprovedBy")
+  back_PaymentRequests_SubmittedBy PaymentRequests[] @relation("fk_PaymentRequests_SubmittedBy")
+  back_UserRoles_UserId UserRoles[] @relation("fk_UserRoles_UserId")
+  relation_DepartmentId Departments? @relation("fk_Users_DepartmentId", fields: [DepartmentId], references: [DepartmentId], onDelete: NoAction, onUpdate: NoAction)
+  back_WorkflowHistory_ActorId WorkflowHistory[] @relation("fk_WorkflowHistory_ActorId")
+}
+
+model UserRoles {
+  UserId BigInt
+  RoleId Int
+  @@id([UserId, RoleId])
+  @@map("UserRoles")
+  relation_RoleId Roles @relation("fk_UserRoles_RoleId", fields: [RoleId], references: [RoleId], onDelete: NoAction, onUpdate: NoAction)
+  relation_UserId Users @relation("fk_UserRoles_UserId", fields: [UserId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Departments {
+  DepartmentId Int @id @default(autoincrement())
+  Code String @db.VarChar(40)
+  Name String @db.VarChar(160)
+  IsActive Boolean
+  @@map("Departments")
+  @@unique([Code])
+  back_Events_OrganizerDepartmentId Events[] @relation("fk_Events_OrganizerDepartmentId")
+  back_Users_DepartmentId Users[] @relation("fk_Users_DepartmentId")
+}
+
+model WorkflowStates {
+  StateCode String @id @db.VarChar(50)
+  StateName String @db.VarChar(140)
+  IsTerminal Boolean
+  @@map("WorkflowStates")
+  back_Events_StateCode Events[] @relation("fk_Events_StateCode")
+  back_WorkflowHistory_FromState WorkflowHistory[] @relation("fk_WorkflowHistory_FromState")
+  back_WorkflowHistory_ToState WorkflowHistory[] @relation("fk_WorkflowHistory_ToState")
+  back_WorkflowTransitions_FromState WorkflowTransitions[] @relation("fk_WorkflowTransitions_FromState")
+  back_WorkflowTransitions_ToState WorkflowTransitions[] @relation("fk_WorkflowTransitions_ToState")
+}
+
+model Events {
+  EventId BigInt @id @default(autoincrement())
+  TicketCode String? @default(dbgenerated())
+  Title String @db.VarChar(240)
+  Description String?
+  OrganizerDepartmentId Int
+  CreatedBy BigInt
+  StartsAt DateTime? @db.Timestamp(6)
+  EndsAt DateTime? @db.Timestamp(6)
+  ExpectedAttendees Int?
+  StateCode String @db.VarChar(50)
+  RowVer Bytes @default(dbgenerated())
+  CreatedAt DateTime @db.Timestamp(6)
+  UpdatedAt DateTime @db.Timestamp(6)
+  @@map("Events")
+  back_BudgetItems_EventId BudgetItems[] @relation("fk_BudgetItems_EventId")
+  back_EventDocuments_EventId EventDocuments[] @relation("fk_EventDocuments_EventId")
+  back_EventPlans_EventId EventPlans? @relation("fk_EventPlans_EventId")
+  back_EventReports_EventId EventReports? @relation("fk_EventReports_EventId")
+  relation_CreatedBy Users @relation("fk_Events_CreatedBy", fields: [CreatedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  relation_OrganizerDepartmentId Departments @relation("fk_Events_OrganizerDepartmentId", fields: [OrganizerDepartmentId], references: [DepartmentId], onDelete: NoAction, onUpdate: NoAction)
+  relation_StateCode WorkflowStates @relation("fk_Events_StateCode", fields: [StateCode], references: [StateCode], onDelete: NoAction, onUpdate: NoAction)
+  back_FacilityRequests_EventId FacilityRequests[] @relation("fk_FacilityRequests_EventId")
+  back_Notifications_EventId Notifications[] @relation("fk_Notifications_EventId")
+  back_PaymentRequests_EventId PaymentRequests? @relation("fk_PaymentRequests_EventId")
+  back_WorkflowHistory_EventId WorkflowHistory[] @relation("fk_WorkflowHistory_EventId")
+}
+
+model BudgetItems {
+  BudgetItemId BigInt @id @default(autoincrement())
+  EventId BigInt
+  ItemName String @db.VarChar(200)
+  Quantity Decimal @db.Decimal(12, 2)
+  UnitPrice Decimal @db.Decimal(19, 2)
+  EstimatedAmount Decimal? @default(dbgenerated()) @db.Decimal(31,4)
+  @@map("BudgetItems")
+  relation_EventId Events @relation("fk_BudgetItems_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model AuditLogs {
+  AuditId BigInt @id @default(autoincrement())
+  ActorId BigInt?
+  EntityName String @db.VarChar(80)
+  EntityId String @db.VarChar(80)
+  ActionCode String @db.VarChar(80)
+  Details String?
+  AtUtc DateTime @db.Timestamp(6)
+  @@map("AuditLogs")
+  relation_ActorId Users? @relation("fk_AuditLogs_ActorId", fields: [ActorId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Equipment {
+  EquipmentId Int @id @default(autoincrement())
+  Code String @db.VarChar(40)
+  Name String @db.VarChar(160)
+  TotalQuantity Int
+  IsActive Boolean
+  @@map("Equipment")
+  @@unique([Code])
+  back_EquipmentRequests_EquipmentId EquipmentRequests[] @relation("fk_EquipmentRequests_EquipmentId")
+}
+
+model EquipmentHandovers {
+  HandoverId BigInt @id @default(autoincrement())
+  RequestId BigInt
+  HandoverType String @db.VarChar(12)
+  ConditionNote String? @db.VarChar(1000)
+  EvidenceDocumentId BigInt?
+  RecordedBy BigInt
+  RecordedAt DateTime @db.Timestamp(6)
+  @@map("EquipmentHandovers")
+  relation_EvidenceDocumentId EventDocuments? @relation("fk_EquipmentHandovers_EvidenceDocumentId", fields: [EvidenceDocumentId], references: [DocumentId], onDelete: NoAction, onUpdate: NoAction)
+  relation_RecordedBy Users @relation("fk_EquipmentHandovers_RecordedBy", fields: [RecordedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  relation_RequestId FacilityRequests @relation("fk_EquipmentHandovers_RequestId", fields: [RequestId], references: [RequestId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model EquipmentRequests {
+  RequestId BigInt
+  EquipmentId Int
+  Quantity Int
+  @@id([RequestId, EquipmentId])
+  @@map("EquipmentRequests")
+  relation_EquipmentId Equipment @relation("fk_EquipmentRequests_EquipmentId", fields: [EquipmentId], references: [EquipmentId], onDelete: NoAction, onUpdate: NoAction)
+  relation_RequestId FacilityRequests @relation("fk_EquipmentRequests_RequestId", fields: [RequestId], references: [RequestId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model EventDocuments {
+  DocumentId BigInt @id @default(autoincrement())
+  EventId BigInt
+  DocumentType String @db.VarChar(50)
+  OriginalFileName String @db.VarChar(255)
+  StorageKey String @db.VarChar(500)
+  MimeType String @db.VarChar(120)
+  FileSizeBytes BigInt
+  UploadedBy BigInt
+  UploadedAt DateTime @db.Timestamp(6)
+  @@map("EventDocuments")
+  back_EquipmentHandovers_EvidenceDocumentId EquipmentHandovers[] @relation("fk_EquipmentHandovers_EvidenceDocumentId")
+  relation_EventId Events @relation("fk_EventDocuments_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+  relation_UploadedBy Users @relation("fk_EventDocuments_UploadedBy", fields: [UploadedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  back_FinancialDocuments_DocumentId FinancialDocuments[] @relation("fk_FinancialDocuments_DocumentId")
+}
+
+model EventPlans {
+  EventId BigInt @id
+  Objectives String?
+  ProgramContent String?
+  Timeline String?
+  Staffing String?
+  RiskPlan String?
+  UpdatedAt DateTime @db.Timestamp(6)
+  @@map("EventPlans")
+  relation_EventId Events @relation("fk_EventPlans_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model EventReports {
+  ReportId BigInt @id @default(autoincrement())
+  EventId BigInt
+  Content String?
+  IsRequired Boolean
+  IsConfirmed Boolean
+  SubmittedAt DateTime? @db.Timestamp(6)
+  ConfirmedBy BigInt?
+  @@map("EventReports")
+  @@unique([EventId])
+  relation_ConfirmedBy Users? @relation("fk_EventReports_ConfirmedBy", fields: [ConfirmedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  relation_EventId Events @relation("fk_EventReports_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Facilities {
+  FacilityId Int @id @default(autoincrement())
+  Code String @db.VarChar(40)
+  Name String @db.VarChar(160)
+  Capacity Int?
+  IsActive Boolean
+  @@map("Facilities")
+  @@unique([Code])
+  back_FacilityReservations_FacilityId FacilityReservations[] @relation("fk_FacilityReservations_FacilityId")
+}
+
+model FacilityRequests {
+  RequestId BigInt @id @default(autoincrement())
+  EventId BigInt
+  RequestedBy BigInt
+  RequestedAt DateTime @db.Timestamp(6)
+  Status String @db.VarChar(25)
+  Note String? @db.VarChar(1000)
+  @@map("FacilityRequests")
+  back_EquipmentHandovers_RequestId EquipmentHandovers[] @relation("fk_EquipmentHandovers_RequestId")
+  back_EquipmentRequests_RequestId EquipmentRequests[] @relation("fk_EquipmentRequests_RequestId")
+  relation_EventId Events @relation("fk_FacilityRequests_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+  relation_RequestedBy Users @relation("fk_FacilityRequests_RequestedBy", fields: [RequestedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  back_FacilityReservations_RequestId FacilityReservations[] @relation("fk_FacilityReservations_RequestId")
+}
+
+model FacilityReservations {
+  ReservationId BigInt @id @default(autoincrement())
+  RequestId BigInt
+  FacilityId Int
+  StartsAt DateTime @db.Timestamp(6)
+  EndsAt DateTime @db.Timestamp(6)
+  Status String @db.VarChar(20)
+  @@map("FacilityReservations")
+  relation_FacilityId Facilities @relation("fk_FacilityReservations_FacilityId", fields: [FacilityId], references: [FacilityId], onDelete: NoAction, onUpdate: NoAction)
+  relation_RequestId FacilityRequests @relation("fk_FacilityReservations_RequestId", fields: [RequestId], references: [RequestId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model FinancialDocuments {
+  FinancialDocumentId BigInt @id @default(autoincrement())
+  PaymentRequestId BigInt
+  DocumentId BigInt
+  @@map("FinancialDocuments")
+  @@unique([PaymentRequestId, DocumentId])
+  relation_DocumentId EventDocuments @relation("fk_FinancialDocuments_DocumentId", fields: [DocumentId], references: [DocumentId], onDelete: NoAction, onUpdate: NoAction)
+  relation_PaymentRequestId PaymentRequests @relation("fk_FinancialDocuments_PaymentRequestId", fields: [PaymentRequestId], references: [PaymentRequestId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Notifications {
+  NotificationId BigInt @id @default(autoincrement())
+  RecipientUserId BigInt
+  EventId BigInt?
+  Title String @db.VarChar(200)
+  Body String? @db.VarChar(1000)
+  IsRead Boolean
+  CreatedAt DateTime @db.Timestamp(6)
+  @@map("Notifications")
+  relation_EventId Events? @relation("fk_Notifications_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+  relation_RecipientUserId Users @relation("fk_Notifications_RecipientUserId", fields: [RecipientUserId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model PaymentRequests {
+  PaymentRequestId BigInt @id @default(autoincrement())
+  EventId BigInt
+  Amount Decimal @db.Decimal(19, 2)
+  Status String @db.VarChar(30)
+  SubmittedBy BigInt
+  ApprovedBy BigInt?
+  ApprovedAt DateTime? @db.Timestamp(6)
+  PaidAt DateTime? @db.Timestamp(6)
+  @@map("PaymentRequests")
+  @@unique([EventId])
+  back_FinancialDocuments_PaymentRequestId FinancialDocuments[] @relation("fk_FinancialDocuments_PaymentRequestId")
+  relation_ApprovedBy Users? @relation("fk_PaymentRequests_ApprovedBy", fields: [ApprovedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  relation_EventId Events @relation("fk_PaymentRequests_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+  relation_SubmittedBy Users @relation("fk_PaymentRequests_SubmittedBy", fields: [SubmittedBy], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model WorkflowHistory {
+  HistoryId BigInt @id @default(autoincrement())
+  EventId BigInt
+  FromState String? @db.VarChar(50)
+  ToState String @db.VarChar(50)
+  ActionCode String @db.VarChar(60)
+  ActorId BigInt
+  Comment String? @db.VarChar(2000)
+  PerformedAt DateTime @db.Timestamp(6)
+  @@map("WorkflowHistory")
+  relation_ActorId Users @relation("fk_WorkflowHistory_ActorId", fields: [ActorId], references: [UserId], onDelete: NoAction, onUpdate: NoAction)
+  relation_EventId Events @relation("fk_WorkflowHistory_EventId", fields: [EventId], references: [EventId], onDelete: NoAction, onUpdate: NoAction)
+  relation_FromState WorkflowStates? @relation("fk_WorkflowHistory_FromState", fields: [FromState], references: [StateCode], onDelete: NoAction, onUpdate: NoAction)
+  relation_ToState WorkflowStates @relation("fk_WorkflowHistory_ToState", fields: [ToState], references: [StateCode], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model WorkflowTransitions {
+  TransitionId Int @id @default(autoincrement())
+  FromState String @db.VarChar(50)
+  ActionCode String @db.VarChar(60)
+  ToState String @db.VarChar(50)
+  RequiredPermission String @db.VarChar(100)
+  @@map("WorkflowTransitions")
+  @@unique([FromState, ActionCode])
+  relation_FromState WorkflowStates @relation("fk_WorkflowTransitions_FromState", fields: [FromState], references: [StateCode], onDelete: NoAction, onUpdate: NoAction)
+  relation_RequiredPermission Permissions @relation("fk_WorkflowTransitions_RequiredPermission", fields: [RequiredPermission], references: [Code], onDelete: NoAction, onUpdate: NoAction)
+  relation_ToState WorkflowStates @relation("fk_WorkflowTransitions_ToState", fields: [ToState], references: [StateCode], onDelete: NoAction, onUpdate: NoAction)
+}

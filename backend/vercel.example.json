@@ -1,0 +1,5 @@
+{
+  "version": 2,
+  "builds": [{ "src": "src/vercel.ts", "use": "@vercel/node", "config": { "includeFiles": ["generated/postgresql/**"] } }],
+  "routes": [{ "src": "/api/(.*)", "dest": "/src/vercel.ts" }]
+}

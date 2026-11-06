@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Hồ sơ thanh toán chờ kiểm tra | Phòng KHTC | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Hồ sơ thanh toán chờ kiểm tra</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Hồ sơ thanh toán chờ kiểm tra: Phòng Kế hoạch - Tài chính</span>
+        </h1>
+        <p class="page-subtitle">Kiểm toán tính hợp lệ của chứng từ hóa đơn, đối soát dự toán và trình cấp thẩm quyền ủy quyền giải ngân</p>
+    </div>
+    <div class="header-actions">
+        <span class="badge badge-pending" style="font-size: 13px; padding: 6px 12px;">
+            Hồ sơ đang xử lý: <strong>{{ payments | length }}</strong>
+        </span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <span>Danh sách tờ trình và chứng từ quyết toán kinh phí</span>
+        </h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 125px;">Mã hồ sơ</th>
+                        <th>Tên sự kiện</th>
+                        <th>Đơn vị trình chi</th>
+                        <th>Người lập chứng từ</th>
+                        <th>Số tiền đề nghị</th>
+                        <th>Tình trạng xử lý</th>
+                        <th class="text-end" style="width: 150px;">Thao tác KHTC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td>
+                            <strong class="font-monospace" style="color: var(--due-blue-primary);">{{ p.TicketCode }}</strong>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('payments.review', payment_request_id=p.PaymentRequestId) }}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">
+                                {{ p.EventTitle }}
+                            </a>
+                        </td>
+                        <td>{{ p.DepartmentName }}</td>
+                        <td>
+                            <div>{{ p.SubmittedByName }}</div>
+                            <small class="text-muted">Lập chứng từ</small>
+                        </td>
+                        <td class="font-monospace">
+                            <span style="font-size: 13.5px; font-weight: 700; color: var(--due-blue-primary);">
+                                {{ p.Amount | currency }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if p.Status == 'PAID' %}badge-approved{% elif p.Status == 'APPROVED' %}badge-approved{% elif p.Status == 'REVISION' %}badge-revision{% else %}badge-pending{% endif %}">
+                                {% if p.Status == 'SUBMITTED' %}Chờ KHTC kiểm tra
+                                {% elif p.Status == 'AUDITED' %}Đã thẩm định - Chờ ký duyệt
+                                {% elif p.Status == 'APPROVED' %}Đã ủy quyền chi
+                                {% elif p.Status == 'PAID' %}Đã thực hiện giải ngân
+                                {% elif p.Status == 'REVISION' %}Cần bổ sung chứng từ
+                                {% else %}{{ p.Status }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('payments.review', payment_request_id=p.PaymentRequestId) }}" class="btn btn-primary btn-sm">
+                                <span>Kiểm tra chứng từ</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <svg class="empty-state-icon" style="color: var(--due-green-primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                <div class="empty-state-title">Không có hồ sơ thanh toán nào đang chờ kiểm tra</div>
+                                <div class="empty-state-text">Hiện tại không có tờ trình quyết toán nào đang tồn đọng tại Phòng Kế hoạch - Tài chính.</div>
+                                <a href="{{ url_for('events.index') }}" class="btn btn-outline btn-sm">Xem tất cả hồ sơ sự kiện</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

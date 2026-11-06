@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+
+{% block title %}Tạo hồ sơ sự kiện mới | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('events.index') }}" style="color: inherit; text-decoration: none;">Hồ sơ sự kiện</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Tạo mới</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row" style="margin-bottom: 18px;">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span>Tạo hồ sơ sự kiện mới</span>
+        </h1>
+        <p class="page-subtitle">Khởi tạo bản nháp đề xuất tổ chức sự kiện theo quy trình xét duyệt của Trường Đại học Kinh tế (DUE)</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('events.index') }}" class="btn btn-outline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <span>Hủy bỏ</span>
+        </a>
+    </div>
+</div>
+
+<!-- BỐ CỤC 2 CỘT CÂN ĐỐI (FORM NHẬP LIỆU BÊN TRÁI & SIDEBAR THÔNG TIN HỖ TRỢ BÊN PHẢI) -->
+<div class="layout-2col">
+    <!-- CỘT CHÍNH (BÊN TRÁI): FORM KHỞI TẠO HỒ SƠ -->
+    <div>
+        <!-- THANH GỢI Ý MẪU SỰ KIỆN NHANH (MINIMIZE USER EFFORT) -->
+        <div class="quick-templates-bar">
+            <span style="font-size: 12.5px; font-weight: 700; color: var(--text-main); display: inline-flex; align-items: center; gap: 5px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--due-blue-primary);"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                <span>Mẫu gợi ý nhanh:</span>
+            </span>
+            <button type="button" class="quick-template-chip" onclick="applyQuickTemplate('science')">
+                <span>📚 Hội thảo Khoa học</span>
+            </button>
+            <button type="button" class="quick-template-chip" onclick="applyQuickTemplate('gala')">
+                <span>🎉 Đại nhạc hội / Văn nghệ</span>
+            </button>
+            <button type="button" class="quick-template-chip" onclick="applyQuickTemplate('startup')">
+                <span>💡 Cuộc thi Khởi nghiệp</span>
+            </button>
+            <button type="button" class="quick-template-chip" onclick="applyQuickTemplate('volunteer')">
+                <span>🤝 Tình nguyện vì Cộng đồng</span>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('events.create') }}" id="createEventForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <!-- THẺ 1: THÔNG TIN CƠ BẢN -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title" style="font-size: 15px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>1. Thông tin định danh sự kiện</span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <!-- Tên sự kiện -->
+                    <div class="form-group">
+                        <label for="title" class="form-label">Tên sự kiện <span class="required" aria-hidden="true">*</span></label>
+                        <input type="text" id="title" name="title" class="form-control" 
+                               placeholder="Ví dụ: Hội thảo Nghiên cứu Khoa học Sinh viên DUE 2026" 
+                               required autofocus oninput="updateLivePreview()">
+                        <div class="form-help">Đặt tên sự kiện rõ ràng, nêu bật nội dung chuyên môn và đối tượng tham gia.</div>
+                    </div>
+
+                    <!-- Đơn vị chủ trì & Quy mô người tham dự -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="department_id" class="form-label">Đơn vị chủ trì <span class="required" aria-hidden="true">*</span></label>
+                            <select id="department_id" name="department_id" class="form-control" required onchange="updateLivePreview()">
+                                {% for d in departments %}
+                                <option value="{{ d.DepartmentId }}" {% if current_user.department_id == d.DepartmentId %}selected{% endif %}>
+                                    {{ d.Name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="attendees" class="form-label">Dự kiến số lượng người tham dự</label>
+                            <input type="number" id="attendees" name="attendees" class="form-control" 
+                                   placeholder="Ví dụ: 150" min="1" step="1" oninput="updateLivePreview()">
+                            <div class="form-help">Căn cứ để Phòng CSVC và hệ thống đề xuất giảng đường phù hợp.</div>
+                        </div>
+                    </div>
+
+                    <!-- Khung thời gian diễn ra -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="starts_at" class="form-label">Thời gian bắt đầu dự kiến</label>
+                            <input type="datetime-local" id="starts_at" name="starts_at" class="form-control" onchange="updateLivePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ends_at" class="form-label">Thời gian kết thúc dự kiến</label>
+                            <input type="datetime-local" id="ends_at" name="ends_at" class="form-control" onchange="updateLivePreview()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THẺ 2: MỤC TIÊU & NỘI DUNG KẾ HOẠCH -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title" style="font-size: 15px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        <span>2. Mục tiêu & Kế hoạch tổ chức</span>
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="objectives" class="form-label">Mục tiêu & Ý nghĩa sự kiện</label>
+                        <textarea id="objectives" name="objectives" class="form-control" rows="3" 
+                                  placeholder="Nêu rõ mục đích, ý nghĩa giáo dục, rèn luyện kỹ năng, chuyên môn hoặc học thuật..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Tóm tắt nội dung chương trình</label>
+                        <textarea id="description" name="description" class="form-control" rows="3" 
+                                  placeholder="Tóm tắt các hoạt động chính, các mốc thời gian quan trọng trong kịch bản..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THANH TÁC VỤ CUỐI FORM (FITTS'S LAW) -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-body" style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <a href="{{ url_for('events.index') }}" class="btn btn-outline">
+                        <span>Hủy bỏ</span>
+                    </a>
+                    <div style="display: inline-flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="submit" name="action_type" value="save_and_list" class="btn btn-outline">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline></svg>
+                            <span>Lưu & Về danh sách</span>
+                        </button>
+                        <button type="submit" name="action_type" value="save_and_view" class="btn btn-primary" id="btnSubmitCreate">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            <span>Lưu & Xem chi tiết</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- CỘT PHỤ (BÊN PHẢI): XEM TRƯỚC TRỰC TIẾP & LỘ TRÌNH XÉT DUYỆT -->
+    <div>
+        <!-- THẺ 1: XEM TRƯỚC HỒ SƠ TRỰC TIẾP (LIVE PREVIEW) -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header" style="background: #F8FAFC;">
+                <h2 class="card-title" style="font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--due-blue-primary);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span>Xem trước thông tin hồ sơ</span>
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="live-preview-card">
+                    <div class="live-preview-header">
+                        <span class="badge badge-draft" style="font-size: 11px;">BẢN NHÁP (DRAFT)</span>
+                        <span class="font-monospace" style="font-weight: 700; color: var(--due-blue-primary); font-size: 12.5px;">EVT-DRAFT</span>
+                    </div>
+                    
+                    <div class="live-preview-title" id="previewTitle">
+                        Chưa nhập tên sự kiện...
+                    </div>
+
+                    <div class="live-preview-meta">
+                        <div class="live-preview-meta-item">
+                            <small>Đơn vị chủ trì:</small>
+                            <strong id="previewDept">{{ current_user.department_name or 'BCH Liên Chi Đoàn' }}</strong>
+                        </div>
+                        <div class="live-preview-meta-item">
+                            <small>Quy mô dự kiến:</small>
+                            <strong id="previewAttendees">— người</strong>
+                        </div>
+                        <div class="live-preview-meta-item" style="grid-column: span 2;">
+                            <small>Thời gian diễn ra:</small>
+                            <strong id="previewTime">Chưa chọn ngày giờ</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- THẺ 2: LỘ TRÌNH XÉT DUYỆT THEO QUY TRÌNH BPMN -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title" style="font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--due-blue-primary);"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span>Lộ trình xét duyệt hồ sơ (BPMN)</span>
+                </h2>
+            </div>
+            <div class="card-body" style="padding: 16px;">
+                <div class="roadmap-list">
+                    <div class="roadmap-item active">
+                        <div class="roadmap-badge">1</div>
+                        <div class="roadmap-content">
+                            <div class="roadmap-title" style="color: var(--due-blue-primary);">Khởi tạo hồ sơ nháp</div>
+                            <div class="roadmap-desc">BCH Liên Chi Đoàn lập kế hoạch và dự trù ngân sách ban đầu.</div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-badge">2</div>
+                        <div class="roadmap-content">
+                            <div class="roadmap-title">Ban Chủ nhiệm Khoa thẩm định</div>
+                            <div class="roadmap-desc">Thẩm định tính khả thi, sự phù hợp chuyên môn và ký xác nhận cơ sở.</div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-badge">3</div>
+                        <div class="roadmap-content">
+                            <div class="roadmap-title">Đoàn Trường phê duyệt cấp phép</div>
+                            <div class="roadmap-desc">Phê duyệt quy mô cấp trường, xem xét chủ trương và ban hành giấy phép.</div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-badge">4</div>
+                        <div class="roadmap-content">
+                            <div class="roadmap-title">Phòng CSVC bố trí hội trường</div>
+                            <div class="roadmap-desc">Kiểm tra lịch chống trùng lặp, cấp giảng đường và bàn giao thiết bị.</div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-badge">5</div>
+                        <div class="roadmap-content">
+                            <div class="roadmap-title">Tổ chức, Báo cáo & Quyết toán</div>
+                            <div class="roadmap-desc">Tổ chức sự kiện, nghiệm thu tài sản và chuyển chứng từ quyết toán KHTC.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- THẺ 3: HƯỚNG DẪN & TIÊU CHUẨN HỒ SƠ HỢP LỆ -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title" style="font-size: 14.5px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--due-green-primary);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span>Lưu ý quy định tổ chức sự kiện</span>
+                </h2>
+            </div>
+            <div class="card-body" style="font-size: 13px; color: var(--text-muted); line-height: 1.55;">
+                <div style="margin-bottom: 10px; display: flex; gap: 8px;">
+                    <span style="color: var(--due-orange-primary); font-weight: 700;">⏱</span>
+                    <span><strong>Thời hạn nộp:</strong> Hồ sơ cần gửi trước ngày diễn ra tối thiểu <strong>07 - 14 ngày</strong> để đảm bảo quy trình thẩm định.</span>
+                </div>
+                <div style="margin-bottom: 10px; display: flex; gap: 8px;">
+                    <span style="color: var(--due-blue-primary); font-weight: 700;">🏛</span>
+                    <span><strong>Địa điểm:</strong> Bố trí theo quy mô thực tế (Hội trường A: 300 chỗ, Giảng đường P-101: 60 chỗ).</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <span style="color: var(--due-green-primary); font-weight: 700;">💰</span>
+                    <span><strong>Dự toán kinh phí:</strong> Sau khi tạo hồ sơ, bạn sẽ được chuyển đến trang chi tiết để nhập các khoản mục dự toán.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// DỮ LIỆU CÁC MẪU SỰ KIỆN GỢI Ý NHANH (MINIMIZE USER EFFORT)
+const quickTemplates = {
+    science: {
+        title: "Hội thảo Nghiên cứu Khoa học Sinh viên DUE 2026",
+        attendees: 150,
+        objectives: "Tạo diễn đàn học thuật chất lượng cao, khơi dậy tinh thần nghiên cứu và công bố công trình khoa học trong sinh viên toàn trường.",
+        description: "1. Khai mạc và phát biểu đề dẫn của Ban Giám hiệu\n2. Báo cáo các tham luận xuất sắc tại các tiểu ban chuyên ngành\n3. Thảo luận chuyên sâu với Hội đồng Khoa học\n4. Tổng kết, trao giải thưởng công trình NCKH tiêu biểu và bế mạc"
+    },
+    gala: {
+        title: "Đại nhạc hội Chào Tân Sinh viên Sparkling Night 2026",
+        attendees: 500,
+        objectives: "Chào đón tân sinh viên K50, kết nối các thế hệ sinh viên và tạo không khí thi đua sôi nổi đầu năm học mới.",
+        description: "1. Khai mạc và trao học bổng tân sinh viên thủ khoa các ngành\n2. Chương trình biểu diễn nghệ thuật của các CLB/Đội/Nhóm DUE\n3. Giao lưu văn hóa nghệ thuật với nghệ sĩ khách mời\n4. Bốc thăm trúng thưởng may mắn và bế mạc chương trình"
+    },
+    startup: {
+        title: "Cuộc thi Ý tưởng Khởi nghiệp Đổi mới Sáng tạo DUE InnoLab 2026",
+        attendees: 200,
+        objectives: "Tìm kiếm, ươm mầm và hỗ trợ thương mại hóa các dự án khởi nghiệp sáng tạo tiềm năng của sinh viên Đại học Kinh tế.",
+        description: "1. Khai mạc và giới thiệu Hội đồng Giám khảo & Quỹ đầu tư\n2. Vòng Tranh tài Pitching trực tiếp của Top 10 dự án xuất sắc\n3. Triển lãm gian hàng sản phẩm mẫu khởi nghiệp sinh viên\n4. Lễ công bố trao giải và cam kết ươm tạo hạt giống"
+    },
+    volunteer: {
+        title: "Chiến dịch Tình nguyện Mùa hè xanh vì Cộng đồng 2026",
+        attendees: 100,
+        objectives: "Phát huy tinh thần xung kích, tình nguyện của tuổi trẻ DUE hướng về cộng đồng, tham gia chuyển đổi số và an sinh xã hội.",
+        description: "1. Lễ xuất quân chiến dịch tình nguyện tại sân trường DUE\n2. Triển khai các đội hình hỗ trợ địa phương khó khăn xây dựng nông thôn mới\n3. Tổ chức sinh hoạt hè, dạy kỹ năng sống và trao học bổng học sinh nghèo hiếu học\n4. Hội quân tổng kết và khen thưởng chiến sĩ tình nguyện xuất sắc"
+    }
+};
+
+function applyQuickTemplate(type) {
+    const tmpl = quickTemplates[type];
+    if (!tmpl) return;
+
+    const titleEl = document.getElementById('title');
+    const attendeesEl = document.getElementById('attendees');
+    const objEl = document.getElementById('objectives');
+    const descEl = document.getElementById('description');
+
+    if (titleEl) titleEl.value = tmpl.title;
+    if (attendeesEl) attendeesEl.value = tmpl.attendees;
+    if (objEl) objEl.value = tmpl.objectives;
+    if (descEl) descEl.value = tmpl.description;
+
+    // Gợi ý ngày giờ mặc định (7 ngày sau, từ 08:00 đến 11:30)
+    const now = new Date();
+    now.setDate(now.getDate() + 7);
+    now.setHours(8, 0, 0, 0);
+    const startIso = formatDateTimeLocal(now);
+    now.setHours(11, 30, 0, 0);
+    const endIso = formatDateTimeLocal(now);
+
+    const startsAtEl = document.getElementById('starts_at');
+    const endsAtEl = document.getElementById('ends_at');
+    if (startsAtEl && !startsAtEl.value) startsAtEl.value = startIso;
+    if (endsAtEl && !endsAtEl.value) endsAtEl.value = endIso;
+
+    updateLivePreview();
+}
+
+function formatDateTimeLocal(d) {
+    const pad = n => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function updateLivePreview() {
+    const titleVal = document.getElementById('title').value.trim();
+    const attendeesVal = document.getElementById('attendees').value.trim();
+    const deptSelect = document.getElementById('department_id');
+    const deptName = deptSelect.options[deptSelect.selectedIndex]?.text || 'BCH Liên Chi Đoàn';
+    const startsAtVal = document.getElementById('starts_at').value;
+    const endsAtVal = document.getElementById('ends_at').value;
+
+    // Cập nhật tiêu đề
+    const previewTitle = document.getElementById('previewTitle');
+    if (previewTitle) {
+        previewTitle.innerText = titleVal || 'Chưa nhập tên sự kiện...';
+        previewTitle.style.color = titleVal ? 'var(--due-blue-primary)' : 'var(--text-muted)';
+    }
+
+    // Cập nhật đơn vị
+    const previewDept = document.getElementById('previewDept');
+    if (previewDept) {
+        previewDept.innerText = deptName;
+    }
+
+    // Cập nhật quy mô
+    const previewAttendees = document.getElementById('previewAttendees');
+    if (previewAttendees) {
+        previewAttendees.innerText = attendeesVal ? `${attendeesVal} người` : '— người';
+    }
+
+    // Cập nhật thời gian
+    const previewTime = document.getElementById('previewTime');
+    if (previewTime) {
+        if (startsAtVal && endsAtVal) {
+            const s = new Date(startsAtVal);
+            const e = new Date(endsAtVal);
+            previewTime.innerText = `${s.toLocaleDateString('vi-VN')} (${s.getHours()}:${s.getMinutes().toString().padStart(2, '0')} - ${e.getHours()}:${e.getMinutes().toString().padStart(2, '0')})`;
+        } else if (startsAtVal) {
+            const s = new Date(startsAtVal);
+            previewTime.innerText = `Từ ${s.toLocaleDateString('vi-VN')} ${s.getHours()}:${s.getMinutes().toString().padStart(2, '0')}`;
+        } else {
+            previewTime.innerText = 'Chưa chọn ngày giờ';
+        }
+    }
+}
+
+// Khởi chạy cập nhật xem trước ngay khi tải trang
+document.addEventListener('DOMContentLoaded', function() {
+    updateLivePreview();
+});
+</script>
+{% endblock %}

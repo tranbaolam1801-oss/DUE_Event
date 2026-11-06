@@ -1,0 +1,473 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.TicketCode }} - {{ event.Title }} | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('events.index') }}" style="color: inherit; text-decoration: none;">Hồ sơ sự kiện</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">{{ event.TicketCode }}</span>
+{% endblock %}
+
+{% block content %}
+<!-- HEADER CHUNG CỦA HỒ SƠ (GỌN GÀNG, KHÔNG CHIẾM QUÁ NHIỀU CHIỀU CAO) -->
+<div class="event-detail-header">
+    <div class="event-detail-title-wrap">
+        <div class="event-meta-top">
+            <span class="event-ticket-badge font-monospace">{{ event.TicketCode }}</span>
+            <span class="badge {{ event.StateCode | status_badge_class }}">{{ event.StateName }}</span>
+            {% if event.IsTerminal %}
+                <span class="badge badge-info">Trạng thái kết thúc</span>
+            {% endif %}
+        </div>
+        <h1 class="event-detail-title">{{ event.Title }}</h1>
+        <div class="event-detail-submeta">
+            <span>Đơn vị: <strong>{{ event.DepartmentName }}</strong></span>
+            <span class="dot-separator">&bull;</span>
+            <span>Người lập: <strong>{{ event.CreatedByName }}</strong></span>
+            <span class="dot-separator">&bull;</span>
+            <span>Ngày tạo: <strong>{{ event.CreatedAt | datetime_vn }}</strong></span>
+        </div>
+    </div>
+
+    <div class="event-header-actions">
+        <!-- Nút AI Assistant Rà soát hồ sơ thông minh -->
+        <button type="button" class="btn btn-outline btn-sm" id="btnTriggerAIReview" onclick="runAIReview()" style="border-color: #075F9F; color: #075F9F;">
+            <span class="ai-badge">AI Assistant</span>
+            <span>Rà soát hồ sơ</span>
+        </button>
+
+        {% if current_user.id == event.CreatedBy and event.StateCode in ('DRAFT', 'REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.edit') %}
+        <a href="{{ url_for('events.edit', event_id=event.EventId) }}" class="btn btn-outline btn-sm" title="Chỉnh sửa nội dung kế hoạch">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span>Sửa kế hoạch</span>
+        </a>
+        <a href="{{ url_for('events.budget', event_id=event.EventId) }}" class="btn btn-outline btn-sm" title="Cập nhật dự trù kinh phí">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Sửa dự toán</span>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- THANH TIẾN TRÌNH BPMN 9 GIAI ĐOẠN RÚT GỌN (VISUAL STEPPER CHUẨN) -->
+<div class="bpmn-stepper" aria-label="Tiến trình xét duyệt và tổ chức 9 giai đoạn">
+    <!-- Giai đoạn 1: Khởi tạo -->
+    <div class="step-item {% if event.StateCode != 'DRAFT' %}completed{% else %}active{% endif %}">
+        <div class="step-circle">1</div>
+        <div class="step-label">Khởi tạo</div>
+    </div>
+
+    <!-- Giai đoạn 2: Khoa duyệt -->
+    <div class="step-item {% if event.StateCode in ('PENDING_UNION', 'REVISION_UNION', 'PENDING_FACILITY', 'EVENT_APPROVED', 'EVENT_HELD', 'RETURN_PENDING', 'REPORT_PENDING', 'FINANCE_PENDING', 'COMPLETED', 'CLOSED') %}completed{% elif event.StateCode == 'PENDING_FACULTY' %}active{% elif event.StateCode == 'REVISION_FACULTY' %}revision{% endif %}">
+        <div class="step-circle">2</div>
+        <div class="step-label">Khoa duyệt</div>
+    </div>
+
+    <!-- Giai đoạn 3: Đoàn duyệt -->
+    <div class="step-item {% if event.StateCode in ('PENDING_FACILITY', 'EVENT_APPROVED', 'EVENT_HELD', 'RETURN_PENDING', 'REPORT_PENDING', 'FINANCE_PENDING', 'COMPLETED', 'CLOSED') %}completed{% elif event.StateCode == 'PENDING_UNION' %}active{% elif event.StateCode == 'REVISION_UNION' %}revision{% endif %}">
+        <div class="step-circle">3</div>
+        <div class="step-label">Đoàn duyệt</div>
+    </div>
+
+    <!-- Giai đoạn 4: Cấp CSVC -->
+    <div class="step-item {% if event.StateCode in ('EVENT_APPROVED', 'EVENT_HELD', 'RETURN_PENDING', 'REPORT_PENDING', 'FINANCE_PENDING', 'COMPLETED', 'CLOSED') %}completed{% elif event.StateCode == 'PENDING_FACILITY' %}active{% elif event.StateCode == 'REVISION_FACILITY' %}revision{% endif %}">
+        <div class="step-circle">4</div>
+        <div class="step-label">Cấp CSVC</div>
+    </div>
+
+    <!-- Giai đoạn 5: Tổ chức -->
+    <div class="step-item {% if event.StateCode in ('EVENT_HELD', 'RETURN_PENDING', 'REPORT_PENDING', 'FINANCE_PENDING', 'COMPLETED', 'CLOSED') %}completed{% elif event.StateCode == 'EVENT_APPROVED' %}active{% endif %}">
+        <div class="step-circle">5</div>
+        <div class="step-label">Tổ chức</div>
+    </div>
+
+    <!-- Giai đoạn 6: Hoàn trả -->
+    <div class="step-item {% if event.StateCode in ('REPORT_PENDING', 'FINANCE_PENDING', 'COMPLETED', 'CLOSED') %}completed{% elif event.StateCode in ('EVENT_HELD', 'RETURN_PENDING') %}active{% endif %}">
+        <div class="step-circle">6</div>
+        <div class="step-label">Hoàn trả</div>
+    </div>
+
+    <!-- Giai đoạn 7: Báo cáo -->
+    <div class="step-item {% if event.StateCode in ('FINANCE_PENDING', 'PAYMENT_APPROVAL', 'PAYMENT_APPROVED', 'COMPLETED', 'CLOSED') %}completed{% elif event.StateCode == 'REPORT_PENDING' %}active{% endif %}">
+        <div class="step-circle">7</div>
+        <div class="step-label">Báo cáo</div>
+    </div>
+
+    <!-- Giai đoạn 8: Quyết toán -->
+    <div class="step-item {% if event.StateCode in ('COMPLETED', 'CLOSED') %}completed{% elif event.StateCode in ('FINANCE_PENDING', 'PAYMENT_APPROVAL', 'PAYMENT_APPROVED', 'FINANCE_REVISION') %}active{% endif %}">
+        <div class="step-circle">8</div>
+        <div class="step-label">Quyết toán</div>
+    </div>
+
+    <!-- Giai đoạn 9: Hoàn tất -->
+    <div class="step-item {% if event.StateCode in ('COMPLETED', 'CLOSED') %}completed active{% endif %}">
+        <div class="step-circle">9</div>
+        <div class="step-label">Hoàn tất</div>
+    </div>
+</div>
+
+<!-- KHỐI HỖ TRỢ / BÁO THIẾU THÔNG TIN KHI NỘP HỒ SƠ (NẾU ĐANG LÀ BẢN NHÁP HOẶC YÊU CẦU SỬA) -->
+{% if event.StateCode in ('DRAFT', 'REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.submit') and (current_user.id == event.CreatedBy or current_user.has_role('BCH_LIEN_CHI_DOAN')) %}
+    {% if not submission_checklist.is_ready %}
+    <div class="submission-checklist-card warning">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #D97706; flex-shrink: 0; margin-top: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <div>
+                <strong style="color: #92400E; font-size: 13.5px;">Hồ sơ chưa đủ điều kiện để nộp duyệt lên Ban Chủ nhiệm Khoa:</strong>
+                <ul class="checklist-items">
+                    <li class="{% if submission_checklist.has_plan %}item-ok{% else %}item-missing{% endif %}">
+                        {% if submission_checklist.has_plan %}
+                            ✓ Kế hoạch chi tiết (Mục tiêu & Kịch bản chương trình) đã hoàn tất.
+                        {% else %}
+                            ✕ Chưa cập nhật Kế hoạch chi tiết & Mục tiêu tổ chức. <a href="{{ url_for('events.detail', event_id=event.EventId, tab='plan') }}">Chuyển đến tab Kế hoạch &rarr;</a>
+                        {% endif %}
+                    </li>
+                    <li class="{% if submission_checklist.has_budget %}item-ok{% else %}item-missing{% endif %}">
+                        {% if submission_checklist.has_budget %}
+                            ✓ Dự trù kinh phí (Đã có {{ budget_items|length }} khoản mục, tổng {{ total_budget | currency }}).
+                        {% else %}
+                            ✕ Chưa lập danh mục Dự trù kinh phí. <a href="{{ url_for('events.detail', event_id=event.EventId, tab='budget') }}">Chuyển đến tab Dự toán &rarr;</a>
+                        {% endif %}
+                    </li>
+                    <li class="{% if submission_checklist.has_schedule %}item-ok{% else %}item-missing{% endif %}">
+                        {% if submission_checklist.has_schedule %}
+                            ✓ Thời gian dự kiến đã được thiết lập đầy đủ.
+                        {% else %}
+                            ✕ Chưa chọn thời gian bắt đầu và kết thúc sự kiện.
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endif %}
+
+<!-- THANH ĐIỀU HƯỚNG 8 TRANG CON (SUB-NAVIGATION TABS BAR) -->
+<nav class="event-subnav-bar" aria-label="Điều hướng các phân hệ của hồ sơ">
+    <div class="subnav-container">
+        <!-- Tab 1: Tổng quan -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='overview') }}" class="event-subnav-item {% if active_tab == 'overview' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Tổng quan</span>
+        </a>
+
+        <!-- Tab 2: Kế hoạch chi tiết -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='plan') }}" class="event-subnav-item {% if active_tab == 'plan' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span>Kế hoạch chi tiết</span>
+        </a>
+
+        <!-- Tab 3: Dự trù kinh phí -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='budget') }}" class="event-subnav-item {% if active_tab == 'budget' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Dự trù kinh phí</span>
+            {% if budget_items and budget_items|length > 0 %}
+            <span class="subnav-badge">{{ budget_items|length }}</span>
+            {% endif %}
+        </a>
+
+        <!-- Tab 4: Cơ sở vật chất -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='facilities') }}" class="event-subnav-item {% if active_tab == 'facilities' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+            <span>Cơ sở vật chất</span>
+            {% if reservations and reservations|length > 0 %}
+            <span class="subnav-badge">{{ reservations|length }}</span>
+            {% endif %}
+        </a>
+
+        <!-- Tab 5: Luồng xét duyệt -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='workflow') }}" class="event-subnav-item {% if active_tab == 'workflow' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Luồng xét duyệt</span>
+            {% if history and history|length > 0 %}
+            <span class="subnav-badge">{{ history|length }}</span>
+            {% endif %}
+        </a>
+
+        <!-- Tab 6: Báo cáo tổng kết -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='report') }}" class="event-subnav-item {% if active_tab == 'report' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            <span>Báo cáo tổng kết</span>
+            {% if report and report.IsConfirmed %}
+            <span class="subnav-badge badge-ok">Đã duyệt</span>
+            {% elif report %}
+            <span class="subnav-badge">Đã nộp</span>
+            {% endif %}
+        </a>
+
+        <!-- Tab 7: Quyết toán -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='settlement') }}" class="event-subnav-item {% if active_tab == 'settlement' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            <span>Quyết toán</span>
+            {% if payment %}
+            <span class="subnav-badge">{{ payment.Status }}</span>
+            {% endif %}
+        </a>
+
+        <!-- Tab 8: Tệp đính kèm -->
+        <a href="{{ url_for('events.detail', event_id=event.EventId, tab='attachments') }}" class="event-subnav-item {% if active_tab == 'attachments' %}active{% endif %}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+            <span>Tệp đính kèm</span>
+            {% if documents and documents|length > 0 %}
+            <span class="subnav-badge">{{ documents|length }}</span>
+            {% endif %}
+        </a>
+    </div>
+</nav>
+
+<!-- KHU VỰC NỘI DUNG CHÍNH (CHỈ RENDER DUY NHẤT 1 TRANG CON TƯƠNG ỨNG VỚI TAB ĐANG CHỌN) -->
+<main class="event-tab-main-content">
+    {% if active_tab == 'overview' %}
+        {% include 'events/tabs/overview.html' %}
+    {% elif active_tab == 'plan' %}
+        {% include 'events/tabs/plan.html' %}
+    {% elif active_tab == 'budget' %}
+        {% include 'events/tabs/budget.html' %}
+    {% elif active_tab == 'facilities' %}
+        {% include 'events/tabs/facilities.html' %}
+    {% elif active_tab == 'workflow' %}
+        {% include 'events/tabs/workflow.html' %}
+    {% elif active_tab == 'report' %}
+        {% include 'events/tabs/report.html' %}
+    {% elif active_tab == 'settlement' %}
+        {% include 'events/tabs/settlement.html' %}
+    {% elif active_tab == 'attachments' %}
+        {% include 'events/tabs/attachments.html' %}
+    {% endif %}
+</main>
+
+<!-- THANH HÀNH ĐỘNG CỐ ĐỊNH (STICKY ACTION BAR - TỐI ƯU THEO PHẦN C & MỤC 8) -->
+<!-- Không che khuất nội dung, không đè lên thanh điều hướng tab, chỉ hiển thị hành động được phép -->
+<div class="sticky-action-bar" role="toolbar" aria-label="Thanh tác vụ chuyển trạng thái">
+    <div style="margin-right: auto; font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
+        <span>Trạng thái hồ sơ:</span>
+        <strong style="color: var(--text-main);">{{ event.StateName }}</strong>
+    </div>
+
+    <!-- Các hành động chuyển trạng thái được phép theo SQL Server WorkflowTransitions -->
+    {% for trans in transitions %}
+        <!-- 1. HÀNH ĐỘNG NỘP HỒ SƠ CHO BCN KHOA (Mục 8: Có kiểm tra điều kiện & xác nhận) -->
+        {% if trans.ActionCode == 'SUBMIT' %}
+            {% if submission_checklist.is_ready %}
+            <button type="button" class="btn btn-primary" onclick="openSubmitModal()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                <span>Nộp hồ sơ cho BCN Khoa</span>
+            </button>
+            {% else %}
+            <button type="button" class="btn btn-primary" disabled title="Hồ sơ còn thiếu Kế hoạch chi tiết hoặc Dự toán. Vui lòng hoàn thiện trước khi nộp.">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                <span>Nộp hồ sơ cho BCN Khoa</span>
+            </button>
+            {% endif %}
+
+        <!-- 2. HÀNH ĐỘNG NỘP LẠI HỒ SƠ SAU KHI SỬA THEO YÊU CẦU -->
+        {% elif trans.ActionCode == 'RESUBMIT' %}
+        <form method="POST" action="{{ url_for('events.action', event_id=event.EventId, action_code='RESUBMIT') }}" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn nộp lại hồ sơ sau khi đã hoàn tất chỉnh sửa theo ý kiến thẩm định?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-success">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Nộp lại hồ sơ</span>
+            </button>
+        </form>
+
+        <!-- 3. HÀNH ĐỘNG PHÊ DUYỆT / CHẤP THUẬN -->
+        {% elif trans.ActionCode in ('APPROVE', 'RECORD_EVENT_HELD', 'SKIP_REPORT', 'SUBMIT_TO_AUTHORITY', 'RECORD_PAID') %}
+        <form method="POST" action="{{ url_for('events.action', event_id=event.EventId, action_code=trans.ActionCode) }}" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-success">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>{{ trans.ToStateName }} ({{ trans.ActionCode }})</span>
+            </button>
+        </form>
+
+        <!-- 4. HÀNH ĐỘNG YÊU CẦU CHỈNH SỬA / BỔ SUNG -->
+        {% elif trans.ActionCode in ('REQUEST_REVISION', 'REQUEST_DOCUMENTS', 'REVISION_FACILITY') %}
+        <button type="button" class="btn btn-warning" onclick="openActionModal('{{ trans.ActionCode }}', 'Yêu cầu chỉnh sửa / Bổ sung hồ sơ')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path></svg>
+            <span>Yêu cầu chỉnh sửa</span>
+        </button>
+
+        <!-- 5. HÀNH ĐỘNG TỪ CHỐI -->
+        {% elif trans.ActionCode in ('REJECT', 'CLOSE') %}
+        <button type="button" class="btn btn-danger" onclick="openActionModal('{{ trans.ActionCode }}', 'Từ chối / Dừng xử lý hồ sơ')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            <span>Từ chối hồ sơ</span>
+        </button>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Lối tắt liên phân hệ theo thẩm quyền -->
+    {% if current_user.has_permission('facilities.assign') and event.StateCode in ('PENDING_FACILITY', 'EVENT_APPROVED') %}
+    <a href="{{ url_for('facilities.assign_facility', event_id=event.EventId) }}" class="btn btn-warning">
+        <span>Bố trí phòng CSVC</span>
+    </a>
+    {% endif %}
+
+    {% if current_user.has_permission('reports.create') and event.StateCode in ('EVENT_HELD', 'RETURN_PENDING', 'REPORT_PENDING') %}
+    <a href="{{ url_for('reports.create', event_id=event.EventId) }}" class="btn btn-outline">
+        <span>Lập báo cáo tổng kết</span>
+    </a>
+    {% endif %}
+
+    {% if current_user.has_permission('payments.submit') and event.StateCode in ('REPORT_PENDING', 'FINANCE_PENDING', 'FINANCE_REVISION') %}
+    <a href="{{ url_for('payments.create', event_id=event.EventId) }}" class="btn btn-outline">
+        <span>Quyết toán tài chính</span>
+    </a>
+    {% endif %}
+</div>
+
+<!-- MODAL XÁC NHẬN NỘP HỒ SƠ LÊN KHOA (MỤC 8 CỦA YÊU CẦU) -->
+<div class="modal-overlay" id="submitModal" role="dialog" aria-modal="true" aria-labelledby="submitModalTitle">
+    <div class="modal-box" style="max-width: 520px;">
+        <form method="POST" action="{{ url_for('events.action', event_id=event.EventId, action_code='SUBMIT') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h3 class="modal-title" id="submitModalTitle" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--due-blue-primary);"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <span>Xác nhận nộp hồ sơ sự kiện</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal('submitModal')" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 12px; font-size: 13.5px; line-height: 1.5;">
+                    Bạn đang chuẩn bị nộp hồ sơ <strong>{{ event.Title }}</strong> (Mã: <code>{{ event.TicketCode }}</code>) lên <strong>Ban Chủ nhiệm Khoa {{ event.DepartmentName }}</strong> để thẩm định bước 1 theo quy trình BPMN.
+                </p>
+                <div style="background-color: #F0FDF4; border: 1px solid #BBF7D0; border-radius: var(--border-radius-sm); padding: 10px 14px; font-size: 13px; color: #166534; margin-bottom: 14px;">
+                    ✓ Kế hoạch chi tiết và Dự trù kinh phí đã được hoàn thiện đầy đủ.
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="submitModalComment" class="form-label">Lời nhắn kèm theo (tùy chọn):</label>
+                    <textarea id="submitModalComment" name="comment" class="form-control" rows="3" placeholder="Kính gửi Ban Chủ nhiệm Khoa xem xét và thẩm định hồ sơ kế hoạch..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('submitModal')">Hủy bỏ</button>
+                <button type="submit" class="btn btn-primary">Xác nhận nộp hồ sơ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL NHẬP Ý KIẾN / LÝ DO CHO CÁC NHÁNH YÊU CẦU SỬA HOẶC TỪ CHỐI -->
+<div class="modal-overlay" id="actionModal" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+    <div class="modal-box">
+        <form method="POST" id="actionModalForm" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="modal-header">
+                <h3 class="modal-title" id="actionModalTitle">Xác nhận thao tác nghiệp vụ</h3>
+                <button type="button" class="modal-close" onclick="closeModal('actionModal')" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="actionModalComment" class="form-label">
+                        Ý kiến đóng góp / Lý do cụ thể <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <textarea id="actionModalComment" name="comment" class="form-control" rows="4" placeholder="Nhập chi tiết ý kiến để người lập hồ sơ tiếp thu và chỉnh sửa..." required></textarea>
+                    <div class="form-help">Nội dung này sẽ được ghi vào lịch sử xử lý (WorkflowHistory) và lưu vết kiểm toán trong CSDL.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('actionModal')">Hủy bỏ</button>
+                <button type="submit" class="btn btn-primary" id="btnSubmitActionModal">Xác nhận thực hiện</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL AI ASSISTANT REVIEW (BPMN: AIReview) -->
+<div class="modal-overlay" id="aiReviewModal" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="aiModalTitle" style="display: flex; align-items: center; gap: 8px;">
+                <span class="ai-badge">AI Assistant</span>
+                <span>Kết quả rà soát hồ sơ thông minh</span>
+            </h3>
+            <button type="button" class="modal-close" onclick="closeModal('aiReviewModal')" aria-label="Đóng">&times;</button>
+        </div>
+        <div class="modal-body" id="aiReviewBody">
+            <div style="text-align: center; padding: 24px;">Đang phân tích kịch bản và dự toán...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="closeModal('aiReviewModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openSubmitModal() {
+    openModal('submitModal');
+}
+
+function openActionModal(actionCode, title) {
+    const modal = document.getElementById('actionModal');
+    const form = document.getElementById('actionModalForm');
+    const titleEl = document.getElementById('actionModalTitle');
+    const submitBtn = document.getElementById('btnSubmitActionModal');
+
+    titleEl.textContent = title;
+    form.action = "{{ url_for('events.action', event_id=event.EventId, action_code='PLACEHOLDER') }}".replace('PLACEHOLDER', actionCode);
+    
+    if (actionCode === 'REJECT' || actionCode === 'CLOSE') {
+        submitBtn.className = 'btn btn-danger';
+        submitBtn.textContent = 'Xác nhận từ chối';
+    } else {
+        submitBtn.className = 'btn btn-warning';
+        submitBtn.textContent = 'Gửi yêu cầu chỉnh sửa';
+    }
+
+    openModal('actionModal');
+    document.getElementById('actionModalComment').value = '';
+    document.getElementById('actionModalComment').focus();
+}
+
+function runAIReview() {
+    openModal('aiReviewModal');
+    const body = document.getElementById('aiReviewBody');
+    body.innerHTML = '<div style="text-align: center; padding: 30px;"><div style="font-weight: 600; color: var(--due-blue-primary);">AI đang rà soát cấu trúc hồ sơ...</div></div>';
+
+    fetch("{{ url_for('events.ai_review', event_id=event.EventId) }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        let suggestionsHtml = '';
+        if (data.suggestions && data.suggestions.length > 0) {
+            suggestionsHtml = data.suggestions.map(s => `
+                <div style="padding: 10px 14px; background-color: #F8FAFC; border-left: 3px solid var(--due-blue-primary); border-radius: 4px; margin-bottom: 10px;">
+                    <strong style="color: var(--text-main); font-size: 13px;">${s.field}:</strong>
+                    <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">${s.message}</div>
+                </div>
+            `).join('');
+        } else {
+            suggestionsHtml = '<div style="color: var(--due-green-primary); font-weight: 600;">Hồ sơ của bạn rất hoàn thiện! Không phát hiện thiếu sót lớn.</div>';
+        }
+
+        body.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Điểm hoàn thiện hồ sơ</div>
+                    <div style="font-size: 26px; font-weight: 800; color: ${data.score >= 70 ? 'var(--due-green-primary)' : 'var(--due-orange-primary)'};">${data.score}/100</div>
+                </div>
+                <div>
+                    <span class="badge ${data.is_ready ? 'badge-approved' : 'badge-revision'}">${data.summary}</span>
+                </div>
+            </div>
+            <div>
+                <h4 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">Khuyến nghị từ trợ lý AI:</h4>
+                ${suggestionsHtml}
+            </div>
+        `;
+    })
+    .catch(err => {
+        body.innerHTML = '<div style="color: #DC2626; padding: 20px;">Lỗi khi kết nối dịch vụ AI rà soát.</div>';
+    });
+}
+</script>
+{% endblock %}

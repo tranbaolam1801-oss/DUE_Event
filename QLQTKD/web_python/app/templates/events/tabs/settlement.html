@@ -1,0 +1,107 @@
+<!-- TAB 7: QUYẾT TOÁN TÀI CHÍNH & GIẢI NGÂN -->
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Hồ sơ quyết toán tài chính & Giải ngân chi phí</span>
+        </h2>
+        <div style="display: flex; gap: 8px;">
+            {% if current_user.has_permission('payments.submit') and event.StateCode in ('REPORT_PENDING', 'FINANCE_PENDING', 'FINANCE_REVISION') %}
+            <a href="{{ url_for('payments.create', event_id=event.EventId) }}" class="btn btn-primary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>{{ 'Cập nhật tờ trình quyết toán' if payment else 'Lập tờ trình quyết toán' }}</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        {% if payment %}
+        <!-- TỔNG HỢP HỒ SƠ THANH TOÁN -->
+        <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 18px 24px; margin-bottom: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: center;">
+                <div>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Số tiền quyết toán đề nghị</span>
+                    <div style="font-size: 26px; font-weight: 800; color: var(--due-blue-primary); margin-top: 4px;" class="font-monospace">
+                        {{ payment.Amount | currency }}
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Trạng thái thẩm định KHTC</span>
+                    <div style="margin-top: 6px;">
+                        <span class="badge {% if payment.Status == 'PAID' %}badge-completed{% elif payment.Status == 'APPROVED' %}badge-approved{% elif payment.Status == 'REVISION' %}badge-revision{% elif payment.Status == 'REJECTED' %}badge-rejected{% else %}badge-pending{% endif %}" style="font-size: 13px; padding: 5px 12px;">
+                            {{ payment.Status }}
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Người lập tờ trình</span>
+                    <div style="font-size: 14px; font-weight: 600; color: var(--text-main); margin-top: 4px;">
+                        {{ payment.SubmittedByName }}
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Thời điểm thanh toán</span>
+                    <div style="font-size: 13px; color: var(--text-main); margin-top: 4px;">
+                        {{ payment.PaidAt | datetime_vn if payment.PaidAt else 'Chưa giải ngân' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LỊCH SỬ THẨM ĐỊNH VÀ QUYẾT ĐỊNH CHI CỦA KHTC / BAN GIÁM HIỆU -->
+        <div>
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--text-main); text-transform: uppercase; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                <span>Quyết định thẩm định tài chính (Payment Decisions)</span>
+            </h3>
+            {% if payment_decisions and payment_decisions|length > 0 %}
+            <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: var(--border-radius-md);">
+                <table class="table" style="margin: 0;">
+                    <thead>
+                        <tr>
+                            <th>Người ra quyết định</th>
+                            <th>Mã quyết định</th>
+                            <th>Thời điểm thẩm định</th>
+                            <th>Nội dung thẩm định / Yêu cầu bổ sung hóa đơn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dec in payment_decisions %}
+                        <tr>
+                            <td><strong>{{ dec.DecidedByName }}</strong></td>
+                            <td>
+                                <span class="badge {% if dec.DecisionCode in ('APPROVED', 'AUTHORIZE_PAYMENT') %}badge-approved{% elif dec.DecisionCode in ('REJECTED', 'REJECT_PAYMENT') %}badge-rejected{% else %}badge-revision{% endif %}">
+                                    {{ dec.DecisionCode }}
+                                </span>
+                            </td>
+                            <td>{{ dec.DecidedAt | datetime_vn }}</td>
+                            <td>{{ dec.Reason or 'Chứng từ hóa đơn hợp lệ theo quy chế chi tiêu nội bộ DUE.' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="padding: 14px; background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 13px; color: var(--text-muted);">
+                Chưa có quyết định thẩm định nào từ Phòng Kế hoạch - Tài chính.
+            </div>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <!-- EMPTY STATE KHI CHƯA CÓ HỒ SƠ QUYẾT TOÁN -->
+        <div class="empty-state" style="padding: 40px 20px;">
+            <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <div class="empty-state-title">Chưa có đề nghị thanh quyết toán</div>
+            <div class="empty-state-text">
+                Sau khi hoàn tất tổ chức và nghiệm thu báo cáo tổng kết, đơn vị tổ chức tập hợp đầy đủ hóa đơn chứng từ VAT để lập tờ trình quyết toán kinh phí gửi Phòng KHTC.
+            </div>
+            {% if current_user.has_permission('payments.submit') and event.StateCode in ('REPORT_PENDING', 'FINANCE_PENDING', 'FINANCE_REVISION') %}
+            <a href="{{ url_for('payments.create', event_id=event.EventId) }}" class="btn btn-primary btn-sm" style="margin-top: 10px;">
+                + Lập tờ trình quyết toán ngay
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>

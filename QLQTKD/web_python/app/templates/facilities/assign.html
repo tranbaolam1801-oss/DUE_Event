@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Bố trí Cơ sở vật chất: {{ event.TicketCode }} | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('facilities.index') }}" style="color: inherit; text-decoration: none;">Cơ sở vật chất</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Bố trí phòng: {{ event.TicketCode }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span class="badge badge-info" style="font-size: 13px; font-weight: 700;">PHÒNG CSVC ĐIỀU PHỐI</span>
+            <span style="font-size: 14px; font-weight: 800; color: var(--due-blue-primary);">{{ event.TicketCode }}</span>
+        </div>
+        <h1 class="page-title">Bố trí Hội trường & Thiết bị phục vụ sự kiện</h1>
+        <p class="page-subtitle">Phân bổ giảng đường, hội trường và thiết bị phục vụ theo quy mô sự kiện</p>
+    </div>
+    <div class="header-actions">
+        <!-- NÚT AI TRỢ LÝ THÔNG MINH GỢI Ý BỐ TRÍ KHÔNG GIAN -->
+        <button type="button" class="btn btn-outline" onclick="runAIAssignSuggest()" style="border-color: var(--due-blue-primary); color: var(--due-blue-primary);">
+            <span class="ai-badge">AI Assistant</span>
+            <span>Gợi ý bố trí phòng tối ưu</span>
+        </button>
+        <a href="{{ url_for('facilities.index') }}" class="btn btn-outline">Quay lại danh sách</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+    <!-- CỘT CHÍNH: FORM BỐ TRÍ PHÒNG & THIẾT BỊ -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Phiếu bố trí Cơ sở vật chất (Dành riêng nhân viên CSVC)</h2>
+        </div>
+        <div class="card-body">
+            <!-- TÓM TẮT HỒ SƠ SỰ KIỆN -->
+            <div style="background-color: #F8FAFC; padding: 14px 18px; border-radius: 6px; margin-bottom: 22px; border: 1px solid var(--border-color);">
+                <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">{{ event.Title }}</div>
+                <div style="font-size: 13px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 16px; margin-top: 6px;">
+                    <div>Đơn vị tổ chức: <strong style="color: var(--text-main);">{{ event.DepartmentName }}</strong></div>
+                    <div>Quy mô đăng ký: <strong style="color: var(--due-blue-primary);">{{ event.ExpectedAttendees or 100 }} chỗ</strong></div>
+                    <div>Người đề xuất: <strong style="color: var(--text-main);">{{ event.CreatedByName }}</strong></div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('facilities.assign_facility', event_id=event.EventId) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- 1. CHỌN ĐỊA ĐIỂM -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assign_facility_id" class="form-label">Chọn Giảng đường / Hội trường bố trí <span class="required">*</span></label>
+                        <select id="assign_facility_id" name="facility_id" class="form-control" required onchange="triggerLiveConflictCheck()">
+                            <option value="">-- Chọn địa điểm cấp cho sự kiện --</option>
+                            {% for f in facilities %}
+                            <option value="{{ f.FacilityId }}" {% if existing_reservations and existing_reservations[0].FacilityId == f.FacilityId %}selected{% endif %}>
+                                {{ f.Name }} (Sức chứa: {{ f.Capacity or '—' }} chỗ)
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 2. KHUNG THỜI GIAN SỬ DỤNG -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="starts_at" class="form-label">Thời gian bắt đầu bàn giao phòng <span class="required">*</span></label>
+                        <input type="datetime-local" id="starts_at" name="starts_at" class="form-control" 
+                               value="{{ event.StartsAt | string | replace(' ', 'T') if event.StartsAt else '' }}" 
+                               required onchange="triggerLiveConflictCheck()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ends_at" class="form-label">Thời gian kết thúc nghiệm thu <span class="required">*</span></label>
+                        <input type="datetime-local" id="ends_at" name="ends_at" class="form-control" 
+                               value="{{ event.EndsAt | string | replace(' ', 'T') if event.EndsAt else '' }}" 
+                               required onchange="triggerLiveConflictCheck()">
+                    </div>
+                </div>
+
+                <!-- CẢNH BÁO XUNG ĐỘT TRỰC TUYẾN -->
+                <div id="liveConflictAlert" style="display: none; margin-bottom: 20px; padding: 12px 16px; border-radius: 6px;"></div>
+
+                <!-- 3. DANH MỤC THIẾT BỊ PHÂN BỔ -->
+                <div style="margin: 22px 0;">
+                    <h3 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>Phân bổ số lượng trang thiết bị âm thanh, ánh sáng:</span>
+                        <span style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Đối chiếu kho hiện có</span>
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+                        {% for eq in equipment_list %}
+                        <div style="background: #F8FAFC; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 13.5px; color: var(--text-main);">{{ eq.Name }}</div>
+                                <small class="text-muted">Tổng kho: <strong>{{ eq.TotalQuantity }}</strong></small>
+                            </div>
+                            <div style="width: 85px;">
+                                <input type="number" id="eq_input_{{ eq.EquipmentId }}" name="eq_{{ eq.EquipmentId }}" class="form-control" value="0" min="0" max="{{ eq.TotalQuantity }}" step="1" aria-label="Số lượng {{ eq.Name }}">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 4. GHI CHÚ KỸ THUẬT VÀ PHÂN BỔ -->
+                <div class="form-group">
+                    <label for="assign_note" class="form-label">Ghi chú điều phối & Yêu cầu kỹ thuật</label>
+                    <textarea id="assign_note" name="note" class="form-control" rows="3" placeholder="Ghi nhận phân công kỹ thuật viên trực âm thanh máy chiếu, lưu ý nguồn điện..."></textarea>
+                </div>
+
+                <!-- 5. TÙY CHỌN PHÊ DUYỆT NGAY -->
+                <div style="background: #EFF6FF; border: 1px solid #BFDBFE; padding: 14px 16px; border-radius: 6px; margin: 20px 0;">
+                    <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; margin-bottom: 0;">
+                        <input type="checkbox" name="auto_approve" value="1" checked style="margin-top: 3px; width: 16px; height: 16px;">
+                        <div>
+                            <strong style="color: var(--due-blue-primary); font-size: 13.5px;">Phê duyệt cấp cơ sở vật chất ngay</strong>
+                            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+                                Xác nhận địa điểm và tự động chuyển bước quy trình hồ sơ sự kiện (State: Approve Facility).
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- HÀNH ĐỘNG NỘP FORM -->
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <a href="{{ url_for('facilities.index') }}" class="btn btn-outline">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Xác nhận bố trí & Lưu hồ sơ</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CỘT PHỤ: THÔNG TIN HƯỚNG DẪN NGHIỆP VỤ CSVC -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Quy định bố trí giảng đường</h2>
+            </div>
+            <div class="card-body" style="font-size: 13px; line-height: 1.6; color: var(--text-main);">
+                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px;">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--due-blue-light); color: var(--due-blue-primary); font-weight: 700; flex-shrink: 0;">1</span>
+                    <div>Ưu tiên bố trí địa điểm có sức chứa phù hợp, tỷ lệ lấp đầy tối ưu từ <strong>70% – 95%</strong>.</div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px;">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--due-blue-light); color: var(--due-blue-primary); font-weight: 700; flex-shrink: 0;">2</span>
+                    <div>Hệ thống tự động sử dụng khóa bi quan (UPDLOCK) trên CSDL SQL Server để ngăn chặn hoàn toàn việc đặt trùng phòng.</div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--due-blue-light); color: var(--due-blue-primary); font-weight: 700; flex-shrink: 0;">3</span>
+                    <div>Sau khi sự kiện diễn ra, nhân viên CSVC phải tiến hành lập <strong>Biên bản nghiệm thu hoàn trả</strong> để giải phóng thiết bị về kho.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal AI Suggest -->
+<div class="modal-overlay" id="aiFacilityModal" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+                <span class="ai-badge">AI Assistant</span>
+                <span>Gợi ý bố trí không gian tối ưu cho sự kiện</span>
+            </h3>
+            <button type="button" class="modal-close" onclick="closeModal('aiFacilityModal')" aria-label="Đóng">&times;</button>
+        </div>
+        <div class="modal-body" id="aiFacilityBody">
+            <div style="text-align: center; padding: 20px;">Đang phân tích dữ liệu quy mô phòng...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="closeModal('aiFacilityModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function triggerLiveConflictCheck() {
+    const facilityId = document.getElementById('assign_facility_id').value;
+    const startsAt = document.getElementById('starts_at').value;
+    const endsAt = document.getElementById('ends_at').value;
+    const alertBox = document.getElementById('liveConflictAlert');
+
+    if (!facilityId || !startsAt || !endsAt) {
+        alertBox.style.display = 'none';
+        return;
+    }
+
+    fetch("{{ url_for('facilities.check_collision') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            facility_id: facilityId,
+            starts_at: startsAt,
+            ends_at: endsAt
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.has_conflict) {
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#FFFBEB';
+            alertBox.style.color = '#92400E';
+            alertBox.style.border = '1px solid #FDE68A';
+            alertBox.innerHTML = `<strong>Cảnh báo:</strong> Địa điểm này đã có lịch đặt bởi <strong>${data.conflict_event}</strong> (${data.starts_at} - ${data.ends_at}).`;
+        } else {
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#F0FDF4';
+            alertBox.style.color = '#166534';
+            alertBox.style.border = '1px solid #BBF7D0';
+            alertBox.innerHTML = `<strong>Khả dụng:</strong> Hội trường hoàn toàn trống trong khung giờ này.`;
+        }
+    })
+    .catch(() => {
+        alertBox.style.display = 'none';
+    });
+}
+
+function runAIAssignSuggest() {
+    openModal('aiFacilityModal');
+    const body = document.getElementById('aiFacilityBody');
+    body.innerHTML = '<div style="text-align: center; padding: 20px;">Đang tính toán tỷ lệ lấp đầy phòng...</div>';
+
+    fetch("{{ url_for('facilities.ai_suggest') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            attendees: {{ event.ExpectedAttendees or 100 }}
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        let html = '';
+        data.forEach(item => {
+            html += `
+                <div style="padding: 12px 14px; background: #F8FAFC; border-left: 3px solid var(--due-green-primary); border-radius: 4px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--text-main); font-size: 14px;">${item.name} (${item.code})</strong>
+                        <span class="badge badge-approved">${item.capacity} chỗ</span>
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--due-blue-primary); font-weight: 600; margin-top: 4px;">${item.fit_rating}</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                        Gợi ý thiết bị: ${item.recommended_equipment.join(', ')}
+                    </div>
+                    <button type="button" class="btn btn-outline btn-sm" style="margin-top: 8px;" onclick="applyFacilitySuggestion(${item.facility_id})">
+                        Bố trí phòng này ngay
+                    </button>
+                </div>
+            `;
+        });
+        body.innerHTML = html || 'Không có gợi ý khả dụng.';
+    });
+}
+
+function applyFacilitySuggestion(id) {
+    document.getElementById('assign_facility_id').value = id;
+    closeModal('aiFacilityModal');
+    triggerLiveConflictCheck();
+}
+</script>
+{% endblock %}

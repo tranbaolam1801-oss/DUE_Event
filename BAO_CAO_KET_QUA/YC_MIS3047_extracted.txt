@@ -1,0 +1,58 @@
+TOTAL PAGES: 2
+
+
+--- PAGE 1 ---
+
+Yêu cầu báo cáo dự án TP3.2 (MIS3047) 
+Chương 1. Giới thiệu bài toán nghiệp vụ 
+• Nêu tên quy trình nghiệp vụ được chọn và lý do chọn. Quy trình phải có thật, nhóm đã trải 
+nghiệm hoặc khảo sát. 
+• Mô tả bối cảnh: tổ chức, người tham gia (tối thiểu 3 vai trò) và vấn đề cần giải quyết. 
+• Nêu điểm nghẽn cụ thể, kèm số liệu ước lượng nếu có. 
+• Trình bày mục tiêu và phạm vi: ứng dụng làm gì và không làm gì. 
+• Tóm tắt sản phẩm: mô hình BPMN to-be, ứng dụng web, video thuyết trình. 
+Chương 2. Mô hình hóa quy trình 
+2.1. Mô hình as-is. Mô hình BPMN có tối thiểu 2 lane, 1 cổng XOR, 1 cổng AND, 1 đối tượng dữ liệu, 1 
+sự kiện hẹn giờ. Đính kèm tệp .bpmn và ảnh .png. 
+2.2. Phân tích định lượng. Chạy BIMP 
+• Gắn các chỉ số: thời gian xử lý, thời gian chờ, tần suất mỗi nhánh, vai trò thực hiện. 
+• Tính thời gian chu trình kỳ vọng và đếm số lần bàn giao. 
+• Xác định 3 nút cổ chai lớn nhất. 
+• Trình bày kết quả trong một bảng. 
+2.3. Xử lý ngoại lệ. Bổ sung tối thiểu 3 ngoại lệ: sự kiện hẹn giờ biên không ngắt (nhắc quá hạn), sự kiện 
+lỗi biên, event sub-process (hủy yêu cầu từ người đề nghị). 
+2.4. Mô hình to-be. Mô hình BPMN to-be có tối thiểu 3 cổng XOR, 3 vai trò, khoảng 20 activities. Chỉ 
+rõ các can thiệp cải tiến so với as-is và giải thích từng can thiệp. 
+Chương 3. Thiết kế tự động hóa và phần mềm 
+3.1. Bản đồ AI trên quy trình. Với mỗi hoạt động trong to-be, phân vào một trong bốn nhóm: giữ thủ 
+công, tự động theo luật, tự động có AI hỗ trợ, giao cho agent. Ghi lý do và mức rủi ro nếu sai. 
+3.2. Thiết kế ngưỡng. Chọn một bước phân loại. Nêu giả định chi phí xử lý thủ công (X) và thiệt hại của 
+quyết định sai (Y). Lập bảng tính xác định ngưỡng độ tin cậy và trình bày lập luận. 
+3.3. Thiết kế phần mềm (khung IDEA: Design). 
+• Mô hình dữ liệu: bảng, trường, quan hệ, khóa. 
+• Danh sách màn hình và vai trò được truy cập. 
+• Bảng ánh xạ BPMN → tính năng: user task → màn hình, service task → API, cổng XOR → điều 
+kiện phê duyệt, lane → phân quyền. 
+• Ngăn xếp công nghệ kèm lý do lựa chọn. 
+• Các quyết định kiến trúc nhóm tự đưa ra: dữ liệu lưu ở đâu, phân quyền thế nào, ứng dụng chạy ở 
+đâu, khóa bí mật được cất giữ ra sao. 
+
+--- PAGE 2 ---
+
+Chương 4. Xây dựng, kiểm thử và đánh giá 
+4.1. Ứng dụng web. Mô tả ứng dụng và chứng minh đáp ứng 6 yêu cầu kỹ thuật tối thiểu: xác thực với ≥ 
+3 vai trò, ≥ 3 luồng phê duyệt theo cổng XOR, lưu trữ bền vững, ≥ 1 tích hợp bên ngoài, bộ kiểm thử tự 
+động, ≥ 15 commit Git. 
+4.2. Nhật ký làm việc với AI. Tối thiểu 10 lượt tương tác đáng chú ý, mỗi lượt gồm prompt, kết quả, 
+đánh giá và điều chỉnh. Có ít nhất 2 lượt thất bại, phân tích nguyên nhân theo các mẫu thất bại đã học. 
+4.3. Kiểm thử và bảo mật. Trình bày kết quả bộ kiểm thử cho kịch bản chính và ngoại lệ, báo cáo theo 6 
+nhóm tiêu chí hoàn thành, và checklist bảo mật đã ký xác nhận. 
+4.4. Đánh giá hiệu quả. So sánh as-is và to-be bằng số liệu: thời gian chu trình, số bàn giao, thời gian 
+chờ ở ba nút cổ chai. Nêu hạn chế còn lại và đề xuất tiếp theo. 
+4.5. Kết luận. Tóm tắt kết quả đạt được và bài học nhóm rút ra. 
+Yêu cầu hình thức 
+• Trình bày A4, Times New Roman 13pt, lề 2–2–2–2 cm. 
+• Có mục lục tự động. danh mục bảng và hình. 
+• Đánh số bảng và hình tự động. 
+• Có danh mục tài liệu tham khảo. 
+• Dung lượng 30-50 trang. Phần phụ lục không tính vào tổng số trang.  

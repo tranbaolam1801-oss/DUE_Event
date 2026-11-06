@@ -1,0 +1,450 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/postgresql"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas = ["my_due"]
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  fullName      String
+  phone         String?
+  role          String   // ADMIN, BTC, BCN_KHOA, DOAN_TRUONG, CSVC, KHTC
+  department    String?
+  isActive      Boolean  @default(true)
+  failedLoginAttempts Int      @default(0)
+  lockedUntil         DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  createdEvents     Event[]            @relation("EventCreator")
+  approvalDecisions ApprovalDecision[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  attachments       Attachment[]
+  handoverBy        HandoverRecord[]   @relation("HandoverBy")
+  receivedBy        HandoverRecord[]   @relation("ReceivedBy")
+  returnInspections ReturnInspection[]
+  incidentReports   IncidentReport[]
+  settlementCreator Settlement[]       @relation("SettlementCreator")
+  settlementReviewer Settlement[]      @relation("SettlementReviewer")
+  @@schema("my_due")
+}
+
+model Event {
+  id                String    @id @default(uuid())
+  eventCode         String    @unique
+  title             String
+  description       String?
+  objectives        String?
+  targetAudience    String?
+  expectedAttendees Int?
+  organizingUnit    String
+  contactPerson     String?
+  contactEmail      String?
+  contactPhone      String?
+  startDate         DateTime?
+  endDate           DateTime?
+  setupTime         DateTime?
+  teardownTime      DateTime?
+  preferredVenue    String?
+  planContent       String?
+  safetyPlan        String?
+  communicationPlan String?
+
+  status            String   @default("DRAFT")
+  permitStatus      String   @default("PENDING")
+  facilityStatus    String   @default("PENDING")
+  inspectionStatus  String   @default("PENDING")
+  settlementStatus  String   @default("PENDING")
+  reportStatus      String   @default("PENDING")
+  currentVersion    Int      @default(1)
+
+  createdById       String
+  createdBy         User     @relation("EventCreator", fields: [createdById], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+  deletedById       String?
+  deleteReason      String?
+
+  versions          EventVersion[]
+  budgetItems       BudgetItem[]
+  scheduleItems     EventScheduleItem[]
+  approvalDecisions ApprovalDecision[]
+  workflowHistory   WorkflowHistory[]
+  attachments       Attachment[]
+  resourceBookings  ResourceBooking[]
+  handoverRecords   HandoverRecord[]
+  returnInspections ReturnInspection[]
+  incidentReports   IncidentReport[]
+  settlements       Settlement[]
+  eventReport       EventReport?
+  notifications     Notification[]
+  @@schema("my_due")
+}
+
+model EventVersion {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  version     Int
+  title       String
+  description String?
+  objectives  String?
+  planContent String?
+  budgetData  String?
+  changeNote  String?
+  changedBy   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  @@schema("my_due")
+}
+
+model EventScheduleItem {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  timeSlot    String
+  activity    String
+  responsible String?
+  notes       String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@schema("my_due")
+}
+
+model BudgetItem {
+  id             String   @id @default(uuid())
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id])
+  category       String
+  itemName       String
+  quantity       Int      @default(1)
+  unitPrice      Float    @default(0)
+  totalPrice     Float    @default(0)
+  notes          String?
+  actualQuantity Int?
+  actualPrice    Float?
+  actualTotal    Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@schema("my_due")
+}
+
+model ApprovalDecision {
+  id          String   @id @default(uuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  stage       String
+  decision    String
+  comments    String?
+  reason      String?
+  version     Int      @default(1)
+  decidedById String
+  decidedBy   User     @relation(fields: [decidedById], references: [id])
+  createdAt   DateTime @default(now())
+  @@schema("my_due")
+}
+
+model WorkflowHistory {
+  id         String   @id @default(uuid())
+  eventId    String
+  event      Event    @relation(fields: [eventId], references: [id])
+  fromStatus String
+  toStatus   String
+  action     String
+  actorId    String?
+  actorName  String?
+  actorRole  String?
+  comments   String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+  @@schema("my_due")
+}
+
+model Attachment {
+  id           String   @id @default(uuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id])
+  fileName     String
+  originalName String
+  fileType     String
+  fileSize     Int
+  filePath     String
+  category     String?
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+  @@schema("my_due")
+}
+
+model Facility {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  location    String?
+  capacity    Int?
+  type        String
+  description String?
+  amenities   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resourceBookings ResourceBooking[]
+  @@schema("my_due")
+}
+
+model Equipment {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  name          String
+  type          String
+  totalQuantity Int      @default(1)
+  description   String?
+  condition     String   @default("GOOD")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bookingItems ResourceBookingItem[]
+  @@schema("my_due")
+}
+
+model ResourceBooking {
+  id                String    @id @default(uuid())
+  eventId           String
+  event             Event     @relation(fields: [eventId], references: [id])
+  facilityId        String
+  facility          Facility  @relation(fields: [facilityId], references: [id])
+  startTime         DateTime
+  endTime           DateTime
+  setupTime         DateTime?
+  teardownTime      DateTime?
+  expectedAttendees Int?
+  purpose           String?
+  specialRequests   String?
+  alternativeOption String?
+  status            String    @default("PENDING")
+  confirmedById     String?
+  confirmedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  bookingItems ResourceBookingItem[]
+  @@schema("my_due")
+}
+
+model ResourceBookingItem {
+  id          String          @id @default(uuid())
+  bookingId   String
+  booking     ResourceBooking @relation(fields: [bookingId], references: [id])
+  equipmentId String
+  equipment   Equipment       @relation(fields: [equipmentId], references: [id])
+  quantity    Int             @default(1)
+  createdAt   DateTime        @default(now())
+  @@schema("my_due")
+}
+
+model HandoverRecord {
+  id                 String    @id @default(uuid())
+  eventId            String
+  event              Event     @relation(fields: [eventId], references: [id])
+  type               String
+  handoverById       String
+  handoverBy         User      @relation("HandoverBy", fields: [handoverById], references: [id])
+  receivedById       String?
+  receivedBy         User?     @relation("ReceivedBy", fields: [receivedById], references: [id])
+  facilityCondition  String?
+  equipmentList      String?
+  notes              String?
+  status             String    @default("PENDING")
+  handoverDate       DateTime  @default(now())
+  confirmedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  @@schema("my_due")
+}
+
+model ReturnInspection {
+  id                 String   @id @default(uuid())
+  eventId            String
+  event              Event    @relation(fields: [eventId], references: [id])
+  inspectedById      String
+  inspectedBy        User     @relation(fields: [inspectedById], references: [id])
+  facilityCondition  String?
+  equipmentCondition String?
+  overallResult      String   @default("PENDING")
+  notes              String?
+  inspectedAt        DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  @@schema("my_due")
+}
+
+model IncidentReport {
+  id           String   @id @default(uuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id])
+  reportedById String
+  reportedBy   User     @relation(fields: [reportedById], references: [id])
+  type         String
+  description  String
+  severity     String   @default("MEDIUM")
+  resolution   String?
+  status       String   @default("OPEN")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@schema("my_due")
+}
+
+model Settlement {
+  id              String    @id @default(uuid())
+  eventId         String
+  event           Event     @relation(fields: [eventId], references: [id])
+  totalBudgeted   Float     @default(0)
+  totalActual     Float     @default(0)
+  difference      Float     @default(0)
+  status          String    @default("DRAFT")
+  submittedById   String?
+  submittedBy     User?     @relation("SettlementCreator", fields: [submittedById], references: [id])
+  submittedAt     DateTime?
+  reviewedById    String?
+  reviewedBy      User?     @relation("SettlementReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  reviewNotes     String?
+  rejectionReason String?
+  settlementDate DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items     SettlementItem[]
+  documents FinancialDocument[]
+  @@schema("my_due")
+}
+
+model SettlementItem {
+  id             String     @id @default(uuid())
+  settlementId   String
+  settlement     Settlement @relation(fields: [settlementId], references: [id])
+  itemName       String
+  category       String?
+  budgetedAmount Float      @default(0)
+  actualAmount   Float      @default(0)
+  difference     Float      @default(0)
+  notes          String?
+  createdAt      DateTime   @default(now())
+  @@schema("my_due")
+}
+
+model FinancialDocument {
+  id             String     @id @default(uuid())
+  settlementId   String
+  settlement     Settlement @relation(fields: [settlementId], references: [id])
+  documentType   String
+  documentNumber String?
+  amount         Float?
+  description    String?
+  fileName       String?
+  filePath       String?
+  isVerified     Boolean    @default(false)
+  verifiedAt     DateTime?
+  createdAt      DateTime   @default(now())
+  @@schema("my_due")
+}
+
+model EventReport {
+  id              String    @id @default(uuid())
+  eventId         String    @unique
+  event           Event     @relation(fields: [eventId], references: [id])
+  actualAttendees Int?
+  summary         String?
+  achievements    String?
+  challenges      String?
+  lessonsLearned  String?
+  recommendations String?
+  status          String    @default("DRAFT")
+  submittedAt     DateTime?
+  acceptedAt      DateTime?
+  acceptedBy      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  @@schema("my_due")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  eventId   String?
+  event     Event?    @relation(fields: [eventId], references: [id])
+  title     String
+  content   String
+  type      String
+  category  String?
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  linkUrl   String?
+  createdAt DateTime  @default(now())
+  @@schema("my_due")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  oldValue   String?
+  newValue   String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  @@schema("my_due")
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  category    String?
+  updatedAt   DateTime @updatedAt
+  @@schema("my_due")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  otpHash   String?
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@schema("my_due")
+}
+
+// Explicit bridge only; never assume Username=email or convert UUID into bigint.
+model LegacyIdentityMap {
+  entity String
+  legacyId BigInt
+  applicationId String
+  verifiedAt DateTime?
+  @@id([entity, legacyId])
+  @@unique([entity, applicationId])
+  @@schema("my_due")
+}

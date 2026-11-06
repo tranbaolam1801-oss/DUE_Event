@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý tài khoản và phân quyền | Quản trị viên | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Quản lý tài khoản và phân quyền</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Quản lý tài khoản và phân quyền người dùng</span>
+        </h1>
+        <p class="page-subtitle">Quản trị danh sách tài khoản đăng nhập, trạng thái hoạt động và cấu hình vai trò RBAC từ CSDL SQL Server</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('admin.roles') }}" class="btn btn-outline btn-sm">
+            <span>Xem ma trận quyền (RBAC)</span>
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <span>Danh sách tài khoản hệ thống ({{ accounts | length }})</span>
+        </h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ID</th>
+                        <th>Email đăng nhập</th>
+                        <th>Họ và tên người dùng</th>
+                        <th>Đơn vị trực thuộc</th>
+                        <th>Vai trò phân quyền (RBAC)</th>
+                        <th class="text-end">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in accounts %}
+                    <tr>
+                        <td class="font-monospace">#{{ u.UserId }}</td>
+                        <td>
+                            <strong class="font-monospace" style="color: var(--due-blue-primary);">{{ u.Username }}</strong>
+                        </td>
+                        <td>
+                            <strong>{{ u.DisplayName }}</strong>
+                        </td>
+                        <td>
+                            <span class="text-muted">{{ u.DepartmentName or 'Ban Giám hiệu / Hệ thống' }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-pending">{{ u.RoleNames or u.RoleCodes }}</span>
+                        </td>
+                        <td class="text-end">
+                            {% if u.IsActive %}
+                                <span class="badge badge-approved">Đang hoạt động</span>
+                            {% else %}
+                                <span class="badge badge-rejected">Đã khóa</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

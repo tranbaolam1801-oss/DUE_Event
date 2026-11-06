@@ -1,0 +1,114 @@
+<!-- TAB 2: KẾ HOẠCH CHI TIẾT SỰ KIỆN -->
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span>Nội dung kế hoạch chi tiết</span>
+        </h2>
+        <div style="display: flex; gap: 8px;">
+            <!-- Nút kích hoạt AI Assistant Rà soát kế hoạch -->
+            <button type="button" class="btn btn-outline btn-sm" onclick="runAIReview()" style="border-color: #075F9F; color: #075F9F;">
+                <span class="ai-badge">AI Assistant</span>
+                <span>Rà soát kế hoạch</span>
+            </button>
+            {% if current_user.id == event.CreatedBy and event.StateCode in ('DRAFT', 'REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.edit') %}
+            <a href="{{ url_for('events.edit', event_id=event.EventId) }}" class="btn btn-primary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                <span>Chỉnh sửa kế hoạch</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- KHỐI 1: MỤC TIÊU & Ý NGHĨA SỰ KIỆN -->
+        <div class="plan-section">
+            <div class="plan-section-header">
+                <div class="plan-section-num">01</div>
+                <div>
+                    <h3 class="plan-section-title">Mục tiêu tổ chức & Ý nghĩa sự kiện</h3>
+                    <p class="plan-section-desc">Ý nghĩa giáo dục, tư tưởng, chuyên môn hoặc phong trào sinh viên</p>
+                </div>
+            </div>
+            <div class="plan-section-content">
+                {% if event.Objectives %}
+                    <p style="white-space: pre-line; line-height: 1.6; margin: 0;">{{ event.Objectives }}</p>
+                {% else %}
+                    <div class="empty-state-text" style="font-style: italic;">Chưa cập nhật mục tiêu cụ thể. Vui lòng bấm "Chỉnh sửa kế hoạch" để bổ sung.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- KHỐI 2: NỘI DUNG & KỊCH BẢN CHƯƠNG TRÌNH -->
+        <div class="plan-section">
+            <div class="plan-section-header">
+                <div class="plan-section-num">02</div>
+                <div>
+                    <h3 class="plan-section-title">Nội dung chi tiết & Kịch bản chương trình</h3>
+                    <p class="plan-section-desc">Diễn biến các hoạt động chính, các tiết mục, diễn giả, khách mời</p>
+                </div>
+            </div>
+            <div class="plan-section-content">
+                {% if event.ProgramContent %}
+                    <p style="white-space: pre-line; line-height: 1.6; margin: 0;">{{ event.ProgramContent }}</p>
+                {% else %}
+                    <div class="empty-state-text" style="font-style: italic;">Chưa cập nhật kịch bản chi tiết của chương trình.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- KHỐI 3 & 4: TIẾN ĐỘ VÀ PHÂN CÔNG BAN TỔ CHỨC (2 CỘT) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+            <div class="plan-section" style="margin-bottom: 0;">
+                <div class="plan-section-header">
+                    <div class="plan-section-num">03</div>
+                    <div>
+                        <h3 class="plan-section-title">Tiến độ triển khai (Timeline)</h3>
+                        <p class="plan-section-desc">Các mốc chuẩn bị, truyền thông, tổng duyệt</p>
+                    </div>
+                </div>
+                <div class="plan-section-content">
+                    {% if event.Timeline %}
+                        <p style="white-space: pre-line; line-height: 1.5; font-size: 13px; margin: 0;">{{ event.Timeline }}</p>
+                    {% else %}
+                        <div class="empty-state-text" style="font-style: italic; font-size: 13px;">Chưa thiết lập mốc tiến độ.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="plan-section" style="margin-bottom: 0;">
+                <div class="plan-section-header">
+                    <div class="plan-section-num">04</div>
+                    <div>
+                        <h3 class="plan-section-title">Phân công ban tổ chức</h3>
+                        <p class="plan-section-desc">Trưởng ban, phó ban và các tiểu ban phụ trách</p>
+                    </div>
+                </div>
+                <div class="plan-section-content">
+                    {% if event.Staffing %}
+                        <p style="white-space: pre-line; line-height: 1.5; font-size: 13px; margin: 0;">{{ event.Staffing }}</p>
+                    {% else %}
+                        <div class="empty-state-text" style="font-style: italic; font-size: 13px;">Chưa phân công nhân sự cụ thể.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- KHỐI 5: PHƯƠNG ÁN RỦI RO & AN NINH TRẬT TỰ -->
+        <div class="plan-section" style="margin-bottom: 0;">
+            <div class="plan-section-header">
+                <div class="plan-section-num">05</div>
+                <div>
+                    <h3 class="plan-section-title">Phương án quản lý rủi ro & An ninh trật tự</h3>
+                    <p class="plan-section-desc">Phòng cháy chữa cháy, an toàn điện, trật tự khuôn viên trường và y tế dự phòng</p>
+                </div>
+            </div>
+            <div class="plan-section-content">
+                {% if event.RiskPlan %}
+                    <p style="white-space: pre-line; line-height: 1.5; font-size: 13px; margin: 0;">{{ event.RiskPlan }}</p>
+                {% else %}
+                    <div class="empty-state-text" style="font-style: italic; font-size: 13px;">Chưa lập phương án quản lý rủi ro và an ninh trật tự.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

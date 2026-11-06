@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Đơn mượn Cơ sở vật chất: {{ event.TicketCode }} | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('events.index') }}" style="color: inherit; text-decoration: none;">Hồ sơ sự kiện</a>
+<span class="breadcrumb-separator">/</span>
+<a href="{{ url_for('events.detail', event_id=event.EventId) }}" style="color: inherit; text-decoration: none;">{{ event.TicketCode }}</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Mượn CSVC</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+            <span>Đơn mượn Cơ sở vật chất: {{ event.TicketCode }}</span>
+        </h1>
+        <p class="page-subtitle">Đăng ký địa điểm tổ chức và mượn thiết bị hỗ trợ gửi Phòng Cơ sở vật chất</p>
+    </div>
+    <div class="header-actions">
+        <!-- Nút AI Gợi ý phương án phòng & thiết bị -->
+        <button type="button" class="btn btn-outline" onclick="runAIFacilitySuggest()" style="border-color: #075F9F; color: #075F9F;">
+            <span class="ai-badge">AI Assistant</span>
+            <span>Gợi ý bố trí phòng</span>
+        </button>
+        <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Quay lại</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 900px;">
+    <div class="card-header">
+        <h2 class="card-title">Phiếu đăng ký mượn địa điểm và thiết bị</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('facilities.request_facility', event_id=event.EventId) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div style="background-color: #F8FAFC; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">{{ event.Title }}</div>
+                <div style="font-size: 13px; color: var(--text-muted);">
+                    Quy mô dự kiến: <strong>{{ event.ExpectedAttendees or 100 }}</strong> người &bull; Đơn vị: <strong>{{ event.DepartmentName }}</strong>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="facility_id" class="form-label">Chọn Hội trường / Giảng đường <span class="required" aria-hidden="true">*</span></label>
+                    <select id="facility_id" name="facility_id" class="form-control" required>
+                        <option value="">-- Chọn địa điểm --</option>
+                        {% for f in facilities %}
+                        <option value="{{ f.FacilityId }}">
+                            {{ f.Name }} (Sức chứa: {{ f.Capacity or '—' }} chỗ)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="starts_at" class="form-label">Thời gian bắt đầu sử dụng</label>
+                    <input type="datetime-local" id="starts_at" name="starts_at" class="form-control" value="{{ event.StartsAt | string | replace(' ', 'T') if event.StartsAt else '' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ends_at" class="form-label">Thời gian kết thúc sử dụng</label>
+                    <input type="datetime-local" id="ends_at" name="ends_at" class="form-control" value="{{ event.EndsAt | string | replace(' ', 'T') if event.EndsAt else '' }}" required>
+                </div>
+            </div>
+
+            <!-- Danh mục thiết bị cần mượn -->
+            <div style="margin: 20px 0;">
+                <h3 style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">
+                    Đăng ký số lượng trang thiết bị cần mượn:
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+                    {% for eq in equipment_list %}
+                    <div style="background: #F8FAFC; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 13px;">{{ eq.Name }}</div>
+                            <small class="text-muted">Kho hiện có: {{ eq.TotalQuantity }}</small>
+                        </div>
+                        <div style="width: 80px;">
+                            <input type="number" name="eq_{{ eq.EquipmentId }}" class="form-control" value="0" min="0" max="{{ eq.TotalQuantity }}" step="1" aria-label="Số lượng {{ eq.Name }}">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="note" class="form-label">Ghi chú & Yêu cầu kỹ thuật đặc biệt</label>
+                <textarea id="note" name="note" class="form-control" rows="3" placeholder="Ví dụ: Cần hỗ trợ kỹ thuật viên âm thanh, micro phụ, dây HDMI..."></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Hủy bỏ</a>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <span>Gửi đơn yêu cầu CSVC</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal AI Suggest -->
+<div class="modal-overlay" id="aiFacilityModal" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+                <span class="ai-badge">AI Assistant</span>
+                <span>Gợi ý bố trí không gian tối ưu</span>
+            </h3>
+            <button type="button" class="modal-close" onclick="closeModal('aiFacilityModal')" aria-label="Đóng">&times;</button>
+        </div>
+        <div class="modal-body" id="aiFacilityBody">
+            <div style="text-align: center; padding: 20px;">Đang phân tích dữ liệu quy mô phòng...</div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="closeModal('aiFacilityModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function runAIFacilitySuggest() {
+    openModal('aiFacilityModal');
+    const body = document.getElementById('aiFacilityBody');
+    body.innerHTML = '<div style="text-align: center; padding: 20px;">Đang tính toán tỷ lệ lấp đầy phòng...</div>';
+
+    fetch("{{ url_for('facilities.ai_suggest') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            attendees: {{ event.ExpectedAttendees or 100 }}
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        let html = '';
+        data.forEach(item => {
+            html += `
+                <div style="padding: 12px 14px; background: #F8FAFC; border-left: 3px solid var(--due-green-primary); border-radius: 4px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--text-main); font-size: 14px;">${item.name} (${item.code})</strong>
+                        <span class="badge badge-approved">${item.capacity} chỗ</span>
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--due-blue-primary); font-weight: 600; margin-top: 4px;">${item.fit_rating}</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                        Gợi ý thiết bị: ${item.recommended_equipment.join(', ')}
+                    </div>
+                    <button type="button" class="btn btn-outline btn-sm" style="margin-top: 8px;" onclick="selectFacility(${item.facility_id})">
+                        Chọn phòng này
+                    </button>
+                </div>
+            `;
+        });
+        body.innerHTML = html || 'Không có gợi ý khả dụng.';
+    });
+}
+
+function selectFacility(id) {
+    document.getElementById('facility_id').value = id;
+    closeModal('aiFacilityModal');
+}
+</script>
+{% endblock %}

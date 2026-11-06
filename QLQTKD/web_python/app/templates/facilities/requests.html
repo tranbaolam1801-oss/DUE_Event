@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Yêu cầu đăng ký CSVC | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('facilities.index') }}" style="color: inherit; text-decoration: none;">Cơ sở vật chất</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Yêu cầu đăng ký</span>
+{% endblock %}
+
+{% block content %}
+<!-- TIÊU ĐỀ GỌN VÀ TABS ĐIỀU HƯỚNG -->
+{% include 'facilities/_tabs_nav.html' %}
+
+<!-- THANH CÔNG CỤ TÌM KIẾM & BỘ LỌC GỌN TRÊN 1 HÀNG -->
+<div class="card" style="margin-bottom: 16px;">
+    <div class="card-body" style="padding: 12px 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <!-- Bộ lọc trạng thái dạng nút chip gọn -->
+            <div style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <a href="{{ url_for('facilities.index', status='ALL', q=search_query) }}" 
+                   class="btn btn-sm {% if current_status == 'ALL' %}btn-primary{% else %}btn-outline{% endif %}"
+                   style="padding: 5px 12px; font-size: 13px;">
+                    <span>Tất cả</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.25); color: inherit; padding: 1px 6px; margin-left: 4px;">{{ total_reqs }}</span>
+                </a>
+                <a href="{{ url_for('facilities.index', status='PENDING', q=search_query) }}" 
+                   class="btn btn-sm {% if current_status == 'PENDING' %}btn-warning{% else %}btn-outline{% endif %}"
+                   style="padding: 5px 12px; font-size: 13px;">
+                    <span>Chờ xử lý</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.25); color: inherit; padding: 1px 6px; margin-left: 4px;">{{ pending_count }}</span>
+                </a>
+                <a href="{{ url_for('facilities.index', status='APPROVED', q=search_query) }}" 
+                   class="btn btn-sm {% if current_status == 'APPROVED' %}btn-success{% else %}btn-outline{% endif %}"
+                   style="padding: 5px 12px; font-size: 13px;">
+                    <span>Đã xác nhận</span>
+                    <span class="badge" style="background: rgba(255,255,255,0.25); color: inherit; padding: 1px 6px; margin-left: 4px;">{{ approved_count }}</span>
+                </a>
+            </div>
+
+            <!-- Ô tìm kiếm gọn gàng -->
+            <form method="GET" action="{{ url_for('facilities.index') }}" style="display: flex; align-items: center; gap: 8px; max-width: 340px; width: 100%;">
+                <input type="hidden" name="status" value="{{ current_status }}">
+                <div style="position: relative; width: 100%;">
+                    <input type="text" name="q" value="{{ search_query }}" 
+                           class="form-control form-control-sm" 
+                           placeholder="Tìm mã hồ sơ, tên sự kiện..."
+                           style="padding-left: 30px; height: 34px;"
+                           aria-label="Tìm kiếm yêu cầu CSVC">
+                    <svg style="position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <button type="submit" class="btn btn-outline btn-sm" style="height: 34px; padding: 0 12px;">Tìm</button>
+                {% if search_query %}
+                <a href="{{ url_for('facilities.index', status=current_status) }}" class="btn btn-outline btn-sm" style="height: 34px; padding: 0 10px;" title="Xóa tìm kiếm">✕</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- BẢNG DANH SÁCH YÊU CẦU ĐĂNG KÝ CSVC -->
+<div class="card">
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Mã hồ sơ</th>
+                        <th>Tên sự kiện</th>
+                        <th>Đơn vị tổ chức</th>
+                        <th>Thời gian dự kiến</th>
+                        <th>Quy mô</th>
+                        <th>Địa điểm bố trí</th>
+                        <th>Trạng thái CSVC</th>
+                        <th class="text-end" style="width: 150px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in requests_list %}
+                    <tr>
+                        <td>
+                            <strong class="font-monospace" style="color: var(--due-blue-primary);">{{ r.TicketCode }}</strong>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('events.detail', event_id=r.EventId) }}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">
+                                {{ r.Title }}
+                            </a>
+                        </td>
+                        <td>
+                            <span style="font-size: 13px;">{{ r.DepartmentName }}</span>
+                        </td>
+                        <td>
+                            <div style="font-size: 13px;">{{ r.StartsAt | datetime_vn }}</div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: #F1F5F9; color: var(--text-main); font-weight: 600;">
+                                {{ r.ExpectedAttendees or '—' }} chỗ
+                            </span>
+                        </td>
+                        <td>
+                            {% if r.FacilityName %}
+                            <div style="font-weight: 600; color: var(--due-blue-primary); font-size: 13px;">
+                                {{ r.FacilityName }}
+                            </div>
+                            {% else %}
+                            <span class="badge badge-draft" style="font-size: 11px;">Chưa chọn phòng</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if r.RequestStatus == 'APPROVED' %}
+                            <span class="badge badge-approved">Đã xác nhận</span>
+                            {% elif r.RequestStatus == 'PENDING' %}
+                            <span class="badge badge-pending">Chờ xử lý</span>
+                            {% elif r.RequestId %}
+                            <span class="badge badge-info">{{ r.RequestStatus }}</span>
+                            {% else %}
+                            <span class="badge badge-draft">Chưa gửi đơn</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div style="display: inline-flex; gap: 6px; justify-content: flex-end;">
+                                <!-- QUYỀN PHÒNG CSVC: BỐ TRÍ VÀ THẨM ĐỊNH PHÒNG -->
+                                {% if current_user.has_permission('facilities.assign') %}
+                                    {% if r.RequestId %}
+                                    <a href="{{ url_for('facilities.review_request', request_id=r.RequestId) }}" 
+                                       class="btn btn-primary btn-sm" 
+                                       title="Thẩm định yêu cầu & Bàn giao tài sản">
+                                        <span>Thẩm định CSVC</span>
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('facilities.assign_facility', event_id=r.EventId) }}" 
+                                       class="btn btn-warning btn-sm" 
+                                       title="Bố trí giảng đường / hội trường cho sự kiện">
+                                        <span>Bố trí phòng</span>
+                                    </a>
+                                    {% endif %}
+                                {% else %}
+                                <!-- QUYỀN BCH: GỬI YÊU CẦU & XEM CHI TIẾT (KHÔNG CÓ NÚT BỐ TRÍ PHÒNG) -->
+                                    {% if not r.RequestId and current_user.has_permission('facilities.request') %}
+                                    <a href="{{ url_for('facilities.request_facility', event_id=r.EventId) }}" 
+                                       class="btn btn-outline btn-sm"
+                                       style="color: var(--due-blue-primary); border-color: var(--due-blue-primary);"
+                                       title="Lập phiếu đề xuất mượn CSVC">
+                                        <span>Đăng ký CSVC</span>
+                                    </a>
+                                    {% else %}
+                                    <a href="{{ url_for('events.detail', event_id=r.EventId) }}" 
+                                       class="btn btn-outline btn-sm" 
+                                       title="Xem chi tiết hồ sơ sự kiện">
+                                        <span>Xem chi tiết</span>
+                                    </a>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state" style="padding: 36px 20px;">
+                                <svg class="empty-state-icon" style="color: var(--due-blue-primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><polyline points="9 11 12 14 22 4"></polyline></svg>
+                                <div class="empty-state-title">Không có yêu cầu cơ sở vật chất nào</div>
+                                <div class="empty-state-text">
+                                    {% if search_query %}
+                                    Không có dữ liệu phù hợp với từ khóa "<strong>{{ search_query }}</strong>".
+                                    {% else %}
+                                    Hiện tại chưa có hồ sơ sự kiện nào cần xử lý hoặc cấp phòng tại danh mục này.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

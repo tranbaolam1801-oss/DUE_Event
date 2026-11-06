@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Phòng & Thiết bị | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('facilities.index') }}" style="color: inherit; text-decoration: none;">Cơ sở vật chất</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Phòng & thiết bị</span>
+{% endblock %}
+
+{% block content %}
+<!-- TIÊU ĐỀ GỌN VÀ TABS ĐIỀU HƯỚNG -->
+{% include 'facilities/_tabs_nav.html' %}
+
+<!-- PHẦN 1: DANH MỤC PHÒNG & HỘI TRƯỜNG -->
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 16px;">
+        <h2 class="card-title" style="margin-bottom: 0; font-size: 15px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+            <span>Giảng đường & Hội trường ({{ facilities | length }})</span>
+        </h2>
+
+        <!-- Bộ lọc và tìm kiếm phòng gọn gàng -->
+        <form method="GET" action="{{ url_for('facilities.catalog') }}" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <select name="capacity" class="form-control form-control-sm" style="width: auto; height: 32px;" onchange="this.form.submit()">
+                <option value="ALL" {% if current_capacity == 'ALL' %}selected{% endif %}>Tất cả quy mô</option>
+                <option value="SMALL" {% if current_capacity == 'SMALL' %}selected{% endif %}>Dưới 100 chỗ</option>
+                <option value="MEDIUM" {% if current_capacity == 'MEDIUM' %}selected{% endif %}>100 – 300 chỗ</option>
+                <option value="LARGE" {% if current_capacity == 'LARGE' %}selected{% endif %}>Trên 300 chỗ</option>
+            </select>
+
+            <div style="position: relative;">
+                <input type="text" name="q" value="{{ search_query }}" 
+                       class="form-control form-control-sm" 
+                       placeholder="Tìm tên hoặc mã phòng..."
+                       style="padding-left: 28px; width: 200px; height: 32px;">
+                <svg style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm" style="height: 32px;">Tìm</button>
+            {% if search_query or current_capacity != 'ALL' %}
+            <a href="{{ url_for('facilities.catalog') }}" class="btn btn-outline btn-sm" style="height: 32px; padding: 0 8px;">✕</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 120px;">Mã phòng</th>
+                        <th>Tên hội trường / Giảng đường</th>
+                        <th>Sức chứa</th>
+                        <th>Phân loại</th>
+                        <th>Tình trạng</th>
+                        <th class="text-end" style="width: 140px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in facilities %}
+                    <tr>
+                        <td>
+                            <strong class="font-monospace" style="color: var(--due-blue-primary);">{{ f.Code }}</strong>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main); font-size: 13.5px;">{{ f.Name }}</div>
+                        </td>
+                        <td>
+                            <strong style="color: var(--due-blue-primary);">{{ f.Capacity or '—' }}</strong> chỗ
+                        </td>
+                        <td>
+                            {% if f.Capacity and f.Capacity > 300 %}
+                            <span class="badge badge-info">Đại hội trường</span>
+                            {% elif f.Capacity and f.Capacity >= 100 %}
+                            <span class="badge" style="background: #EFF6FF; color: var(--due-blue-primary);">Hội thảo vừa</span>
+                            {% else %}
+                            <span class="badge" style="background: #F1F5F9; color: var(--text-main);">Phòng họp</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if f.IsOccupied %}
+                            <span class="badge badge-warning">Đang có lịch</span>
+                            {% else %}
+                            <span class="badge badge-approved">Đang trống</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('facilities.schedule', facility_id=f.FacilityId) }}" class="btn btn-outline btn-sm" style="font-size: 12px; padding: 4px 10px;">
+                                <span>Xem lịch</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center" style="padding: 24px; color: var(--text-muted);">
+                            Không tìm thấy địa điểm nào phù hợp.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- PHẦN 2: DANH MỤC TRANG THIẾT BỊ TRONG KHO -->
+<div class="card">
+    <div class="card-header" style="padding: 12px 16px;">
+        <h2 class="card-title" style="margin-bottom: 0; font-size: 15px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            <span>Trang thiết bị trong kho phục vụ sự kiện ({{ equipment_items | length }})</span>
+        </h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">Mã thiết bị</th>
+                        <th>Tên trang thiết bị</th>
+                        <th class="text-end">Tổng tài sản</th>
+                        <th class="text-end">Đang mượn</th>
+                        <th class="text-end">Khả dụng sẵn sàng</th>
+                        <th class="text-center" style="width: 140px;">Tình trạng kho</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eq in equipment_items %}
+                    <tr>
+                        <td>
+                            <strong class="font-monospace" style="color: var(--text-main);">{{ eq.Code }}</strong>
+                        </td>
+                        <td>
+                            <strong style="color: var(--text-main); font-size: 13.5px;">{{ eq.Name }}</strong>
+                        </td>
+                        <td class="text-end font-monospace">
+                            <strong>{{ eq.TotalQuantity }}</strong>
+                        </td>
+                        <td class="text-end font-monospace" style="color: var(--due-orange-primary);">
+                            <strong>{{ eq.InUseQuantity }}</strong>
+                        </td>
+                        <td class="text-end font-monospace">
+                            <strong style="color: var(--due-green-primary); font-size: 13.5px;">{{ eq.AvailableQuantity }}</strong>
+                        </td>
+                        <td class="text-center">
+                            {% if eq.AvailableQuantity > 0 %}
+                            <span class="badge badge-approved">Sẵn sàng cấp</span>
+                            {% else %}
+                            <span class="badge badge-danger">Đang kín lịch</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center" style="padding: 20px; color: var(--text-muted);">
+                            Chưa có dữ liệu thiết bị trong kho.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

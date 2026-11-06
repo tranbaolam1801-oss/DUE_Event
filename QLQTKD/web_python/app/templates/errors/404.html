@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Không tìm thấy trang | MY DUE{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 60px 20px;">
+    <div style="font-size: 64px; font-weight: 800; color: var(--due-blue-primary); line-height: 1;">404</div>
+    <h1 style="font-size: 22px; margin: 16px 0 8px; color: var(--text-main);">Không tìm thấy trang yêu cầu</h1>
+    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 24px;">
+        Đường dẫn bạn truy cập không tồn tại hoặc hồ sơ sự kiện đã bị thay đổi.
+    </p>
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+        Quay lại Bàn làm việc
+    </a>
+</div>
+{% endblock %}

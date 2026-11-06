@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Báo cáo tổng kết sự kiện | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Báo cáo tổng kết</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Báo cáo tổng kết sự kiện</span>
+        </h1>
+        <p class="page-subtitle">Văn bản đánh giá kết quả tổ chức sự kiện nộp Ban Thường vụ Đoàn Trường nghiệm thu (BPMN: Lane Đoàn Trường)</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <span>Danh sách báo cáo tổng kết đã nộp ({{ reports | length }})</span>
+        </h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 125px;">Mã hồ sơ</th>
+                        <th>Tên sự kiện</th>
+                        <th>Đơn vị chủ trì</th>
+                        <th>Thời điểm nộp</th>
+                        <th>Tình trạng nghiệm thu</th>
+                        <th class="text-end" style="width: 140px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in reports %}
+                    <tr>
+                        <td>
+                            <strong class="font-monospace" style="color: var(--due-blue-primary);">{{ r.TicketCode }}</strong>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('reports.view', event_id=r.EventId) }}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">
+                                {{ r.EventTitle }}
+                            </a>
+                        </td>
+                        <td>{{ r.DepartmentName }}</td>
+                        <td><small>{{ r.SubmittedAt | datetime_vn }}</small></td>
+                        <td>
+                            {% if r.IsConfirmed %}
+                                <span class="badge badge-approved">Đoàn Trường đã nghiệm thu</span>
+                            {% else %}
+                                <span class="badge badge-pending">Chờ Đoàn Trường duyệt</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('reports.view', event_id=r.EventId) }}" class="btn btn-outline btn-sm">
+                                <span>Xem báo cáo</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <div class="empty-state-title">Chưa có báo cáo tổng kết nào</div>
+                                <div class="empty-state-text">Khi sự kiện đã diễn ra và hoàn trả CSVC, BCH Liên Chi Đoàn sẽ thực hiện lập báo cáo tại chi tiết hồ sơ sự kiện.</div>
+                                <a href="{{ url_for('events.index') }}" class="btn btn-outline btn-sm">Xem hồ sơ sự kiện</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

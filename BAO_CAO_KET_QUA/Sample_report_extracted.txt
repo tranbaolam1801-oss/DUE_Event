@@ -1,0 +1,446 @@
+
+=== PAGE 8 ===
+vii
+1.4.3. Các kỹ năng cần thiết của Developer....................................................................9
+1.4.4. Các công nghệ và công cụ được sử dùng............................................................10
+1.4.4.1 Giới thiệu về HTML.....................................................................10
+1.4.4.2 Giới thiệu về CSS........................................................................10
+1.4.4.3 Giới thiệu về JavaScript..............................................................11
+1.4.4.4 Giới thiệu về ASP.Net.................................................................11
+1.4.4.5 Giới thiệu về SQL server.............................................................12
+1.4.4.6 Công cụ kiểm thử API – Postman...............................................12
+1.5.VịtríthựctậpDevelopertrongDoanhnghiệp......................................................13
+1.6Tổngkếtchương1.....................................................................................................13
+CHƯƠNG2.PHÂNTÍCHVÀTHIẾTKẾQUYTRÌNHCHUYỂNHÀNGNỘIBỘ
+TẠICỬAHÀNGBÁNLẺ.............................................................................................15
+2.1.Khảosátvàthuthậpyêucầu..................................................................................15
+2.2.Yêucầuvềhệthống..................................................................................................16
+2.2.1. Các yêu cầu phi chức năng..................................................................................16
+2.2.2. Các yêu cầu chức năng........................................................................................17
+2.3.Workflow...................................................................................................................19
+2.4.UseCasevàđặctảUseCase....................................................................................20
+2.4.1. Use Case toàn bộ hệ thống..................................................................................20
+2.4.2. Use Case Đăng nhập............................................................................................21
+2.4.3 Use Case Tạo phiếu chuyển hàng nội bộ..............................................................22
+2.4.3.1 UC và đặc tả UC “Tạo phiếu chuyển hàng”.....................................23
+2.4.3.2 UC và đặc tả UC “Nhập mã sản phẩm cần chuyển”......................25
+2.4.3.3 UC và đặc tả UC “Nhập số lượng cần chuyển”..............................26
+2.4.3.4 UC và đặc tả UC “Nhập chi nhánh cần chuyển hàng”...................29
+2.4.4 Use Case Kiểm tra phiếu chuyển hàng nội bộ......................................................31
+2.4.4.1 UC và đặc tả UC “Kiểm tra phiếu chuyển hàng”.........................31
+
+=== PAGE 9 ===
+viii
+2.4.4.2 UC và đặc tả UC “Tìm kiếm phiếu chuyển hàng”........................33
+2.4.4.3 UC và đặc tả UC “Sửa thông tin phiếu chuyển hàng”.................35
+2.4.4.4 UC và đặc tả UC “Xóa phiếu chuyển hàng”................................37
+2.4.5. Use Case Phê duyệt phiếu chuyển hàng nội bộ...................................................40
+2.4.6 UC và đặc tả UC “Đăng xuất”..............................................................................42
+2.4.7 UC và đặc tả UC “Tạo tài khoản cho nhân viên”.................................................44
+2.4.7.1 UC và đặc tả UC “Nhập thông tin nhân viên”..............................46
+2.4.7.2 UC và đặc tả UC “Phân quyền sử dụng cho nhân viên”.............48
+2.4.7.3 UC và đặc tả UC “Tạo thông tin Đăng nhập cho Nhân viên”......50
+2.4.8 UC và đặc tả UC “Kiểm tra tồn kho”...................................................................52
+2.8.1 UC và đặc tả UC “Lọc sản phẩm theo tồn kho”..............................54
+2.8.2 UC và đặc tả UC “Thiết lặp mức tồn kho tối thiểu”.........................55
+2.8.3 UC và đặc tả UC “Xuất báo cáo hàng gần hết”..............................57
+2.4.9 UC và đặc tả UC “Quản lý thông tin chi nhánh”..................................................59
+2.4.9.1 UC và đặc tả UC “Nhập địa chỉ chi nhánh”.................................61
+2.4.9.2 UC và đặc tả UC “Nhập SĐT quản lý chi nhánh”........................62
+2.4.9.3 UC và đặc tả UC “Nhập tên chi nhánh”.......................................64
+2.5.UserStory..................................................................................................................65
+2.5.1. Đăng nhập............................................................................................................65
+2.5.2. Đăng xuất.............................................................................................................66
+2.5.3. Quản lý phiếu chuyển hàng.................................................................................67
+2.5.3.1 Use Story “Nhập mã sản phẩm cần chuyển”..............................67
+2.5.3.2 Use Story “Nhập số lượng cần chuyển”......................................67
+2.5.3.3 Use Story “Nhập chi nhánh cần chuyển hàng”............................68
+2.5.3.4 Use Story “Tìm kiếm phiếu chuyển hàng”...................................69
+2.5.3.5 Use Story “Sửa thông tin phiếu chuyển hàng”............................69
+2.5.3.6 Use Story “Xóa phiếu chuyển hàng”...........................................70
+2.5.3.7 Use Story “Phê duyệt phiếu chuyển hàng”..................................71
+
+=== PAGE 10 ===
+ix
+2.6TổngkếtChương2....................................................................................................72
+CHƯƠNG3.XÂYDỰNGHỆTHỐNGCHUYỂNHÀNGNỘIBỘTẠICỬAHÀNG
+BÁNLẺ............................................................................................................................74
+3.1Tạovàquảnlýcơsởdữliệu.....................................................................................74
+3.1.1 Thiết kế lớp...........................................................................................................74
+3.1.2 Thiết kế cơ sở dữ liệu...........................................................................................75
+3.1.2.1 Sơ đồ quan hệ.............................................................................75
+3.1.2.2 Mô tả chi tiết cơ sở dữ liệu..........................................................75
+3.2XâydựngAPIvàxửlýnghiệpvụ............................................................................78
+3.3Thiếtkếgiaodiệnngườidùng..................................................................................79
+3.4Tổngkếtchương3.....................................................................................................90
+KẾTLUẬNVÀHƯỚNGPHÁTTRIỂN......................................................................92
+TÀILIỆUTHAMKHẢO...............................................................................................93
+PHỤLỤC.........................................................................................................................94
+I. Linkvideophỏngvấn..............................................................................................94
+II. LinkGitHub.............................................................................................................94
+III. Thiếtkếhệthống.................................................................................................94
+1.Mànhình“DanhsáchthôngtincácKhochinhánh”..............................................94
+1.1 Màn hình “Tạo Kho mới”........................................................................................98
+1.2 Màn hình “Lưu thông tin tạo mới Kho không thành công”...................................102
+1.3 Màn hình “Xem chi tiết thông tin Kho”................................................................107
+1.4 Màn hình “Sửa chi tiết thông tin Kho”..................................................................112
+1.5 Màn hình “Lưu thay đổi thông tin chi tiết Kho”...................................................117
+1.6 Màn hình “Xóa Kho”.............................................................................................122
+2.Mànhình“DanhsáchthôngtinNhânviêncủacửahàng”....................................125
+
+=== PAGE 11 ===
+x
+2.1 Màn hình “Tạo mới thông tin Nhân viên”.............................................................129
+2.2 Màn hình “Phân quyền cho nhân viên trong cửa hàng”........................................134
+2.3 Màn hình “Tạo nhân viên không thành công”.......................................................138
+2.4 Màn hình “Xem thông tin chi tiết Nhân viên đã tạo”............................................143
+2.5 Màn hình “Sửa thông tin chi tiết Nhân viên”........................................................148
+2.6 Màn hình “Lưu thông tin sau sửa Nhân viên”.......................................................153
+2.7 Màn hình “Xóa thông tin Nhân viên”....................................................................158
+3.Mànhình“Danhsáchphiếuchuyểnhàng”............................................................162
+3.1 Màn hình “Tạo phiếu chuyển hàng”......................................................................166
+3.2 Màn hình “Tạo phiếu chuyển hàng không thành công”........................................171
+3.3 Màn hình “Sửa phiếu chuyển hàng”......................................................................177
+3.4 Màn hình “Lưu thành công phiếu chuyển hàng”...................................................182
+3.5 Màn hình “Lưu sửa phiếu Chuyển hàng”..............................................................188
+3.6 Màn hình “Tìm kiếm phiếu chuyển hàng”............................................................193
+3.7 Màn hình “Nhập số lượng vượt quá số lượng tồn kho”........................................197
+4.Mànhình“DanhsáchPhiếuchuyểnhàngđangchờduyệt”.................................203
+4.1 Màn hình “Chi tiết phiếu chờ Duyệt”....................................................................207
+4.2 Màn hình “Danh sách sau Duyệt”.........................................................................212
+
+=== PAGE 13 ===
+xii
+Hình 3.1 Thiết kế sơ đồ lớp...............................................................................................74
+Hình 3.2 Sơ đồ quan hệ.....................................................................................................75
+Hình 3.3 API chi tiết phiếu chuyển...................................................................................78
+Hình 3.4 API quản lý chuyển hàng....................................................................................78
+Hình 3.5 API quản lý kho..................................................................................................79
+Hình 3.6 API quản lý nhân viên kho.................................................................................79
+Hình 3.7 API quản lý nhập kho.........................................................................................79
+Hình 3.8 API quản lý sản phẩm.........................................................................................79
+Hình 3.9 API trạng thái phiếu chuyển...............................................................................79
+Hình 3.10 Màn hình phê duyệt..........................................................................................80
+Hình 3.11 Màn hình quản lý chuyển hàng.........................................................................80
+Hình 3.12 Màn hình tạo mới phiếu chuyển hàng..............................................................81
+Hình 3.13 Màn hình chỉnh sửa phiếu chuyển hàng...........................................................81
+Hình 3.14 Màn hình xóa phiếu chuyển hàng.....................................................................82
+Hình 3.15 Màn hình xem chi tiết phiếu chuyển.................................................................82
+Hình 3.16 Màn hình quản lý kho.......................................................................................83
+Hình 3.17 Màn hình tạo mới kho.......................................................................................83
+Hình 3.18 Màn hình chỉnh sửa thông tin kho....................................................................84
+Hình 3.19 Màn hình xóa thông tin kho..............................................................................84
+
+=== PAGE 14 ===
+xiii
+Hình 3.20 Màn hình quản lý nhập kho..............................................................................85
+Hình 3.21 Màn hình tạo mới phiếu nhập kho....................................................................85
+Hình 3.22 Màn hình chỉnh sửa thông tin phiếu nhập kho.................................................86
+Hình 3.23 Màn hình xóa phiếu nhập kho..........................................................................86
+Hình 3.24 Màn hình quản lý sản phẩm..............................................................................87
+Hình 3.25 Màn hình tạo mới sản phẩm.............................................................................87
+Hình 3.26 Màn hình chỉnh sửa thông tin sản phẩm...........................................................88
+Hình 3.27 Màn hình xóa thông tin sản phẩm....................................................................88
+Hình 3.28 Màn hình quản lý nhân viên kho......................................................................89
+Hình 3.29 Màn hình tạo mới nhân viên.............................................................................89
+Hình 3.30 Màn hình chỉnh sửa thông tin nhân viên..........................................................90
+Hình 3.31 Màn hình xóa thông tin nhân viên....................................................................90
+Hình 5.1 Danh sách các Kho chi nhánh.............................................................................94
+Hình 5.1.1 Tạo Kho mới....................................................................................................98
+Hình 5.1.2 Lưu thông tin tạo mới Kho không thành công...............................................102
+Hình 5.1.3 Xem chi tiết thông tin Kho............................................................................107
+Hình 5.1.4 Sửa chi tiết thông tin Kho..............................................................................112
+Hình 5.1.5 Lưu thay đổi thông tin chi tiết Kho...............................................................117
+Hình 5.1.6 Xóa Kho.........................................................................................................122
+
+=== PAGE 15 ===
+xiv
+Hình 5.2 Danh sách thông tin Nhân viên của cửa hàng...................................................125
+Hình 5.2.1 Tạo mới thông tin Nhân viên.........................................................................129
+Hình 5.2.2 Phân quyền cho nhân viên trong cửa hàng....................................................134
+Hình 5.2.3 Tạo nhân viên không thành công...................................................................138
+Hình 5.2.4 Xem thông tin chi tiết Nhân viên đã tạo........................................................143
+Hình 5.2.5 Sửa thông tin chi tiết Nhân viên....................................................................148
+Hình 5.2.6 Lưu thông tin sau sửa Nhân viên...................................................................153
+Hình 5.2.7 Xóa thông tin Nhân viên................................................................................158
+Hình 5.3 Danh sách phiếu chuyển hàng..........................................................................162
+Hình 5.3.1 Tạo phiếu chuyển hàng..................................................................................166
+Hình 5.3.2 Tạo phiếu chuyển hàng không thành công....................................................171
+Hình 5.3.3 Sửa phiếu chuyển hàng..................................................................................177
+Hình 5.3.4 Lưu thành công phiếu chuyển hàng...............................................................182
+Hình 5.3.5 Lưu sửa phiếu Chuyển hàng..........................................................................188
+Hình 5.3.6 Tìm kiếm phiếu chuyển hàng........................................................................193
+Hình 5.3.6 Nhập số lượng vượt quá số lượng tồn kho....................................................197
+Hình 5.4 Danh sách Phiếu chuyển hàng đang chờ duyệt.................................................203
+Hình 5.4.1 Chi tiết phiếu chờ Duyệt................................................................................207
+Hình 5.4.2 Danh sách sau Duyệt.....................................................................................212
+
+=== PAGE 18 ===
+xvii
+Bảng 2.10.3 Đặc tả Use Case “Nhập tên chi nhánh”.........................................................64
+Bảng 2.11 Use Story cho chức năng Đăng nhập...............................................................65
+Bảng 2.12 Use Story cho chức năng Đăng xuất................................................................66
+Bảng 2.13 Use Story cho chức năng Nhập mã sản phẩm cần chuyển...............................67
+Bảng 2.14 Use Story cho chức năng Nhập số lượng cần chuyển......................................67
+Bảng 2.15 Use Story cho chức năng Nhập chi nhánh cần chuyển....................................68
+Bảng 2.16 Use Story cho chức năng Tìm kiếm phiếu chuyển hàng..................................69
+Bảng 2.17 Use Story cho chức năng Sửa thông tin phiếu chuyển hàng............................69
+Bảng 2.18 Use Story cho chức năng Xóa phiếu chuyển hàng...........................................70
+Bảng 2.19 Use Story cho chức năng Phê duyệt phiếu chuyển hàng..................................71
+Bảng 3.1 Bảng kho............................................................................................................75
+Bảng 3.2 Bảng nhập kho....................................................................................................75
+Bảng 3.3 Bảng sản phẩm...................................................................................................76
+Bảng 3.4 Bảng loại sản phẩm............................................................................................76
+Bảng 3.5 Bảng phiếu chuyển hàng....................................................................................76
+Bảng 3.6 Bảng chi tiết phiếu chuyển.................................................................................77
+Bảng 3.7 Bảng trạng thái phiếu.........................................................................................77
+Bảng 3.8 Bảng nhân viên kho............................................................................................77
+Bảng 5.1 Đặc tả màn hình “Danh sách các Kho chi nhánh”.............................................94
+Bảng 5.1.1 Đặc tả màn hình “Tạo mới Kho”.....................................................................98
+Bảng 5.1.2 Đặc tả màn hình “Lưu thông tin tạo mới Kho không thành công”...............102
+Bảng 5.1.3 Đặc tả màn hình “Xem chi tiết thông tin Kho”.............................................107
+Bảng 5.1.4 Đặc tả màn hình “Sửa chi tiết thông tin Kho”...............................................112
+Bảng 5.1.5 Đặc tả màn hình “Lưu thay đổi thông tin chi tiết Kho”................................117
+Bảng 5.1.6 Đặc tả màn hình “Xóa Kho”.........................................................................122
+
+=== PAGE 19 ===
+xviii
+Bảng 5.2 Đặc tả màn hình “Danh sách thông tin Nhân viên của cửa hàng”...................126
+Bảng 5.2.1 Đặc tả màn hình “Tạo mới thông tin Nhân viên”..........................................129
+Bảng 5.2.2 Đặc tả màn hình “Phân quyền cho nhân viên trong cửa hàng”.....................134
+Bảng 5.2.3 Đặc tả màn hình “Tạo nhân viên không thành công”...................................138
+Bảng 5.2.4 Đặc tả màn hình “Xem thông tin chi tiết Nhân viên đã tạo”.........................143
+Bảng 5.2.5 Đặc tả màn hình “Sửa thông tin chi tiết Nhân viên”.....................................148
+Bảng 5.2.6 Đặc tả màn hình “Lưu thông tin sau sửa Nhân viên”....................................153
+Bảng 5.2.7 Đặc tả màn hình “Xóa thông tin Nhân viên”................................................158
+Bảng 5.3 Đặc tả màn hình “Danh sách phiếu chuyển hàng”...........................................162
+Bảng 5.3.1 Đặc tả màn hình “Tạo phiếu chuyển hàng”...................................................166
+Bảng 5.3.2 Đặc tả màn hình “Tạo phiếu chuyển hàng không thành công”.....................171
+Bảng 5.3.3 Đặc tả màn hình “Sửa phiếu chuyển hàng”...................................................177
+Bảng 5.3.4 Đặc tả màn hình “Lưu thành công phiếu chuyển hàng”...............................182
+Bảng 5.3.5 Đặc tả màn hình “Lưu sửa phiếu Chuyển hàng”...........................................188
+Bảng 5.3.6 Đặc tả màn hình “Tìm kiếm phiếu chuyển hàng”.........................................194
+Bảng 5.3.7 Đặc tả màn hình “Nhập số lượng vượt quá số lượng tồn kho”.....................198
+Bảng 5.4 Đặc tả màn hình “Danh sách Phiếu chuyển hàng đang chờ duyệt”.................203
+Bảng 5.4.1 Đặc tả màn hình “Chi tiết phiếu chờ Duyệt”.................................................207
+Bảng 5.4.2 Đặc tả màn hình “Danh sách sau Duyệt”......................................................212
+
+=== PAGE 24 ===
+23
+5.Nộidungcủađềtài
+Đề tài được tổ chức gồm phần mở đầu, 3 chương nội dung và phần kết luận:
+- Mở đầu
+- Chương 1: Tổng quan về đơn vị thực tập và cơ sở lý thuyết
+- Chương 2: Phân tích và thiết kế hệ thống chuyển hàng nội bộ tại cửa hàng bán lẻ
+- Chương 3: Xây dựng hệ thống chuyển hàng nội bộ tại cửa hàng bán lẻ
+- Kết luận và hướng phát triển
+
+=== PAGE 44 ===
+43
+2.4.3.1UCvàđặctảUC“Tạophiếuchuyểnhàng”
+Bảng 2.4 Đặc tả Use Case “Tạo phiếu chuyển hàng nội bộ”
+UseCaseID 3Tạophiếuchuyểnhàng
+Môtả Là nhân viên hoặc quản lý, tôi muốn tạo một phiếu chuyển hàng nội bộ
+giữa các chi nhánh để hệ thống ghi nhận việc luân chuyển hàng hóa
+Tácnhân Quản lý, nhân viên
+Mứcđộưu
+tiên
+Bắt buộc
+Sựkiệnkích
+hoạt
+Người dùng chọn chức năng “Tạo phiếu chuyển hàng” từ giao diện hệ
+thống.
+Điềukiện
+trước
+Người dùng đã đăng nhập vào hệ thống
+Người dùng có quyền tạo phiếu chuyển hàng.
+Danh sách sản phẩm và chi nhánh đã tồn tại trong hệ thống.
+Điềukiệnsau Phiếu chuyển hàng được tạo thành công, trạng thái “Đang chờ”.
+Dữ liệu được lưu trữ và hiển thị trong danh sách phiếu chuyển hàng.
+Luồngxửlý
+chính
+1. Người dùng đăng nhập vào hệ thống thành công
+2. Người dùng truy cập vào chức năng “Tạo phiếu chuyển hàng”
+3. Hệ thống hiển thị màn hình “Tạo phiếu chuyển hàng”
+4. Người dùng thực hiện:
+UC 3.1: Nhập mã sản phẩm cần chuyển
+UC 3.2: Nhập số lượng cần chuyển
+
+=== PAGE 45 ===
+44
+UC 3.3: Chọn chi nhánh cần chuyển đến
+5. Hệ thống kiểm tra dữ liệu đã nhập hợp lệ (sản phẩm tồn tại, số
+lượng hợp lệ, chi nhánh không trùng…).
+6. Người dùng nhấn “Xác nhận tạo phiếu”.
+7. Hệ thống tạo phiếu chuyển hàng và gán trạng thái “Đang chờ”.
+Luồngthay
+thế
+4a. Người dùng thêm nhiều sản phẩm (lặp lại các bước nhập mã và số
+lượng).
+4b. Người dùng xóa sản phẩm khỏi phiếu nếu nhập nhầm.
+Luồngngoại
+lệ
+5a. Dữ liệu không hợp lệ (ví dụ số lượng vượt tồn kho, chi nhánh không
+hợp lệ).
+➜ Hệ thống hiển thị cảnh báo và yêu cầu chỉnh sửa.
+7a. Gặp lỗi khi ghi dữ liệu vào hệ thống
+➜ Hiển thị thông báo lỗi “Không thể tạo phiếu, vui lòng thử lại sau.”
+Quytắc
+nghiệpvụ
+Mỗi phiếu chuyển hàng phải có ít nhất một sản phẩm và một chi nhánh
+nhận.
+Chi nhánh nhận không được trùng với chi nhánh gửi.
+Không cho phép tạo phiếu khi chưa nhập đầy đủ thông tin cần thiết.
+Yêucầuphi
+chứcnăng
+Thời gian tạo phiếu không vượt quá 5 giây kể từ khi nhấn xác nhận.
+Giao diện hỗ trợ xác nhận phiếu với thông báo rõ ràng, dễ hiểu.
+Hệ thống phải ghi nhật ký thao tác tạo phiếu để phục vụ truy vết.
+2.4.3.2UCvàđặctảUC“Nhậpmãsảnphẩmcầnchuyển”
+Bảng 2.4.1 Đặc tả Use Case “Nhập mã sản phẩm cần chuyển”
+
+=== PAGE 47 ===
+46
+hiện tại...
+6. Người dùng tiếp tục nhập số lượng cần chuyển (chuyển sang UC
+3.1).
+Luồngthay
+thế
+3a. Người dùng nhập mã bằng tay
+3b. Người dùng nhập tên sản phẩm
+➜ Hệ thống tự động lọc các sản phẩm trùng tên nhập
+Luồngngoại
+lệ
+4a. Người dùng quét mã nhưng hệ thống không tìm thấy trong cơ sở dữ
+liệu
+4b. Hệ thống hiển thị thông báo: “Mã sản phẩm không hợp lệ hoặc chưa
+được đăng ký.”
+4c. Người dùng có thể quét lại hoặc nhập tên/ mã tìm thủ công
+Quytắc
+nghiệpvụ
+Mã sản phẩm phải tồn tại và đang hoạt động.
+Không cho phép nhập mã trùng lặp trong cùng một phiếu chuyển hàng.
+Mỗi phiếu phải có ít nhất 1 sản phẩm.
+Nhân viên chỉ được tạo phiếu cho chi nhánh mình làm việc.
+Yêucầuphi
+chứcnăng
+Hệ thống cần phản hồi kết quả tra mã trong vòng tối đa 2 giây.
+Phải hỗ trợ quét mã từ thiết bị barcode scanner.
+Giao diện hỗ trợ gợi ý sản phẩm theo tên gần đúng khi nhập tay.
+2.4.3.3UCvàđặctảUC“Nhậpsốlượngcầnchuyển”
+Bảng 2.4.2 Đặc tả Use Case “Nhập số lượng cần chuyển”
+UseCaseID 3.2Nhậpsốlượngcầnchuyển
+
+=== PAGE 88 ===
+87
+So that hệ thống tự điền thông tin vào phiếu chuyển hàng
+Acceptance
+Criteria
+Hệ thống tự điền tên, tồn kho, đơn vị tính.
+Cảnh báo nếu mã sai hoặc sản phẩm không tồn tại.
+Tasks Gặp gỡ nhân viên kho để khảo sát quy trình nhập mã.
+Thiết kế giao diện quét/nhập mã sản phẩm.
+Viết quy tắc nghiệp vụ: không cho nhập mã trùng.
+2.5.3.2UseStory“Nhậpsốlượngcầnchuyển”
+Bảng 2.14 Use Story cho chức năng Nhập số lượng cần chuyển
+Theme Quảnlýphiếuchuyểnhàng
+Epic Tạophiếuchuyểnhàng
+Usecase3.2 Usecase3.2:Nhậpsốlượngcầnchuyển
+As a người dùng hệ thống (nhân viên kho hoặc quản lý cửa hàng)
+I want to nhập số lượng cho từng sản phẩm,
+So that tôi có thể xác định chính xác số lượng hàng cần chuyển
+Acceptance
+Criteria
+Không nhập quá tồn kho hiện tại.
+Mỗi sản phẩm phải có số lượng > 0.
+Tasks Làm việc với bộ phận kho để hiểu quy trình cập nhật và phản ánh
+tồn kho trong hệ thống.
+Viết tài liệu kiểm tra số lượng so với tồn kho.
+Vẽ sơ đồ trạng thái phiếu chuyển hàng
+
+=== PAGE 95 ===
+94
+3.1.2Thiếtkếcơsởdữliệu
+3.1.2.1Sơđồquanhệ
+Hình 3.2 Sơ đồ quan hệ
+3.1.2.2Môtảchitiếtcơsởdữliệu
+ Kho (ma_kho, ten, dia_chi)
+Bảng 3.1 Bảng kho
+Thuộc tính Kiểu dữ liệu Ràng buộc Khóa Mô tả thuộc tính
+ma_kho varchar(10) not null PK Khóa chính của bảng
+ten nvarchar(100) not null Tên kho
+dia_chi nvarchar(255) not null Địa chỉ kho
+ Nhap_Kho(ma_nhap, ma_kho, ma_san_pham, so_luong, ngay_nhap, dien_giai )
+Bảng 3.2 Bảng nhập kho
+Thuộc tính Kiểu dữ liệu Ràng buộc Khóa Mô tả thuộc tính
+ma_nhap varchar(10) not null PK Khóa chính của bảng
+ma_kho varchar(10) not null Mã kho
+
+=== PAGE 98 ===
+97
+Thuộc tính Kiểu dữ liệu Ràng buộc Khóa Mô tả thuộc tính
+ma_nv varchar(10) not null PK Khóa chính của bảng
+ho_ten nvarchar(100) not null Họ và tên nhân viên
+vai_tro nvarchar(50) not null Vai trò của nhân viên
+email nvarchar(100) not null Email
+so_dien_thoai varchar(11) not null Số điện thoai
+dia_chi nvarchar(255) not null Địa chỉ
+3.2XâydựngAPIvàxửlýnghiệpvụ
+API của hệ thống được xây dựng bằng ngôn ngữ C# trên nền tảng ASP.NET Core,
+tuân thủ mô hình RESTful và sử dụng định dạng JSON trong quá trình truyền tải dữ liệu.
+Hệ thống API hỗ trợ các thao tác trao đổi thông tin giữa Frontend, Backend và cơ sở dữ
+liệu, đảm bảo việc xử lý diễn ra nhanh chóng, đồng bộ và chính xác.
+ API của ChiTietPhieuChuyen
+Hình 3.3 API chi tiết phiếu chuyển
+ API của QuanLyChuyenHang
+Hình 3.4 API quản lý chuyển hàng
+ API của QuanLyKho
+
+=== PAGE 105 ===
+104
+Hình 3.20 Màn hình quản lý nhập kho
+ Tạo mới phiếu nhập kho
+Hình 3.21 Màn hình tạo mới phiếu nhập kho
+ Chỉnh sửa thông tin phiếu nhập kho
+
+=== PAGE 106 ===
+105
+Hình 3.22 Màn hình chỉnh sửa thông tin phiếu nhập kho
+ Xóa phiếu nhập kho
+Hình 3.23 Màn hình xóa phiếu nhập kho
+ Module quản lý sản phẩm
+
+=== PAGE 107 ===
+106
+Hình 3.24 Màn hình quản lý sản phẩm
+ Tạo mới sản phẩm
+Hình 3.25 Màn hình tạo mới sản phẩm
+ Chỉnh sửa thông tin sản phẩm
+
+=== PAGE 108 ===
+107
+Hình 3.26 Màn hình chỉnh sửa thông tin sản phẩm
+ Xóa thông tin sản phẩm
+Hình 3.27 Màn hình xóa thông tin sản phẩm
+ Module quản lý nhân viên kho
+
+=== PAGE 109 ===
+108
+Hình 3.28 Màn hình quản lý nhân viên kho
+ Tạo mới nhân viên
+Hình 3.29 Màn hình tạo mới nhân viên
+ Chỉnh sửa thông tin nhân viên
+
+=== PAGE 191 ===
+190
+Indicator đang chọn theo vị trí mục
+được click
+3.2Mànhình“Tạophiếuchuyểnhàngkhôngthànhcông”
+Hình 5.3.2 Tạo phiếu chuyển hàng không thành công
+Bảng 5.3.2 Đặc tả màn hình “Tạo phiếu chuyển hàng không thành công”
+ID Condition Null Condition
+type
+Description Notes
+1 Click Sidebar
+Button
+Mở trang Phê duyệt

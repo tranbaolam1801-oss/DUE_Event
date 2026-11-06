@@ -1,0 +1,628 @@
+=== PAGE 71 ===
+70
+2.4.7.3UCvàđặctảUC“TạothôngtinĐăngnhậpchoNhânviên”
+Bảng 2.8.3 Đặc tả Use Case “Tạo thông tin Đăng nhập cho nhân viên”
+UseCaseID 9.3Tạothôngtinđăngnhập
+Mô tả Là quản lý, tôi muốn tạo thông tin đăng nhập (tên người dùng và mật
+khẩu) cho nhân viên đã được nhập thông tin, để họ có thể truy cập vào
+hệ thống.
+Tác nhân Quản lý
+Mức độ ưu
+tiên
+Bắt buộc
+Sự kiện kích
+hoạt
+Sau khi đã nhập thông tin nhân viên thành công, quản lý tiến hành tạo tài
+khoản đăng nhập cho nhân viên đó.
+Điều kiện
+trước
+Quản lý đã đăng nhập vào hệ thống.
+Thông tin nhân viên đã được lưu vào hệ thống
+Quản lý có quyền tạo tài khoản
+Điều kiện sau Nhân viên có thể đăng nhập vào hệ thống bằng tên người dùng và mật
+khẩu đã tạo
+Thông tin tài khoản được lưu trữ an toàn
+Luồng xử lý
+chính
+1. Quản lý đăng nhập vào hệ thống.
+2. Quản lý truy cập chức năng “Tạo thông tin đăng nhập”
+3. Hệ thống hiển thị các thông tin cần nhập
+4. Quản lý nhập thông tin đăng nhập: Usename và Password
+5. Quản lý nhấn “Tạo tài khoản”
+=== PAGE 72 ===
+71
+6. Hệ thống kiểm tra trùng lặp username và định dạng mật khẩu
+7. Hệ thống lưu thông tin tài khoản
+8. Hệ thống hiển thị thông báo “Tạo tài khoản thành công”
+Luồng thay
+thế
+4a. Quản lý chọn “Tạo tự động” → hệ thống tự sinh username và mật
+khẩu mặc định
+4b. Quản lý nhấn “Hủy” → thoát mà không lưu gì
+6a. Username đã tồn tại → hệ thống yêu cầu nhập lại tên khác
+Luồng ngoại
+lệ
+7a. Lỗi khi lưu thông tin tài khoản → thông báo: “Không thể tạo tài
+khoản. Vui lòng thử lại”
+Quy tắc
+nghiệp vụ
+Mỗi nhân viên chỉ có một tài khoản đăng nhập duy nhất
+Username không được trùng lặp
+Mật khẩu phải đảm bảo tối thiểu 8 ký tự, có ít nhất một chữ cái và một số
+Yêu cầu phi
+chức năng
+Thời gian xử lý không vượt quá 3 giây
+Giao diện đơn giản, có cảnh báo khi nhập sai
+2.4.8UCvàđặctảUC“Kiểmtratồnkho”
+Hình 2.9 Sơ đồ Use Case “Kiểm tra tồn kho” và chức năng chi tiết
+=== PAGE 73 ===
+72
+Bảng 2.9 Đặc tả Use Case “Kiểm tra tồn kho”
+UseCaseID 10Kiểmtratồnkho
+Mô tả Là quản lý, tôi muốn kiểm tra số lượng tồn kho hiện tại tại các chi nhánh
+để phục vụ việc ra quyết định chuyển hàng và quản lý kho hiệu quả.
+Tác nhân Quản lý
+Mức độ ưu
+tiên
+Bắt buộc
+Sự kiện kích
+hoạt
+Quản lý muốn biết tình trạng tồn kho tại một hoặc nhiều chi nhánh trong
+hệ thống.
+Điều kiện
+trước
+Quản lý đã đăng nhập vào hệ thống.
+Dữ liệu tồn kho đã được cập nhật và đồng bộ từ các chi nhánh
+Điều kiện sau Quản lý có thể xem được số lượng tồn kho hiện tại của từng sản phẩm
+Hệ thống không cho phép chỉnh sửa trực tiếp tồn kho từ chức năng này
+Luồng xử lý
+chính
+1. Quản lý đăng nhập vào hệ thống.
+2. Quản lý truy cập chức năng “Kiểm tra tồn kho”
+3. Hệ thống hiển thị bộ lọc: chọn nhóm sản phẩm, nhập mã sản
+phẩm, tên sản phẩm…
+4. Quản lý chọn hoặc nhập tiêu chí tìm kiếm
+5. Hệ thống truy vấn và hiển thị danh sách tồn kho tương ứng, bao
+gồm: Mã sản phẩm, Tên sản phẩm, tồn kho, đơn vị tính, …
+6. Quản lý có thể sắp xếp, lọc hoặc xuất danh sách tồn kho ra file
+(Excel/PDF)
+=== PAGE 74 ===
+73
+7. Hệ thống hiển thị thông báo nếu không có kết quả nào phù hợp
+Luồng thay
+thế
+4a. Quản lý không nhập gì và nhấn “Tìm” → hệ thống hiển thị toàn bộ
+tồn kho
+Luồng ngoại
+lệ
+5a. Lỗi khi truy vấn dữ liệu → hệ thống hiển thị: “Không thể lấy dữ liệu
+tồn kho. Vui lòng thử lại sau”
+Quy tắc
+nghiệp vụ
+Tồn kho hiển thị là số lượng thực tế sau khi đã trừ các đơn hàng/phiếu
+chuyển đang xử lý
+Quản lý chỉ được xem tồn kho, không được chỉnh sửa từ giao diện này
+Dữ liệu tồn kho được cập nhật theo thời gian thực hoặc đồng bộ theo lịch
+trình của hệ thống
+Yêu cầu phi
+chức năng
+Thời gian xử lý không vượt quá 3 giây
+Giao diện dễ sử dụng, hỗ trợ lọc và tìm kiếm nâng cao
+Cho phép xuất báo cáo nhanh chóng với định dạng chuẩn
+2.8.1UCvàđặctảUC“Lọcsảnphẩmtheotồnkho”
+Bảng 2.9.1 Đặc tả Use Case “Lọc sản phẩm theo tồn kho”
+UseCaseID 10.1Lọcsảnphẩmtheotồnkho
+Mô tả Là quản lý, tôi muốn lọc danh sách sản phẩm theo các tiêu chí tồn kho
+để dễ dàng theo dõi và ra quyết định chuyển hàng hoặc đặt hàng.
+Tác nhân Quản lý
+Mức độ ưu
+tiên
+Trung bình - cần thiết để hỗ trợ quản lý hiệu quả
+=== PAGE 75 ===
+74
+Sự kiện kích
+hoạt
+Quản lý muốn lọc danh sách sản phẩm theo số lượng tồn kho
+Điều kiện
+trước
+Quản lý đã đăng nhập vào hệ thống.
+Hệ thống đã hiển thị danh sách tồn kho hoặc cho phép tìm kiếm sản
+phẩm
+Điều kiện sau Hệ thống đã hiển thị danh sách tồn kho hoặc cho phép tìm kiếm sản
+phẩm
+Giao diện hiển thị rõ ràng trạng thái tồn của từng sản phẩm
+Luồng xử lý
+chính
+1. Quản lý đăng nhập vào hệ thống.
+2. Quản lý truy cập chức năng “Kiểm tra tồn kho”
+3. Quản lý nhấn vào bộ lọc nâng cao
+4. Quản lý nhập số lượng tồn kho cần lọc
+5. Hệ thống thực hiện lọc theo điều kiện đã chọn
+6. Danh sách sản phẩm hiển thị tương ứng với điều kiện lọc
+7. Quảnlýcóthể kết hợplọc thêm theotênsảnphẩm,mã sảnphẩm,
+hoặc chi nhánh
+Luồng thay
+thế
+4a.Quảnlýkhôngchọnđiềukiệnlọc→Hệthốnggiữnguyêndanhsách
+hiện tại
+6a. Khôngcósảnphẩmphùhợpđiềukiện→Hệthốnghiểnthị:“Không
+có sản phẩm nào phù hợp”
+Luồng ngoại
+lệ
+4a. Lỗi truy vấn dữ liệu tồn kho
+→ Hệ thống thông báo: “Không thể lọc dữ liệu. Vui lòng thử lại sau.”
+=== PAGE 76 ===
+75
+Quy tắc
+nghiệp vụ
+Mức tối thiểu và tối đa tồn kho được thiết lập trước bởi quản lý hoặc bộ
+phận kho
+Hệ thống lấy tồn kho mới nhất để lọc
+Quản lý không được phép chỉnh sửa dữ liệu tồn kho tại đây
+Yêu cầu phi
+chức năng
+Thời gian xử lý không vượt quá 3 giây
+Giao diện lọc trực quan, dễ chọn và có thể mở rộng thêm điều kiện lọc
+Cho phép kết hợp nhiều điều kiện lọc linh hoạt
+2.8.2UCvàđặctảUC“Thiếtlặpmứctồnkhotốithiểu”
+Bảng 2.9.2 Đặc tả Use Case “Thiết lặp mức tồn kho tối thiểu”
+UseCase
+ID
+10.2Thiếtlậpmứctồnkhotốithiểu
+Mô tả Là quản lý, tôi muốn thiết lập mức tồn kho tối thiểu cho các sản phẩm để
+hệ thống có thể cảnh báo khi số lượng tồn kho giảm xuống dưới mức cho
+phép, giúp chủ động hơn trong việc bổ sung hàng hóa.
+Tác nhân Quản lý
+Mức độ ưu
+tiên
+Cao - Hỗ trợ kiểm soát cho hiệu quả
+Sự kiện
+kích hoạt
+Quảnlýmuốnthiếtlậphoặcđiềuchỉnhmứctồnkhotốithiểuchosảnphẩm
+Điều kiện
+trước
+Quản lý đã đăng nhập vào hệ thống.
+Danh sách sản phẩm đã được hệ thống ghi nhận
+=== PAGE 77 ===
+76
+Điều kiện
+sau
+Mức tồn kho tối thiểu mới được cập nhật và lưu vào hệ thống
+Hệ thống có thể sử dụng mức này để so sánh khi hiển thị danh sách tồn kho
+và cảnh báo
+Luồng xử
+lý chính
+1. Quản lý đăng nhập vào hệ thống.
+2. Quản lý truy cập chức năng “Kiểm tra tồn kho”
+3. Quản lý tìm kiếm hoặc chọn sản phẩm muốn thiết lập
+4. Quản lý nhấn nút “Thiết lập mức tối thiểu”
+5. Hệ thống hiển thị form nhập giá trị tồn kho tối thiểu
+6. Quản lý nhập số lượng tối thiểu
+7. Nhấn “Lưu”
+8. Hệ thống xác nhận và cập nhật dữ liệu
+9. Hiển thị thông báo: “Thiết lập mức tồn kho tối thiểu thành công”
+Luồng thay
+thế
+6a. Quản lý để trống giá trị nhập
+→ Hệ thống yêu cầu nhập giá trị
+6b. Nhập giá trị không hợp lệ (âm, chữ cái...)
+→ Hệ thống hiển thị lỗi: “Vui lòng nhập số nguyên dương hợp lệ”
+Luồng
+ngoại lệ
+8a. Lỗi khi lưu dữ liệu vào hệ thống
+→ Hệ thống thông báo: “Không thể lưu thông tin. Vui lòng thử lại sau.”
+Quy tắc
+nghiệp vụ
+Mức tồn kho tối thiểu phải là số nguyên dương
+Chỉ quản lý mới có quyền thiết lập hoặc thay đổi
+Mỗi sản phẩm chỉ có một giá trị tồn kho tối thiểu tại một thời điểm
+Hệ thống tự động cảnh báo nếu tồn kho hiện tại < mức tối thiểu
+=== PAGE 78 ===
+77
+Yêu cầu phi
+chức năng
+Thời gian xử lý không vượt quá 3 giây
+Giao diện hỗ trợ nhập nhiều sản phẩm liên tiếp nhanh chóng
+Lưu lịch sử thay đổi mức tồn kho tối thiểu (người chỉnh sửa, thời điểm, giá
+trị trước & sau)
+2.8.3UCvàđặctảUC“Xuấtbáocáohànggầnhết”
+Bảng 2.9.3 Đặc tả Use Case “Xuất báo cáo hàng gần hết”
+UseCaseID 10.3Xuấtbáocáohànggầnhết
+Mô tả Là quản lý, tôi muốn xuất báo cáo danh sách các sản phẩm có tồn kho
+thấp hơn mức tối thiểu để theo dõi, lên kế hoạch nhập hàng và chia sẻ cho
+các bộ phận liên quan.
+Tác nhân Quản lý
+Mức độ ưu
+tiên
+Cao - Hỗ trợ kiểm soát cho hiệu quả
+Sự kiện kích
+hoạt
+Quản lý muốn xuất báo cáo tình trạng tồn kho thấp để chú ý nhập hàng
+Điều kiện
+trước
+Quản lý đã đăng nhập vào hệ thống.
+Đãcódữliệutồnkhovàmứctồnkhotốithiểuthiếtlậpchotừngsảnphẩm
+Điều kiện
+sau
+Hệ thống xuất file (PDF hoặc Excel) chứa danh sách sản phẩm có số
+lượng tồn kho < mức tối thiểu
+File được lưu hoặc tải xuống thành công
+Luồng xử lý 1. Quản lý đăng nhập vào hệ thống.
+=== PAGE 79 ===
+78
+chính 2. Quản lý truy cập chức năng “Kiểm tra tồn kho”
+3. Nhấn nút “Xuất báo cáo hàng gần hết”
+4. Hệ thống lọc các sản phẩm có tồn kho thấp hơn mức tối thiểu
+5. Hiển thị bản xem trước danh sách (tùy chọn)
+6. Quản lý chọn định dạng file (PDF hoặc Excel)
+7. Nhấn “Tải xuống”
+8. Hệ thống tạo file và yêu cầu lưu file hoặc tự động tải xuống
+9. Hiển thị thông báo: “Báo cáo được tạo thành công”
+Luồng thay
+thế
+6a. Nếu quản lý không chọn định dạng
+→ Hệ thống mặc định tạo file Excel
+Luồng ngoại
+lệ
+4a. Không có sản phẩm nào dưới mức tối thiểu
+→ Hệ thống thông báo: “Không có sản phẩm nào cần báo cáo”
+8a. Lỗi khi tạo file
+→ Hệ thống hiển thị: “Không thể tạo báo cáo. Vui lòng thử lại”
+Quy tắc
+nghiệp vụ
+Chỉ lọc các sản phẩm có tồn kho hiện tại < mức tồn kho tối thiểu
+File báo cáo phải chứa: mã SP, tên SP, tồn kho hiện tại, mức tối thiểu
+Báo cáo nên được tạo theo thời điểm hiện tại và ghi chú ngày tạo
+Yêu cầu phi
+chức năng
+Thời gian xử lý không vượt quá 3 giây
+Báo cáo có định dạng dễ đọc, dễ in
+Có thể tải báo cáo về hoặc gửi qua email (ở phiên bản nâng cao)
+=== PAGE 80 ===
+79
+2.4.9UCvàđặctảUC“Quảnlýthôngtinchinhánh”
+Hình 2.10 Sơ đồ Use Case “Quản lý thông tin chi nhánh” và chức năng chi tiết
+Bảng 2.10 Đặc tả Use Case “Quản lý thông tin chi nhánh”
+UseCaseID 11Quảnlýthôngtinchinhánh
+Mô tả Hệ thống cho phép quản lý thêm mới hoặc cập nhật các thông tin liên
+quan đến chi nhánh như tên, địa chỉ, và số điện thoại của người quản lý.
+Tác nhân Quản lý
+Mức độ ưu
+tiên
+Cao
+Sự kiện kích
+hoạt
+Quản lý muốn cập nhật hoặc thêm thông tin chi nhánh vào hệ thống.
+Điều kiện
+trước
+Quản lý đã đăng nhập vào hệ thống.
+Có quyền truy cập chức năng quản lý chi nhánh.
+Điều kiện sau Thông tin chi nhánh được lưu vào hệ thống thành công.
+Hiển thị thông báo lưu thành công.
+=== PAGE 81 ===
+80
+Luồng xử lý
+chính
+1. Quản lý đăng nhập vào hệ thống.
+2. Truy cập mục “Quản lý chi nhánh”.
+3. Nhập tên chi nhánh.
+4. Nhập địa chỉ chi nhánh.
+5. Nhập số điện thoại quản lý chi nhánh.
+6. Nhấn nút “Lưu”.
+7. Hệ thống kiểm tra và lưu dữ liệu.
+8. Hiển thị thông báo “Lưu thông tin chi nhánh thành công”.
+Luồng thay
+thế
+6a. Nếu quản lý nhấn “Hủy”
+→ Quay lại màn hình chính, không lưu thay đổi.
+Luồng ngoại
+lệ
+4a. Nhập thiếu địa chỉ hoặc tên
+→ Hệ thống thông báo: “Vui lòng nhập đầy đủ thông tin bắt buộc”.
+7a. Lỗi kết nối cơ sở dữ liệu
+→ Hiển thị: “Lưu thất bại. Vui lòng thử lại sau”.
+Quy tắc
+nghiệp vụ
+Tên và địa chỉ chi nhánh là bắt buộc.
+Số điện thoại phải đúng định dạng
+Không trùng tên chi nhánh trong cùng hệ thống.
+Yêu cầu phi
+chức năng
+Thời gian xử lý không vượt quá 3 giây
+Giao diện thân thiện, dễ thao tác.
+2.4.9.1UCvàđặctảUC“Nhậpđịachỉchinhánh”
+Bảng 2.10.1 Đặc tả Use Case “Nhập địa chỉ chi nhánh”
+=== PAGE 82 ===
+81
+UseCaseID 11.1Nhậpđịachỉchinhánh
+Mô tả Cho phép nhập địa chỉ đầy đủ của chi nhánh (số nhà, đường,
+phường, quận, thành phố).
+Tác nhân Quản lý
+Mức độ ưu tiên Trung bình
+Sự kiện kích hoạt Quảnlýmuốncậpnhậthoặcthêmthôngtinchinhánhvàohệthống.
+Điều kiện trước Quản lý đã đăng nhập vào hệ thống.
+Có quyền truy cập chức năng quản lý chi nhánh.
+Điều kiện sau Địa chỉ chi nhánh được nhập hợp lệ và lưu vào hệ thống
+Luồng xử lý chính 1. Quản lý đăng nhập vào hệ thống.
+2. Quản lý truy cập giao diện nhập thông tin chi nhánh.
+3. Quản lý truy cập giao diện nhập thông tin chi nhánh.
+4. Hệ thống kiểm tra định dạng và độ đầy đủ của địa chỉ.
+5. Nếu hợp lệ, cho phép tiếp tục sang bước nhập thông tin tiếp
+theo.
+Luồng thay thế 4a. Nếu địa chỉ bị bỏ trống
+→ Hệ thống đánh dấu trường lỗi và yêu cầu nhập lại.
+Luồng ngoại lệ 4a. Nếu định dạng địa chỉ chứa ký tự không hợp lệ
+→ Hệ thống hiển thị thông báo: “Địa chỉ chứa ký tự không hợp lệ”.
+=== PAGE 83 ===
+82
+Quy tắc nghiệp vụ Địa chỉ là trường bắt buộc, không được để trống.
+Phải bao gồm ít nhất 3 thành phần: số nhà, tên đường, khu vực hành
+chính.
+Không chứa ký tự đặc biệt như @, #, %, ^,…
+Yêu cầu phi chức
+năng
+Thời gian xử lý không vượt quá 3 giây
+Giao diện hiển thị rõ ràng, có thể nhập dài dòng không bị cắt bớt.
+Trường nhập địa chỉ hỗ trợ gợi ý nhanh từ dữ liệu địa chỉ phổ biến
+2.4.9.2UCvàđặctảUC“NhậpSĐTquảnlýchinhánh”
+Bảng 2.10.2 Đặc tả Use Case “Nhập SĐT quản lý chi nhánh”
+UseCaseID 11.2NhậpSĐTquảnlýchinhánh
+Mô tả Hệ thống cho phép quản lý nhập số điện thoại của người quản lý chi
+nhánh nhằm hỗ trợ liên hệ khi cần thiết.
+Tác nhân Quản lý
+Mức độ ưu tiên Trung bình
+Sự kiện kích
+hoạt
+Quản lý muốn thêm mới hoặc chỉnh sửa thông tin chi nhánh và cần cập
+nhật số điện thoại của người quản lý chi nhánh.
+Điều kiện trước Quản lý đã đăng nhập vào hệ thống.
+Có quyền truy cập chức năng quản lý chi nhánh.
+Điều kiện sau Số điện thoại được nhập hợp lệ và lư vào hệ thống
+Luồng xử lý 1. Quản lý đăng nhập vào hệ thống.
+=== PAGE 84 ===
+83
+chính 2. Quản lý mở giao diện nhập thông tin chi nhánh.
+3. Quản lý nhập số điện thoại vào trường tương ứng.
+4. Hệ thống kiểm tra định dạng số điện thoại.
+5. Nếu hợp lệ, hệ thống chấp nhận và lưu tạm thời số điện thoại.
+Luồng thay thế 4a. Nếu trường số điện thoại bị bỏ trống
+→ Hệ thống hiển thị cảnh báo: “Vui lòng nhập số điện thoại”.
+Luồng ngoại lệ 4a. Nếu nhập sai định dạng (ví dụ: thiếu số, có ký tự chữ)
+→ Hệ thống hiển thị thông báo lỗi: “Số điện thoại không hợp lệ”.
+Quy tắc nghiệp
+vụ
+Số điện thoại là trường bắt buộc.
+Chỉ chấp nhận ký tự số, không bao gồm ký tự chữ hoặc đặc biệt.
+Độ dài tối thiểu: 10 số, tối đa: 11 số (theo chuẩn Việt Nam).
+Có thể bắt đầu bằng các đầu số phổ biến của nhà mạng (03, 05, 07, 08,
+09...).
+Yêu cầu phi
+chức năng
+Phản hồi kiểm tra định dạng số điện thoại trong vòng 1 giây.
+Hiển thị cảnh báo rõ ràng, dễ hiểu nếu người dùng nhập sai.
+Trường nhập có hỗ trợ định dạng tự động
+2.4.9.3UCvàđặctảUC“Nhậptênchinhánh”
+Bảng 2.10.3 Đặc tả Use Case “Nhập tên chi nhánh”
+UseCaseID 11.3Nhậptênquảnlýchinhánh
+Mô tả Hệ thống cho phép quản lý nhập tên chi nhánh
+Tác nhân Quản lý
+=== PAGE 85 ===
+84
+Mức độ ưu tiên Cao
+Sự kiện kích hoạt Quảnlýmuốnthêmmớihoặccậpnhậttêncủamộtchinhánhtrong
+hệ thống.
+Điều kiện trước Quản lý đã đăng nhập vào hệ thống.
+Quản lý đã mở giao diện thêm mới hoặc chỉnh sửa chi nhánh.
+Điều kiện sau Tên chi nhánh được hệ thống ghi nhận và lưu vào hệ thống.
+Luồng xử lý chính 1. Quản lý đăng nhập vào hệ thống.
+2. Quản lý mở giao diện nhập thông tin chi nhánh.
+3. Nhập tên chi nhánh vào trường tương ứng.
+4. Hệ thống kiểm tra ràng buộc ký tự và độ dài tên.
+5. Nếu hợp lệ, hệ thống chấp nhận và lưu vào hệ thống.
+Luồng thay thế 4a. Nếu người dùng để trống trường tên
+→ Hệ thống cảnh báo: “Vui lòng nhập tên chi nhánh”.
+Luồng ngoại lệ 4a. Nếu tên chi nhánh vượt quá giới hạn ký tự (ví dụ: > 100 ký tự)
+→ Hệ thống hiển thị: “Tên chi nhánh không được vượt quá 100 ký
+tự”.
+Quy tắc nghiệp vụ Tên chi nhánh là trường bắt buộc.
+Không được chứa ký tự đặc biệt (ngoại trừ dấu cách và dấu gạch
+ngang).
+Độ dài tối đa: 100 ký tự.
+=== PAGE 86 ===
+85
+Không được trùng tên với chi nhánh đã tồn tại trong hệ thống.
+Yêu cầu phi chức
+năng
+Kiểm tra sự tồn tại của dữ liệu tức thời (dưới 1 giây).
+Hiển thị lỗi bằng màu và thông báo rõ ràng, dễ hiểu.
+Giao diện nhập phải hỗ trợ tiếng Việt có dấu.
+2.5.UserStory
+2.5.1.Đăngnhập
+Bảng 2.11 Use Story cho chức năng Đăng nhập
+Theme Đăngnhậphệthống
+Epic Xácthựcthôngtinđăngnhập
+Usecase1 Usecase1:Nhậpmãsảnphẩmcầnchuyển
+Asangườidùnghệthống(nhânviênkhohoặcquảnlýcửahàng)
+I want to nhập tên đăng nhập và mật khẩu,
+So that tôi có thể đăng nhập vào hệ thống để làm việc.
+Acceptance
+Criteria
+Hệ thống kiểm tra tài khoản và mật khẩu.
+Đăng nhập thành công chuyển đến màn trang chủ
+Nếu sai quá 6 lần → khóa tài khoản 30 phút..
+Tasks Phân tích quy trình xác thực hiện tại.
+Viết đặc tả Use Case cho Đăng nhập.
+Thiết kế màn hình Login.
+=== PAGE 87 ===
+86
+2.5.2.Đăngxuất
+Bảng 2.12 Use Story cho chức năng Đăng xuất
+Theme Đăngxuấthệthống
+Epic Kếtthúcphiênlàmviệc
+Usecase2 Usecase2:Nhậpmãsảnphẩmcầnchuyển
+Asangườidùnghệthống(nhânviênkhohoặcquảnlýcửahàng)
+I want to nhấn nút “Đăng xuất”,
+So that tôi có thể kết thúc phiên làm việc một cách an toàn.
+Acceptance
+Criteria
+Nhấn “Đăng xuất” → quay về màn hình login.
+Hiển thị thông báo đăng xuất thành công.
+Tasks N/A
+2.5.3.Quảnlýphiếuchuyểnhàng
+2.5.3.1UseStory“Nhậpmãsảnphẩmcầnchuyển”
+Bảng 2.13 Use Story cho chức năng Nhập mã sản phẩm cần chuyển
+Theme Quảnlýphiếuchuyểnhàng
+Epic Tạophiếuchuyểnhàng
+Usecase3.1 Usecase3.1:Nhậpmãsảnphẩmcầnchuyển
+Asangườidùnghệthống(nhânviênkhohoặcquảnlýcửahàng)
+I want to nhập mã hoặc quét mã sản phẩm,
+=== PAGE 88 ===
+87
+So that hệ thống tự điền thông tin vào phiếu chuyển hàng
+Acceptance
+Criteria
+Hệ thống tự điền tên, tồn kho, đơn vị tính.
+Cảnh báo nếu mã sai hoặc sản phẩm không tồn tại.
+Tasks Gặp gỡ nhân viên kho để khảo sát quy trình nhập mã.
+Thiết kế giao diện quét/nhập mã sản phẩm.
+Viết quy tắc nghiệp vụ: không cho nhập mã trùng.
+2.5.3.2UseStory“Nhậpsốlượngcầnchuyển”
+Bảng 2.14 Use Story cho chức năng Nhập số lượng cần chuyển
+Theme Quảnlýphiếuchuyểnhàng
+Epic Tạophiếuchuyểnhàng
+Usecase3.2 Usecase3.2:Nhậpsốlượngcầnchuyển
+As a người dùng hệ thống (nhân viên kho hoặc quản lý cửa hàng)
+I want to nhập số lượng cho từng sản phẩm,
+So that tôi có thể xác định chính xác số lượng hàng cần chuyển
+Acceptance
+Criteria
+Không nhập quá tồn kho hiện tại.
+Mỗi sản phẩm phải có số lượng > 0.
+Tasks Làm việc với bộ phận kho để hiểu quy trình cập nhật và phản ánh
+tồn kho trong hệ thống.
+Viết tài liệu kiểm tra số lượng so với tồn kho.
+Vẽ sơ đồ trạng thái phiếu chuyển hàng
+=== PAGE 89 ===
+88
+2.5.3.3UseStory“Nhậpchinhánhcầnchuyểnhàng”
+Bảng 2.15 Use Story cho chức năng Nhập chi nhánh cần chuyển
+Theme Quảnlýphiếuchuyểnhàng
+Epic Tạophiếuchuyểnhàng
+Usecase3.3 Usecase3.3:Nhậpchinhánhcầnchuyểnhàng
+Asangườidùnghệthống(nhânviênkhohoặcquảnlýcửahàng)
+I want to chọn chi nhánh nhận,
+So that hệ thống biết nơi sẽ tiếp nhận hàng hóa
+Acceptance
+Criteria
+Không cho chọn chi nhánh nhận trùng với chi nhánh gửi.
+Viết mô tả logic lọc chi nhánh hợp lệ.
+Tasks Làm việc với quản lý để xác nhận quy tắc chọn chi nhánh.
+Vẽ màn hình chọn chi nhánh.
+2.5.3.4UseStory“Tìmkiếmphiếuchuyểnhàng”
+Bảng 2.16 Use Story cho chức năng Tìm kiếm phiếu chuyển hàng
+Theme Quảnlýphiếuchuyểnhàng
+Epic Kiểmtraphiếuchuyểnhàng
+Usecase4.1 Usecase4.1:Tìmkiếmphiếuchuyểnhàng
+As a người dùng hệ thống (nhân viên kho hoặc quản lý cửa hàng)
+I want to tìm kiếm các phiếu chuyển hàng theo tiêu chí,
+=== PAGE 90 ===
+89
+So that tôi có thể kiểm tra, theo dõi hoặc cập nhật chúng.
+Acceptance
+Criteria
+Hiển thị thông báo nếu không tìm thấy.
+Có thể tìm gần đúng, tìm theo ngày, trạng thái, chi nhánh.
+Tasks Xácđịnhcáctrườngcầntìmkiếm:mãphiếu,trạngthái,ngườitạo…
+Phân tích và mô tả logic tìm kiếm: hỗ trợ tìm gần đúng, tìm theo
+phạm vi ngày, tìm theo trạng thái…
+Xác định các tình huống không tìm thấy dữ liệu và thông báo lỗi phù
+hợp.
+2.5.3.5UseStory“Sửathôngtinphiếuchuyểnhàng”
+Bảng 2.17 Use Story cho chức năng Sửa thông tin phiếu chuyển hàng
+Theme Quảnlýphiếuchuyểnhàng
+Epic Kiểmtraphiếuchuyểnhàng
+Usecase4.2 Usecase4.2:Sửathôngtinphiếuchuyểnhàng
+As a người dùng hệ thống (nhân viên kho hoặc quản lý cửa hàng)
+I want to sửa phiếu chuyển hàng trước khi xuất kho,
+So that thông tin điều chuyển được chính xác.
+Acceptance
+Criteria
+Chỉ sửa khi phiếu “Chờ xác nhận” hoặc “Đang xử lý”.
+Tasks Phân tích các trường được phép sửa.
+Xác định các vai trò người dùng có quyền chỉnh sửa phiếu (người tạo
+=== PAGE 91 ===
+90
+phiếu, quản lý) và trạng thái phiếu được phép sửa.
+Phân tích và mô tả logic kiểm tra quyền sửa phiếu theo vai trò người
+dùng
+2.5.3.6UseStory“Xóaphiếuchuyểnhàng”
+Bảng 2.18 Use Story cho chức năng Xóa phiếu chuyển hàng
+Theme Quảnlýphiếuchuyểnhàng
+Epic Kiểmtraphiếuchuyểnhàng
+Usecase4.3 Usecase4.3:Xóaphiếuchuyểnhàng
+As a người dùng hệ thống (nhân viên kho hoặc quản lý cửa hàng)
+I want to xóa các phiếu chưa xử lý,
+So that loại bỏ phiếu sai hoặc không cần thiết.
+Acceptance
+Criteria
+Phiếu bị chuyển sang trạng thái “Đã hủy”.
+Không được xóa nếu đã xuất kho.
+Tasks Ghi chú các trường hợp không xóa được trong tài liệu đặc tả.
+Làm việc với các bên liên quan để xác định điều kiện cho phép
+xóa phiếu
+Đề xuất hiển thị cảnh báo xác nhận trước khi xóa
+2.5.3.7UseStory“Phêduyệtphiếuchuyểnhàng”
+Bảng 2.19 Use Story cho chức năng Phê duyệt phiếu chuyển hàng
+=== PAGE 92 ===
+91
+Theme Quảnlýphiếuchuyểnhàng
+Epic Kiểmtraphiếuchuyểnhàng
+Usecase5 Usecase5:Phêduyệtphiếuchuyểnhàng
+As a người quản lý chi nhánh
+I want to phê duyệt các phiếu chuyển hàng,
+So that tôi đảm bảo việc điều chuyển hàng là chính xác.
+AcceptanceCriteria Phiếu chuyển sang trạng thái “Đã phê duyệt”.
+Ghi nhận người duyệt, thời gian.
+Tasks Khảo sát quy trình phê duyệt hiện tại.
+Thiết kế giao diện xác nhận/ từ chối có lý do.
+Thiết kế giao diện xem lại lịch sử phê duyệt
+2.6TổngkếtChương2
+Chương 2 đã trình bày chi tiết quá trình phân tích nghiệp vụ và xác định yêu cầu cho
+hệthốngchuyểnhàngnộibộtạicửahàngbánlẻ.Trongchươngnày,cácyêucầuchứcnăng
+đã được xác định rõ ràng, bao gồm các tính năng như tạo phiếu chuyển hàng, kiểm tra và
+xử lý phiếu, cùng với việc phân quyền theo vai trò người dùng. Bên cạnh đó, các yêu cầu
+phi chức năng như thời gian phản hồi, bảo mật, khả năng sử dụng và khả năng mở rộng
+cũngđượclàmrõđểđảmbảohệthốngvậnhànhổnđịnhvàhiệuquảtrongmôitrườngthực
+tế. Mô hình BPMN giúp mô tả trực quan quy trình nghiệp vụ chuyển hàng, từ bước tạo yêu
+cầu đến phê duyệt và thực hiện điều chuyển. Đồng thời, sơ đồ Use Case và đặc tả Use Case
+chi tiết đã được xây dựng để làm rõ các tương tác giữa người dùng và hệ thống. Ngoài ra,
+việc chuyển hóa các yêu cầu thành User Story theo hướng tiếp cận Agile cũng góp phần
+hỗ trợ việc phát triển hệ thống linh hoạt và bám sát nhu cầu thực tế. Nhìn chung, Chương
+=== PAGE 93 ===
+92
+2 đóng vai trò làm nền tảng quan trọng cho các bước thiết kế và triển khai hệ thống ở các
+chương tiếp theo.
+=== PAGE 94 ===
+93
+CHƯƠNG3.XÂYDỰNGHỆTHỐNGCHUYỂNHÀNGNỘIBỘTẠICỬA
+HÀNGBÁNLẺ
+3.1Tạovàquảnlýcơsởdữliệu
+3.1.1Thiếtkếlớp
+Hình 3.1 Thiết kế sơ đồ lớp
+=== PAGE 95 ===
+94
+3.1.2Thiếtkếcơsởdữliệu
+3.1.2.1Sơđồquanhệ
+Hình 3.2 Sơ đồ quan hệ
+3.1.2.2Môtảchitiếtcơsởdữliệu
+ Kho (ma_kho, ten, dia_chi)
+Bảng 3.1 Bảng kho
+Thuộc tính Kiểu dữ liệu Ràng buộc Khóa Mô tả thuộc tính
+ma_kho varchar(10) not null PK Khóa chính của bảng
+ten nvarchar(100) not null Tên kho
+dia_chi nvarchar(255) not null Địa chỉ kho
+ Nhap_Kho(ma_nhap, ma_kho, ma_san_pham, so_luong, ngay_nhap, dien_giai )
+Bảng 3.2 Bảng nhập kho
+Thuộc tính Kiểu dữ liệu Ràng buộc Khóa Mô tả thuộc tính
+ma_nhap varchar(10) not null PK Khóa chính của bảng
+ma_kho varchar(10) not null Mã kho

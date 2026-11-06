@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Cấu hình RBAC | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Cấu hình vai trò & Quyền</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span>Ma trận phân quyền (RBAC Permission Matrix)</span>
+        </h1>
+        <p class="page-subtitle">Cấu hình mối quan hệ giữa Roles và Permissions từ CSDL Microsoft SQL Server</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Ma trận Vai trò & Quyền hạn hệ thống</h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="min-width: 220px;">Mã quyền (Permission Code)</th>
+                        <th>Diễn giải quyền hạn</th>
+                        {% for r in roles %}
+                        <th class="text-center" style="font-size: 11px; white-space: normal; min-width: 90px;">
+                            {{ r.Name }}
+                        </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in permissions %}
+                    <tr>
+                        <td><strong class="font-monospace" style="color: var(--due-blue-primary);">{{ p.Code }}</strong></td>
+                        <td><small>{{ p.Description }}</small></td>
+                        {% for r in roles %}
+                        <td class="text-center">
+                            {% if (r.Code, p.Code) in rp_set %}
+                                <span style="color: var(--due-green-primary); font-size: 16px; font-weight: 800;">&check;</span>
+                            {% else %}
+                                <span style="color: var(--text-light); font-size: 14px;">—</span>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

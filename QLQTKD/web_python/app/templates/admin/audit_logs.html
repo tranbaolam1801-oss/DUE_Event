@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Nhật ký kiểm toán an ninh | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Nhật ký kiểm toán</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            <span>Nhật ký kiểm toán hệ thống (dbo.AuditLogs)</span>
+        </h1>
+        <p class="page-subtitle">Ghi nhận minh bạch mọi thao tác chuyển trạng thái, tạo hồ sơ và thay đổi quyền hạn</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">100 bản ghi kiểm toán gần nhất</h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">ID</th>
+                        <th>Thời gian (UTC)</th>
+                        <th>Người thực hiện</th>
+                        <th>Đối tượng</th>
+                        <th>Mã định danh</th>
+                        <th>Hành động</th>
+                        <th>Chi tiết chuyển đổi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="font-monospace">#{{ log.AuditId }}</td>
+                        <td><small>{{ log.AtUtc | datetime_vn }}</small></td>
+                        <td>
+                            <strong>{{ log.ActorName or 'Hệ thống tự động' }}</strong>
+                            {% if log.ActorEmail %}<small class="text-muted" style="display: block;">{{ log.ActorEmail }}</small>{% endif %}
+                        </td>
+                        <td><small class="badge badge-info">{{ log.EntityName }}</small></td>
+                        <td class="font-monospace"><small>{{ log.EntityId }}</small></td>
+                        <td><strong style="color: var(--due-blue-primary);">{{ log.ActionCode }}</strong></td>
+                        <td><small>{{ log.Details or '—' }}</small></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center" style="padding: 30px; color: var(--text-muted);">
+                            Chưa có dữ liệu nhật ký kiểm toán.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

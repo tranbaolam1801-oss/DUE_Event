@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MY DUE - Quản lý quy trình sự kiện{% endblock %} | DUE</title>
+    <!-- Favicon chính thức DUE -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/due_logo_emblem.png') }}">
+    <!-- CSS Design System Hiện đại -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR ĐIỀU HƯỚNG THEO VAI TRÒ (RBAC) - KHÔNG CÓ BÀN LÀM VIỆC CHUNG -->
+        <aside class="app-sidebar" id="appSidebar" aria-label="Điều hướng chính">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='images/due_logo_emblem.png') }}" alt="Logo DUE" class="sidebar-logo">
+                <div class="sidebar-brand-text">
+                    <h1>MY DUE</h1>
+                    <p>Quản lý quy trình sự kiện</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <!-- 1. VAI TRÒ: BCH LIÊN CHI ĐOÀN -->
+                {% if current_user.has_role('BCH_LIEN_CHI_DOAN') %}
+                <div class="nav-section-title">Nghiệp vụ tổ chức</div>
+                <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    <span>Hồ sơ sự kiện</span>
+                </a>
+                <a href="{{ url_for('facilities.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('facilities.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Cơ sở vật chất</span>
+                </a>
+                <a href="{{ url_for('reports.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span>Báo cáo tổng kết</span>
+                </a>
+                {% endif %}
+
+                <!-- 2. VAI TRÒ: BAN CHỦ NHIỆM KHOA -->
+                {% if current_user.has_role('BAN_CHU_NHIEM_KHOA') %}
+                <div class="nav-section-title">Thẩm định cơ sở</div>
+                <a href="{{ url_for('approvals.faculty_list') }}" class="nav-item {% if request.endpoint == 'approvals.faculty_list' or request.endpoint == 'approvals.faculty_review' %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <span>Hồ sơ chờ xét duyệt</span>
+                </a>
+                <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    <span>Hồ sơ sự kiện</span>
+                </a>
+                {% endif %}
+
+                <!-- 3. VAI TRÒ: ĐOÀN TRƯỜNG -->
+                {% if current_user.has_role('DOAN_TRUONG') %}
+                <div class="nav-section-title">Phê duyệt cấp trường</div>
+                <a href="{{ url_for('approvals.union_list') }}" class="nav-item {% if request.endpoint == 'approvals.union_list' or request.endpoint == 'approvals.union_review' %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    <span>Hồ sơ chờ phê duyệt</span>
+                </a>
+                <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    <span>Hồ sơ sự kiện</span>
+                </a>
+                <a href="{{ url_for('reports.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span>Nghiệm thu báo cáo</span>
+                </a>
+                {% endif %}
+
+                <!-- 4. VAI TRÒ: PHÒNG CƠ SỞ VẬT CHẤT -->
+                {% if current_user.has_role('PHONG_CSVC') %}
+                <div class="nav-section-title">Điều phối cơ sở vật chất</div>
+                <a href="{{ url_for('facilities.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('facilities.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Cơ sở vật chất</span>
+                </a>
+                <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                    <span>Hồ sơ sự kiện</span>
+                </a>
+                {% endif %}
+
+                <!-- 5. VAI TRÒ: PHÒNG KẾ HOẠCH TÀI CHÍNH / THẨM QUYỀN CHI -->
+                {% if current_user.has_role('PHONG_KHTC', 'APPROVAL_AUTHORITY') %}
+                <div class="nav-section-title">Tài chính & Quyết toán</div>
+                <a href="{{ url_for('payments.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('payments.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Hồ sơ thanh toán chờ duyệt</span>
+                </a>
+                <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                    <span>Hồ sơ sự kiện</span>
+                </a>
+                {% endif %}
+
+                <!-- 6. VAI TRÒ: QUẢN TRỊ VIÊN HỆ THỐNG -->
+                {% if current_user.has_role('SYSTEM_ADMIN') %}
+                <div class="nav-section-title">Quản trị hệ thống</div>
+                <a href="{{ url_for('admin.users') }}" class="nav-item {% if request.endpoint == 'admin.users' %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>Tài khoản & Phân quyền</span>
+                </a>
+                <a href="{{ url_for('admin.roles') }}" class="nav-item {% if request.endpoint == 'admin.roles' %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span>Cấu hình RBAC</span>
+                </a>
+                <a href="{{ url_for('admin.audit_logs') }}" class="nav-item {% if request.endpoint == 'admin.audit_logs' %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    <span>Nhật ký hệ thống</span>
+                </a>
+                <a href="{{ url_for('facilities.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('facilities.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Cơ sở vật chất</span>
+                </a>
+                <a href="{{ url_for('events.index') }}" class="nav-item {% if request.endpoint and request.endpoint.startswith('events.') %}active{% endif %}">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    <span>Hồ sơ sự kiện</span>
+                </a>
+                {% endif %}
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar" title="{{ current_user.display_name }}">
+                        {{ current_user.display_name[:1] | upper }}
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ current_user.display_name }}</div>
+                        <div class="user-role">{{ current_user.role_title }}</div>
+                    </div>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="color: #FFF; border-color: rgba(255,255,255,0.3); padding: 4px 8px; margin-left: 4px;" title="Đăng xuất" aria-label="Đăng xuất">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- KHUNG NỘI DUNG CHÍNH (MAIN AREA) -->
+        <div class="app-main">
+            <!-- Header điều hướng & Nhận thức nội dung (Content Awareness) -->
+            <header class="app-header">
+                <div class="header-left">
+                    <button class="btn-sidebar-toggle" id="btnSidebarToggle" aria-label="Mở menu điều hướng" aria-expanded="false">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <nav class="header-breadcrumb" aria-label="Breadcrumb">
+                        {% block breadcrumb %}
+                        <span class="breadcrumb-current">Hệ thống MY DUE</span>
+                        {% endblock %}
+                    </nav>
+                </div>
+
+                <div class="header-right">
+                    <span class="role-pill">{{ current_user.role_title }}</span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" style="font-weight: 500;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        <span>Đăng xuất</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Vùng nội dung nghiệp vụ -->
+            <main class="content-body" id="mainContent">
+                <!-- Thông báo trạng thái (Flash Alerts) -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            <span>{{ message }}</span>
+                            <button type="button" class="alert-close" aria-label="Đóng thông báo" style="background: none; border: none; cursor: pointer; color: inherit; font-size: 16px;">&times;</button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Script tương tác chính -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

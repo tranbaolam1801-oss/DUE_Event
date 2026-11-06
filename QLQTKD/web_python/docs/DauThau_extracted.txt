@@ -1,0 +1,232 @@
+﻿
+Tên quy trình: Quy trình Tiếp nhận, Xét duyệt và Cấp phép Tổ chức Sự kiện 
+
+
+Nguyễn Hữu Hiếu_8_241121514117
+Trần Bảo Lâm_11_241121514127
+Nguyễn Thị Thùy Linh_13_241121514130
+Võ Văn Phát_20_241121514149
+Trần Hoàng Phúc_21_241121514150
+Nguyễn Thị Yến Tiền_27_241121514162
+Phạm Thị Thanh Trà_29_241121514164
+ 
+Mô tả:
+Quy trình quản lý toàn bộ vòng đời từ khi Ban Tổ chức (BTC) sự kiện lập kế hoạch chi tiết, dự trù kinh phí, nộp hồ sơ xin cấp phép đến khi được Ban Chấp hành Liên Chi Đoàn Khoa và Ban Chủ Nhiệm Khoa, Đoàn Trường Đại học Kinh tế Đà Nẵng, Bộ phận Cơ sở vật chất thẩm định, phê duyệt. Quy trình có sự tham gia của 4 vai trò (BTC sự kiện, Ban Chủ nhiệm Khoa, Đoàn Trường Đại học Kinh tế Đà Nẵng, Bộ phận Cơ sở vật chất) với nhiều hoạt động nghiệp vụ cụ thể. Điểm then chốt của quy trình bao gồm 3 cổng rẽ nhánh quyết định (XOR):
+Kiểm duyệt nội dung - tính chuẩn mực
+Thẩm định tính khả thi kế hoạch/ngân sách
+Kiểm tra - phân bổ hội trường/thiết bị thực tế. 
+Quy trình kết thúc sau khi hoàn tất nghiệm thu bàn giao cơ sở vật chất và quyết toán tài chính sự kiện.
+ Vấn đề muốn cải tiến:
+Quy trình xử lý hồ sơ còn thủ công: Hồ sơ kế hoạch, dự trù kinh phí và đăng ký mượn địa điểm, thiết bị chủ yếu được xử lý bằng giấy tờ hoặc qua nhiều kênh khác nhau → mất thời gian, dễ thất lạc và khó theo dõi trạng thái hồ sơ.
+Phê duyệt qua nhiều bước, phản hồi chậm: Hồ sơ phải lần lượt qua nhiều bộ phận kiểm tra và phê duyệt → BTC khó biết hồ sơ đang ở bước nào và phải chờ lâu để nhận phản hồi.
+Khó chủ động kiểm soát lịch và tài nguyên: Lịch hội trường, sảnh và thiết bị do Hệ thống của Trường kiểm soát, BTC không có quyền truy cập hoặc cập nhật trực tiếp → khó chủ động kiểm tra lịch và dễ phát sinh thay đổi địa điểm, cơ sở vật chất.
+Khó tổng hợp và theo dõi sau sự kiện: Thông tin nghiệm thu, bàn giao và quyết toán được lưu trữ rời rạc, chưa thống nhất giữa các phòng ban → khó tra cứu và tổng hợp khi cần.
+Giải pháp:
+1. Số hóa toàn bộ hồ sơ và phê duyệt
+BTC lập kế hoạch, dự trù kinh phí và đơn mượn địa điểm/cơ sở vật chất trực tiếp trên hệ thống.
+Hồ sơ được tự động chuyển đến đúng bộ phận có thẩm quyền.
+Người duyệt có thể phê duyệt / từ chối / yêu cầu chỉnh sửa ngay trên hệ thống.
+Hệ thống lưu lịch sử xử lý và trạng thái hồ sơ → tránh thất lạc, dễ theo dõi tiến độ.
+2. Tự động kiểm tra tính đầy đủ và tính hợp lệ
+Khi BTC gửi hồ sơ, hệ thống tự kiểm tra các điều kiện bắt buộc.
+Tự động kiểm tra các điều kiện cơ bản của kế hoạch và ngân sách.
+Chỉ chuyển sang bước thẩm định khi hồ sơ hợp lệ.
+→ Giảm việc phải gửi đi gửi lại hồ sơ do thiếu thông tin.
+3. Tích hợp kiểm tra lịch hội trường và thiết bị
+Khi BTC chọn ngày, giờ, hội trường và thiết bị, hệ thống tự động kiểm tra lịch sử dụng.
+Nếu tài nguyên đã được đặt thì thông báo trùng và yêu cầu chọn phương án khác.
+Nếu còn trống thì tự động ghi nhận/giữ chỗ tài nguyên.
+→ Giảm tình trạng trùng lịch, đổi địa điểm sát ngày tổ chức.
+4. Tự động thông báo và theo dõi tiến độ
+Gửi thông báo khi hồ sơ: được tiếp nhận, cần chỉnh sửa, được phê duyệt, bị từ chối, được xác nhận địa điểm/thiết bị.
+BTC có thể theo dõi trạng thái hồ sơ trên hệ thống thay vì phải hỏi qua tin nhắn.
+
+Kế hoạch thực hiện: 
+Xác định &amp; Khám phá quy trình: Khảo sát thực tế, phỏng vấn các bên liên quan và thu thập biểu mẫu để xây dựng danh mục &gt;20 hoạt động và mô hình hiện trạng (As-Is).
+Phân tích quy trình: Phân tích điểm nghẽn nút cổ chai gây chậm trễ duyệt kinh phí, trùng lịch phòng và loại bỏ các thao tác thừa.
+Thiết kế lại quy trình: Tối ưu luồng duyệt song song, chuẩn hóa 3 cổng rẽ nhánh XOR và xây dựng mô hình tương lai (To-Be) chuẩn BPMN 2.0.
+Triển khai (Vibe Coding): Dùng AI hỗ trợ code ra một sản phẩm thực tế với giao diện và các tính năng trực quan, dễ thao tác.
+Kiểm tra &amp; Đánh giá: Chạy thử nghiệm các kịch bản kiểm thử (duyệt/từ chối/yêu cầu sửa), đo lường thời gian xử lý và đánh giá mức độ tinh gọn so với ban đầu.
+
+
+
+
+1. Giải quyết vấn đề: Xử lý hồ sơ thủ công, dễ thất lạc
+Giải pháp: Số hóa &quot;Một cửa&quot; trực tuyến (Single Portal)
+Cách hoạt động: Sinh viên/Ban tổ chức (BTC) không nộp giấy nữa mà điền vào một Biểu mẫu điện tử (E-form) duy nhất. Kế hoạch sự kiện, file dự trù kinh phí sẽ được đính kèm trực tiếp trên form này.
+Hiệu quả: Xóa bỏ hoàn toàn việc in ấn, chạy đi chạy lại nộp giấy. Mọi thông tin nằm tập trung ở một nơi, không bao giờ rơi rớt hay thất lạc. Mỗi sự kiện sẽ được hệ thống cấp một Mã hồ sơ (Ticket ID) duy nhất để quản lý từ đầu đến cuối.
+2. Giải quyết vấn đề: Phản hồi chậm, BTC không biết hồ sơ đang ở đâu
+Giải pháp: Luồng phê duyệt tự động (Automated Workflow) và Bảng theo dõi trạng thái (Tracking Dashboard)
+Cách hoạt động:
+Tạo ra một quy trình chuyển tiếp tự động: Ngay khi người A (VD: Cố vấn học tập) bấm &quot;Duyệt&quot;, hồ sơ lập tức đẩy sang màn hình của người B (VD: Bí thư Đoàn) kèm theo một Email/Thông báo nhắc nhở.
+Cung cấp cho BTC một Bảng trạng thái trực quan giống như việc &quot;Theo dõi đơn hàng Shopee&quot;. Mở app/web lên là thấy ngay thanh tiến độ: Đã nộp -&gt; Chờ Khoa duyệt -&gt; Chờ CSVC duyệt -&gt; Hoàn tất.
+Hiệu quả: Rút ngắn thời gian chờ đợi vì hồ sơ không bị &quot;ngâm&quot; quên. BTC hoàn toàn chủ động, biết chính xác ai đang giữ hồ sơ để đốc thúc nếu cần, không phải đi hỏi thăm từng phòng ban.
+3. Giải quyết vấn đề: Khó kiểm soát lịch phòng, dễ trùng lặp hoặc phải thay đổi
+Giải pháp: Tích hợp Lịch tài nguyên theo thời gian thực (Real-time Shared Calendar)
+Cách hoạt động: Mặc dù hệ thống của trường kiểm soát tài nguyên, đồ án của bạn có thể thiết kế một module &quot;Đồng bộ lịch&quot;. Hệ thống sẽ hiển thị một Bảng lịch (Booking Calendar) công khai các hội trường/sảnh/thiết bị. Lịch hiển thị rõ: Giờ nào màu đỏ (đã có người mượn/đang bảo trì), giờ nào màu xanh (trống). Hệ thống sẽ chặn ngay từ bước điền form, không cho phép BTC chọn vào các khung giờ màu đỏ.
+Hiệu quả: Giải quyết triệt để vấn đề &quot;đăng ký mù mờ&quot;. BTC chủ động chọn được địa điểm trống ngay từ đầu, loại bỏ các vòng lặp (rework) do phải làm lại đơn xin đổi phòng/đổi ngày.
+4. Giải quyết vấn đề: Rời rạc thông tin sau sự kiện (Nghiệm thu, quyết toán)
+Giải pháp: Đóng gói quy trình khép kín trên cùng một hệ thống (Closed-loop System)
+Cách hoạt động: Thay vì nghiệm thu bằng giấy hoặc gửi qua Zalo/Email khác, quy trình sẽ tiếp tục mở ra các bước &quot;Hậu sự kiện&quot; trên chính cái Mã hồ sơ (Ticket ID) ban đầu. Lúc bàn giao thiết bị, nhân viên CSVC chỉ cần mở hệ thống, tích chọn &quot;Tài sản nguyên vẹn&quot; và chụp ảnh đính kèm. BTC nộp hóa đơn quyết toán cũng bằng cách upload lên đúng luồng công việc đó.
+Hiệu quả: Mọi dữ liệu (từ lúc xin phép tổ chức, kinh phí dự trù, đến lúc trả đồ, kinh phí thực tế) được xâu chuỗi thành một bộ hồ sơ điện tử hoàn chỉnh. Khi cần tổng hợp cuối năm, các phòng ban chỉ cần xuất file (Export) chỉ với một cú click chuột.
+
+
+Tên quy trình: Quy trình đăng kí sử dụng sân bóng DUE
+
+
+
+Nguyễn Hữu Hiếu_8_241121514117
+Trần Bảo Lâm_11_241121514127
+Nguyễn Thị Thùy Linh_13_241121514130
+Võ Văn Phát_20_241121514149
+Trần Hoàng Phúc_21_241121514150
+Nguyễn Thị Yến Tiền_27_241121514162
+Phạm Thị Thanh Trà_29_241121514164
+
+Mô tả:
+Quy trình quản lý việc đăng ký và sử dụng sân bóng đá DUE từ khi sinh viên đại diện cho đội bóng lập phiếu đăng ký, gửi yêu cầu sử dụng sân đến khi được Văn phòng quản lý Ký túc xá (KTX) kiểm tra, phê duyệt và bàn giao sân. Quy trình có sự tham gia của 3 vai trò chính (Sinh viên/Đội trưởng, Văn phòng quản lý KTX, Bộ phận quản lý sân) với các hoạt động nghiệp vụ cụ thể.
+Điểm then chốt của quy trình bao gồm 3 bước kiểm tra và quyết định:
+Kiểm tra thông tin và tính hợp lệ của phiếu đăng ký
+Kiểm tra lịch và tình trạng sân bóng
+Kiểm tra và xác nhận tình trạng sân sau khi sử dụng
+Quy trình kết thúc sau khi đội bóng hoàn trả sân đúng nguyên trạng và Văn phòng quản lý KTX xác nhận hoàn tất việc bàn giao.
+
+Vấn đề muốn cải tiến:
+Quy trình đăng ký còn thủ công: Phiếu đăng ký sử dụng sân chủ yếu được điền bằng giấy và nộp trực tiếp tại Văn phòng quản lý KTX → mất thời gian, dễ sai sót hoặc thất lạc hồ sơ.
+Phải đi lại nhiều lần: Sinh viên phải đến Văn phòng KTX để nộp phiếu, sau đó quay lại để nhận sân và cuối buổi tiếp tục đến bàn giao sân, nhận lại thẻ sinh viên → gây mất thời gian và bất tiện.
+Khó chủ động kiểm soát lịch sân: Sinh viên không thể trực tiếp kiểm tra tình trạng sân trước khi đăng ký → dễ xảy ra tình trạng chọn thời gian sân đã được đăng ký hoặc phải điều chỉnh lịch.
+Khó theo dõi trạng thái đăng ký: Sau khi nộp phiếu, sinh viên phải chờ phản hồi hoặc liên hệ với Văn phòng KTX để biết hồ sơ đã được phê duyệt hay chưa → thiếu thông tin về tiến độ xử lý.
+Thông tin bàn giao chưa được quản lý tập trung: Thông tin đăng ký, nhận sân và bàn giao sân được xử lý thủ công → khó tra cứu lịch sử sử dụng và tình trạng sân khi cần.
+Giải pháp:
+1. Số hóa đăng ký và phê duyệt
+Sinh viên/đội trưởng thực hiện đăng ký sử dụng sân trực tiếp trên hệ thống.
+Nhập thông tin đội bóng, ngày, giờ và thời gian sử dụng.
+Hồ sơ được tự động chuyển đến Văn phòng quản lý KTX để kiểm tra và phê duyệt.
+Người quản lý có thể phê duyệt / từ chối / yêu cầu chỉnh sửa trực tiếp trên hệ thống.
+Hệ thống lưu lịch sử xử lý và trạng thái đăng ký → tránh thất lạc, dễ theo dõi.
+2. Tự động kiểm tra tính đầy đủ và hợp lệ
+Khi đội bóng gửi yêu cầu, hệ thống tự động kiểm tra các thông tin bắt buộc.
+Kiểm tra thời gian đăng ký có hợp lệ hay không.
+Kiểm tra đội bóng có đáp ứng các điều kiện sử dụng sân hay không.
+Chỉ chuyển yêu cầu đến bước phê duyệt khi thông tin hợp lệ.
+→ Giảm việc phải bổ sung hoặc đăng ký lại do thiếu thông tin.
+3. Tích hợp kiểm tra lịch và tình trạng sân
+Khi sinh viên chọn ngày và giờ, hệ thống tự động kiểm tra lịch sân.
+Nếu sân đã có đội đăng ký → thông báo trùng lịch và yêu cầu chọn khung giờ khác.
+Nếu sân còn trống → cho phép tiếp tục đăng ký và ghi nhận khung giờ.
+Người quản lý có thể xem lịch sử dụng sân tập trung trên hệ thống.
+→ Giảm tình trạng trùng lịch và giúp sinh viên chủ động lựa chọn thời gian.
+4. Tự động thông báo và theo dõi tiến độ
+Gửi thông báo khi yêu cầu: đã tiếp nhận, cần chỉnh sửa, được phê duyệt hoặc bị từ chối.
+Thông báo thời gian và sân được cấp cho đội bóng.
+Sinh viên có thể theo dõi trạng thái đăng ký trực tiếp trên hệ thống.
+→ Không cần liên hệ trực tiếp với Văn phòng KTX để hỏi tình trạng hồ sơ.
+5. Số hóa nhận và bàn giao sân
+Khi đến nhận sân, đội trưởng cung cấp mã đăng ký hoặc thông tin xác nhận trên hệ thống.
+Sau khi sử dụng, đội bóng dọn vệ sinh và hoàn trả sân.
+Nhân viên KTX kiểm tra tình trạng sân.
+Kết quả bàn giao được ghi nhận trên hệ thống.
+→ Tạo lịch sử sử dụng và bàn giao sân rõ ràng, dễ tra cứu.
+Kế hoạch thực hiện:
+Xác định &amp; Khám phá quy trình: Khảo sát thực tế, phỏng vấn sinh viên/đội trưởng và Văn phòng quản lý KTX, thu thập phiếu đăng ký và các quy định sử dụng sân để xây dựng danh mục hoạt động và mô hình hiện trạng (As-Is).
+Phân tích quy trình: Phân tích các điểm nghẽn như đăng ký bằng giấy, phải đi lại nhiều lần, khó kiểm tra lịch sân và thời gian chờ phản hồi.
+Thiết kế lại quy trình: Số hóa đăng ký, tự động kiểm tra lịch sân, rút gọn các bước đi lại không cần thiết, thiết kế luồng phê duyệt và xây dựng mô hình tương lai (To-Be) theo chuẩn BPMN 2.0.
+Triển khai (Vibe Coding): Dùng AI hỗ trợ xây dựng sản phẩm thực tế với giao diện trực quan, cho phép sinh viên đăng ký sân, xem lịch, theo dõi trạng thái và cho phép KTX quản lý, phê duyệt yêu cầu.
+Kiểm tra &amp; Đánh giá: Chạy thử các kịch bản kiểm thử như đăng ký thành công / trùng lịch / từ chối / yêu cầu chỉnh sửa / nhận sân / bàn giao sân, sau đó đo lường thời gian xử lý và đánh giá mức độ tinh gọn so với quy trình ban đầu.
+Xác định &amp; Khám phá quy trình: Khảo sát thực tế, phỏng vấn các bên liên quan và thu thập biểu mẫu để xây dựng sơ đồ hiện trạng (As-Is) với đầy đủ các hoạt động từ đăng ký → phê duyệt → nhận sân → sử dụng → bàn giao.
+
+Quy trình bắt đầu khi Ban Tổ chức sự kiện phát sinh nhu cầu tổ chức một chương trình hoặc sự kiện của Liên Chi Đoàn Khoa. BTC tiến hành xác định mục tiêu, nội dung, thời gian, địa điểm, đối tượng tham gia và quy mô dự kiến của chương trình.
+Bước 1. Lập kế hoạch tổ chức sự kiện (1 THÁNG)
+BTC thực hiện các công việc:
+Xác định mục tiêu và nội dung chương trình.
+Xác định thời gian, địa điểm và số lượng người tham gia.
+Xây dựng timeline tổ chức.
+Phân công nhiệm vụ cho từng thành viên.
+Xác định nhu cầu về nhân sự, trang thiết bị và cơ sở vật chất.
+Xây dựng phương án dự phòng cho các tình huống phát sinh.
+Bước 2. Lập dự trù kinh phí (1 TUẦN)
+Dựa trên kế hoạch, BTC lập bảng dự trù kinh phí
+Bước 3. Chuẩn bị hồ sơ xin tổ chức (3 NGÀY)
+BTC hoàn thiện bộ hồ sơ gồm:
+Kế hoạch tổ chức sự kiện.
+Bảng dự trù kinh phí.
+Danh sách Ban Tổ chức.
+Bảng phân công nhiệm vụ.
+Kịch bản chương trình.
+Tờ trình xin tổ chức.
+Phiếu đề nghị sử dụng địa điểm và cơ sở vật chất.
+Các tài liệu liên quan khác nếu có.
+Trước khi gửi lên cấp khoa, BTC hoặc Ban Chấp hành Liên Chi Đoàn kiểm tra tính đầy đủ, thống nhất và hợp lệ của hồ sơ.
+Bước 4. Gửi hồ sơ đến Ban Chủ nhiệm Khoa (THỜI GIAN LÀM : 30 PHÚT, THỜI GIAN CH: 3 NGÀY)
+BTC nộp hồ sơ cho Ban Chủ nhiệm Khoa để xem xét về:
+Mục tiêu và ý nghĩa của sự kiện.
+Mức độ phù hợp với hoạt động của Khoa.
+Nội dung, quy mô và đối tượng tham gia.
+Thời gian tổ chức có trùng với lịch học hoặc hoạt động khác không.
+Tính hợp lý của dự trù kinh phí.
+Những rủi ro có thể ảnh hưởng đến sinh viên và nhà trường.
+XOR 1: Ban Chủ nhiệm Khoa có phê duyệt hồ sơ không?
+Nếu không phê duyệt và yêu cầu chỉnh sửa: Ban Chủ nhiệm Khoa ghi rõ nội dung cần bổ sung hoặc điều chỉnh. Hồ sơ được trả lại cho BTC. BTC chỉnh sửa kế hoạch, dự trù kinh phí hoặc tài liệu liên quan, sau đó nộp lại.
+Nếu từ chối hoàn toàn: Ban Chủ nhiệm Khoa thông báo lý do từ chối và quy trình kết thúc.
+Nếu phê duyệt: Ban Chủ nhiệm Khoa ký xác nhận, sau đó hồ sơ được chuyển đến Đoàn Trường.
+Bước 5. Đoàn Trường tiếp nhận và thẩm định hồ sơ (THỜI GIAN LÀM : 30 PHÚT, THỜI GIAN CHỜ: 4 NGÀY)
+Đoàn Trường Đại học Kinh tế – Đại học Đà Nẵng tiếp nhận hồ sơ đã được Ban Chủ nhiệm Khoa xác nhận và thực hiện:
+Kiểm tra tính đầy đủ và hợp lệ của hồ sơ.
+Đối chiếu kế hoạch với định hướng hoạt động Đoàn – Hội.
+Kiểm tra lịch tổ chức để tránh trùng lặp.
+Đánh giá nội dung, đối tượng, quy mô và hình thức tổ chức.
+Kiểm tra vấn đề an toàn, an ninh và quản lý sinh viên.
+Xem xét dự trù kinh phí và nguồn tài trợ.
+Yêu cầu bổ sung giấy tờ nếu cần.
+XOR 2: Đoàn Trường có phê duyệt sự kiện không?
+Nếu hồ sơ cần chỉnh sửa hoặc bổ sung: Đoàn Trường gửi yêu cầu điều chỉnh về BTC. BTC cập nhật hồ sơ, xin xác nhận lại của Ban Chủ nhiệm Khoa nếu nội dung thay đổi đáng kể, sau đó nộp lại Đoàn Trường.
+Nếu không đồng ý tổ chức: Đoàn Trường thông báo lý do từ chối. BTC tiếp nhận thông báo và quy trình kết thúc.
+Nếu đồng ý: Đoàn Trường phê duyệt kế hoạch hoặc ban hành văn bản chấp thuận tổ chức. Nếu sự kiện cần sử dụng địa điểm, phòng học, hội trường hoặc thiết bị của trường, hồ sơ tiếp tục được gửi đến Bộ phận Cơ sở vật chất.
+Bước 6. Gửi yêu cầu sử dụng cơ sở vật chất 
+Sau khi được Đoàn Trường phê duyệt, BTC lập hoặc hoàn thiện phiếu đề nghị sử dụng cơ sở vật chất, trong đó ghi rõ:
+Tên sự kiện.
+Thời gian sử dụng.
+Địa điểm đề nghị sử dụng.
+Danh mục thiết bị cần mượn.
+Thời gian nhận và hoàn trả thiết bị.
+Người chịu trách nhiệm quản lý.
+Bước 7. Bộ phận Cơ sở vật chất kiểm tra (Thời gian chờ: 1 ngày)
+Bộ phận Cơ sở vật chất thực hiện:
+Kiểm tra lịch sử dụng phòng, sân hoặc hội trường.
+Kiểm tra tình trạng và số lượng thiết bị.
+Đối chiếu thời gian với các đơn vị khác.
+Đánh giá khả năng đáp ứng yêu cầu.
+Đề xuất thay đổi địa điểm, thời gian hoặc thiết bị nếu cần.
+Xác định trách nhiệm bàn giao và hoàn trả tài sản.
+XOR 3: Cơ sở vật chất có đáp ứng yêu cầu không?
+Nếu không đáp ứng hoàn toàn: Bộ phận Cơ sở vật chất thông báo lý do, chẳng hạn địa điểm đã có đơn vị khác sử dụng hoặc thiết bị không đủ. BTC điều chỉnh thời gian, địa điểm hoặc danh mục thiết bị rồi gửi lại yêu cầu.
+Nếu chỉ đáp ứng một phần: Bộ phận Cơ sở vật chất đề xuất phương án thay thế. BTC xem xét và xác nhận phương án mới.
+Nếu đáp ứng: Bộ phận Cơ sở vật chất xác nhận lịch sử dụng và danh mục thiết bị được cấp.
+Bước 8. Tổ chức sự kiện
+BTC tiến hành:
+Triển khai truyền thông.
+Chuẩn bị nhân sự và vật dụng.
+Nhận bàn giao địa điểm, thiết bị.
+Kiểm tra âm thanh, ánh sáng và bố trí không gian.
+Tổ chức chương trình theo kế hoạch đã được duyệt.
+Theo dõi, xử lý các vấn đề phát sinh.
+Ghi nhận hình ảnh và minh chứng của sự kiện.
+Bước 9. Hoàn trả cơ sở vật chất
+Sau sự kiện, BTC:
+Kiểm tra và thu gom thiết bị.
+Vệ sinh, sắp xếp lại địa điểm.
+Bàn giao lại tài sản cho Bộ phận Cơ sở vật chất.
+Xác nhận số lượng và tình trạng thiết bị.
+Lập biên bản nếu xảy ra mất mát hoặc hư hỏng.
+Bước 10. Tổng kết và quyết toán
+BTC thực hiện:
+Tổng hợp kết quả chương trình.
+Đối chiếu chi phí thực tế với dự trù.
+Thu thập hóa đơn, chứng từ và minh chứng.
+Lập báo cáo tổng kết.
+Lập báo cáo quyết toán kinh phí.
+Gửi báo cáo cho Ban Chủ nhiệm Khoa và Đoàn Trường.
+Lưu trữ toàn bộ hồ sơ sự kiện.
+Quy trình kết thúc khi báo cáo tổng kết, quyết toán được tiếp nhận và hồ sơ sự kiện được lưu trữ đầy đủ.
+
+

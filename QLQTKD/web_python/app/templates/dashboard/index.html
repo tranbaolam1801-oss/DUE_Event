@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+
+{% block title %}Cổng điều hành sự kiện | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Cổng điều hành sự kiện (Bàn làm việc)</span>
+{% endblock %}
+
+{% block content %}
+<!-- 1. HERO PORTAL BANNER (PHONG CÁCH GITHUB TELEVENT & MODERN SAAS) -->
+<div class="hero-portal-banner">
+    <div class="hero-portal-content">
+        <div>
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 10px;">
+                <span class="status-dot-pulse" style="background: #4ADE80;"></span>
+                <span>Hệ thống điều hành trực tuyến • Học kỳ I (2026 - 2027)</span>
+            </div>
+            <h1 class="hero-title">
+                Xin chào, {{ current_user.display_name }}
+            </h1>
+            <p class="hero-subtitle">
+                Vai trò hiện hành: <strong>{{ current_user.role_title }}</strong>. Bạn đang có 
+                <span style="color: #FDE047; font-weight: 700;">{{ pending_tasks_count }} hồ sơ</span> cần xử lý trong chu trình sự kiện.
+            </p>
+        </div>
+        <div class="hero-actions">
+            {% if role_landing_url and role_landing_url != url_for('dashboard.index') %}
+            <a href="{{ role_landing_url }}" class="btn btn-warning" style="box-shadow: 0 4px 12px rgba(254,117,30,0.3); font-weight: 700;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                <span>{{ role_landing_label }} ({{ pending_tasks_count }})</span>
+            </a>
+            {% endif %}
+
+            {% if current_user.has_permission('events.create') %}
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary" id="btnCreateEventQuick" style="background: #FFFFFF; color: var(--due-blue-primary); border-color: #FFFFFF; font-weight: 700;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                <span>+ Tạo đề án sự kiện</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 2. INTERACTIVE BPMN WORKFLOW PIPELINE (5 GIAI ĐOẠN ĐIỀU HÀNH) -->
+<div class="workflow-pipeline-card">
+    <div class="pipeline-header">
+        <h2 class="pipeline-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Tiến trình luồng công việc sự kiện To-Be (BPMN Pipeline)</span>
+        </h2>
+        <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">
+            Tổng cộng: <strong>{{ total_events }}</strong> sự kiện đang vận hành
+        </span>
+    </div>
+    <div class="workflow-pipeline-steps">
+        <!-- Bước 1: Khởi tạo & Dự thảo -->
+        <a href="{{ url_for('events.index', state='DRAFT') }}" class="pipeline-step-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pipeline-step-badge">1</span>
+                <span class="pipeline-step-count">{{ stage_counts.draft }}</span>
+            </div>
+            <div class="pipeline-step-name">Lập đề án & Dự toán</div>
+            <div style="font-size: 11px; color: var(--text-muted);">BCH Liên Chi Đoàn</div>
+        </a>
+
+        <!-- Bước 2: Thẩm định cấp Khoa -->
+        <a href="{{ url_for('approvals.faculty_list') if current_user.has_role('BAN_CHU_NHIEM_KHOA', 'SYSTEM_ADMIN') else url_for('events.index') }}" class="pipeline-step-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pipeline-step-badge">2</span>
+                <span class="pipeline-step-count" style="color: var(--due-orange-primary);">{{ stage_counts.faculty }}</span>
+            </div>
+            <div class="pipeline-step-name">Thẩm định cấp Khoa</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Ban Chủ nhiệm Khoa</div>
+        </a>
+
+        <!-- Bước 3: Cấp phép Đoàn Trường -->
+        <a href="{{ url_for('approvals.union_list') if current_user.has_role('DOAN_TRUONG', 'SYSTEM_ADMIN') else url_for('events.index') }}" class="pipeline-step-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pipeline-step-badge">3</span>
+                <span class="pipeline-step-count">{{ stage_counts.union }}</span>
+            </div>
+            <div class="pipeline-step-name">Cấp phép cấp Trường</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Đoàn Thanh niên DUE</div>
+        </a>
+
+        <!-- Bước 4: CSVC & Tổ chức -->
+        <a href="{{ url_for('facilities.index') }}" class="pipeline-step-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pipeline-step-badge">4</span>
+                <span class="pipeline-step-count" style="color: var(--due-green-primary);">{{ stage_counts.facility }}</span>
+            </div>
+            <div class="pipeline-step-name">Bố trí CSVC & Tổ chức</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Phòng Cơ sở vật chất</div>
+        </a>
+
+        <!-- Bước 5: Quyết toán & Đóng hồ sơ -->
+        <a href="{{ url_for('payments.index') }}" class="pipeline-step-item">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="pipeline-step-badge">5</span>
+                <span class="pipeline-step-count">{{ stage_counts.finance }}</span>
+            </div>
+            <div class="pipeline-step-name">Nghiệm thu & Quyết toán</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Phòng KHTC & Lưu trữ</div>
+        </a>
+    </div>
+</div>
+
+<!-- 3. THANH ĐIỀU KHIỂN & CHUYỂN ĐỔI CHẾ ĐỘ XEM (CARDS / TABLE) -->
+<div class="view-control-bar">
+    <div class="filter-chips-group">
+        <a href="{{ url_for('events.index') }}" class="filter-chip active">Tất cả sự kiện ({{ total_events }})</a>
+        <a href="{{ url_for('events.index', state='PENDING_FACULTY') }}" class="filter-chip">Chờ Khoa duyệt</a>
+        <a href="{{ url_for('events.index', state='PENDING_UNION') }}" class="filter-chip">Chờ Đoàn duyệt</a>
+        <a href="{{ url_for('events.index', state='EVENT_APPROVED') }}" class="filter-chip">Đã cấp phép</a>
+        <a href="{{ url_for('facilities.index') }}" class="filter-chip">Lịch hội trường</a>
+    </div>
+
+    <div class="view-mode-toggle" id="viewModeToggle">
+        <button type="button" class="view-mode-btn active" id="btnViewCards" onclick="switchView('cards')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Dạng Thẻ</span>
+        </button>
+        <button type="button" class="view-mode-btn" id="btnViewTable" onclick="switchView('table')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            <span>Dạng Bảng</span>
+        </button>
+    </div>
+</div>
+
+<!-- 4. NỘI DUNG CHÍNH: BỐ CỤC 2 CỘT (70% HỒ SƠ SỰ KIỆN / 30% HỘI TRƯỜNG & HOẠT ĐỘNG) -->
+<div style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; align-items: start;">
+    <!-- CỘT TRÁI: DANH SÁCH SỰ KIỆN (CARDS VIEW & TABLE VIEW) -->
+    <div>
+        <!-- A. DẠNG THẺ HIỆN ĐẠI (EVENT CARDS GRID - TELEVENT & ELANCHEZHIYAN01 STYLE) -->
+        <div class="event-cards-grid" id="eventsCardGrid">
+            {% for evt in recent_events %}
+            <div class="event-card">
+                <div class="event-card-header">
+                    <!-- Date Box -->
+                    <div class="event-date-box">
+                        <span class="month">T.{{ evt.StartsAt.month if evt.StartsAt else '11' }}</span>
+                        <span class="day">{{ evt.StartsAt.day if evt.StartsAt else '15' }}</span>
+                    </div>
+                    <div class="event-card-header-info">
+                        <div class="event-card-ticket">{{ evt.TicketCode }}</div>
+                        <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="event-card-title">
+                            {{ evt.Title }}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="event-card-body">
+                    <div class="event-card-meta-row">
+                        <span class="event-card-meta-item">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <span>{{ evt.DepartmentName }}</span>
+                        </span>
+                        <span class="event-card-meta-item">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <span>{{ evt.ExpectedAttendees or 250 }} SV</span>
+                        </span>
+                    </div>
+
+                    <div class="event-card-meta-row" style="margin-top: -2px;">
+                        <span class="event-card-meta-item font-monospace" style="color: var(--due-blue-primary); font-weight: 600;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            <span>{{ evt.EstimatedBudget | currency }}</span>
+                        </span>
+                    </div>
+
+                    <!-- Tiến trình quy trình BPMN -->
+                    <div class="event-card-progress">
+                        <div class="event-progress-label">
+                            <span>Tiến độ xét duyệt</span>
+                            {% set prog = 20 %}
+                            {% if evt.StateCode in ('SUBMITTED_FACULTY', 'PENDING_FACULTY') %}{% set prog = 40 %}
+                            {% elif evt.StateCode in ('SUBMITTED_UNION', 'PENDING_UNION') %}{% set prog = 60 %}
+                            {% elif evt.StateCode in ('UNION_APPROVED', 'EVENT_APPROVED', 'PENDING_FACILITY') %}{% set prog = 80 %}
+                            {% elif evt.StateCode in ('COMPLETED', 'CLOSED') %}{% set prog = 100 %}
+                            {% endif %}
+                            <span>{{ prog }}%</span>
+                        </div>
+                        <div class="event-progress-bar-bg">
+                            <div class="event-progress-bar-fill" style="width: {{ prog }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-card-footer">
+                    <span class="badge {{ evt.StateCode | status_badge_class }}" style="font-size: 11px;">
+                        {{ evt.StateName }}
+                    </span>
+                    <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="btn btn-outline btn-sm">
+                        <span>Chi tiết hồ sơ</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div style="grid-column: 1 / -1; background: #FFFFFF; padding: 48px 24px; border-radius: 12px; border: 1px dashed var(--border-color); text-align: center;">
+                <p style="color: var(--text-muted); margin-bottom: 16px;">Hiện chưa có hồ sơ sự kiện nào trong danh sách.</p>
+                {% if current_user.has_permission('events.create') %}
+                <a href="{{ url_for('events.create') }}" class="btn btn-primary btn-sm">+ Tạo hồ sơ sự kiện ngay</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- B. DẠNG BẢNG DỮ LIỆU TRUYỀN THỐNG (TABLE VIEW - ẨN MẶC ĐỊNH, CHUYỂN BẰNG NÚT TOGGLE) -->
+        <div class="card" id="eventsTableView" style="display: none; margin-bottom: 24px;">
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive" style="border: none;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã vé</th>
+                                <th>Tên sự kiện</th>
+                                <th>Đơn vị</th>
+                                <th>Thời gian</th>
+                                <th>Dự trù kinh phí</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evt in recent_events %}
+                            <tr>
+                                <td><strong style="color: var(--due-blue-primary);">{{ evt.TicketCode }}</strong></td>
+                                <td>
+                                    <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" style="color: var(--text-main); font-weight: 600; text-decoration: none;">
+                                        {{ evt.Title }}
+                                    </a>
+                                </td>
+                                <td><small class="text-muted">{{ evt.DepartmentName }}</small></td>
+                                <td><small>{{ evt.StartsAt | datetime_vn }}</small></td>
+                                <td class="font-monospace"><small>{{ evt.EstimatedBudget | currency }}</small></td>
+                                <td>
+                                    <span class="badge {{ evt.StateCode | status_badge_class }}">{{ evt.StateName }}</span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="btn btn-outline btn-sm">Xem</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CỘT PHẢI: TRẠNG THÁI HỘI TRƯỜNG CSVC & THÔNG BÁO HOẠT ĐỘNG (BONKER009 STYLE) -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- THẺ TÌNH TRẠNG HỘI TRƯỜNG & ĐỊA ĐIỂM SỰ KIỆN -->
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="card-title" style="font-size: 15px;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Trạng thái Hội trường DUE</span>
+                </h3>
+                <a href="{{ url_for('facilities.index') }}" class="btn btn-outline btn-sm" style="font-size: 11.5px; padding: 3px 8px;">
+                    Lịch CSVC
+                </a>
+            </div>
+            <div class="card-body" style="padding: 12px 16px; display: flex; flex-direction: column; gap: 12px;">
+                {% for fac in facilities[:4] %}
+                {% set is_reserved = fac.Code in reserved_facility_codes %}
+                <div class="venue-card" style="padding: 12px; margin-bottom: 0;">
+                    <div class="venue-card-header">
+                        <div>
+                            <div class="venue-name">{{ fac.Name }}</div>
+                            <div class="venue-capacity">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                                <span>Sức chứa: <strong>{{ fac.Capacity }} chỗ</strong></span>
+                            </div>
+                        </div>
+                        <span class="venue-status-pill {{ 'venue-status-reserved' if is_reserved else 'venue-status-available' }}">
+                            <span class="status-dot-pulse"></span>
+                            <span>{{ 'Đang có lịch' if is_reserved else 'Sẵn sàng' }}</span>
+                        </span>
+                    </div>
+                    <div class="venue-amenities">
+                        <span class="amenity-tag">🎤 Âm thanh</span>
+                        <span class="amenity-tag">📽️ Máy chiếu</span>
+                        <span class="amenity-tag">❄️ Điều hòa</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- THẺ HOẠT ĐỘNG VÀ NHẬT KÝ HỆ THỐNG GẦN ĐÂY -->
+        <div class="card" style="margin-bottom: 0;">
+            <div class="card-header">
+                <h3 class="card-title" style="font-size: 15px;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span>Thông báo nghiệp vụ</span>
+                </h3>
+            </div>
+            <div class="card-body" style="padding: 12px 16px;">
+                {% for noti in notifications %}
+                <div style="padding: 10px 0; border-bottom: 1px solid #F1F5F9;">
+                    <div style="font-weight: 600; font-size: 13px; color: var(--text-main); margin-bottom: 2px;">
+                        {{ noti.Title }}
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">
+                        {{ noti.Body }}
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-light); margin-top: 4px;">
+                        {{ noti.CreatedAt | datetime_vn }}
+                    </div>
+                </div>
+                {% else %}
+                <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12.5px;">
+                    Không có thông báo mới nào.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchView(mode) {
+    const cardGrid = document.getElementById('eventsCardGrid');
+    const tableView = document.getElementById('eventsTableView');
+    const btnCards = document.getElementById('btnViewCards');
+    const btnTable = document.getElementById('btnViewTable');
+
+    if (mode === 'cards') {
+        cardGrid.style.display = 'grid';
+        tableView.style.display = 'none';
+        btnCards.classList.add('active');
+        btnTable.classList.remove('active');
+        localStorage.setItem('my_due_view_mode', 'cards');
+    } else {
+        cardGrid.style.display = 'none';
+        tableView.style.display = 'block';
+        btnCards.classList.remove('active');
+        btnTable.classList.add('active');
+        localStorage.setItem('my_due_view_mode', 'table');
+    }
+}
+
+// Khôi phục tùy chọn chế độ xem người dùng
+document.addEventListener('DOMContentLoaded', function() {
+    const savedMode = localStorage.getItem('my_due_view_mode');
+    if (savedMode === 'table') {
+        switchView('table');
+    }
+});
+</script>
+{% endblock %}

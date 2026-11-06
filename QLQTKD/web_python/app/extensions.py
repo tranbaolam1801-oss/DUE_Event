@@ -1,0 +1,9 @@
+from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
+
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.login_message = 'Vui lòng đăng nhập để truy cập chức năng này.'
+login_manager.login_message_category = 'warning'
+
+csrf = CSRFProtect()

@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  /* DUE Brand – Primary blue scale */
+  --color-blue-50: #e8f1fa;
+  --color-blue-100: #d1e4f5;
+  --color-blue-200: #a3c9eb;
+  --color-blue-300: #75aee1;
+  --color-blue-400: #4793d7;
+  --color-blue-500: #1a78cd;
+  --color-blue-600: #005faf;
+  --color-blue-700: #004a8a;
+  --color-blue-800: #003d70;
+  --color-blue-900: #002b52;
+  --color-blue-950: #001a33;
+
+  /* DUE Brand – Orange (secondary / accent) */
+  --color-orange-50: #fef0e7;
+  --color-orange-100: #fde0cf;
+  --color-orange-200: #fbc19f;
+  --color-orange-300: #f9a26f;
+  --color-orange-400: #f78948;
+  --color-orange-500: #f37021;
+  --color-orange-600: #d45f1a;
+  --color-orange-700: #b54f15;
+  --color-orange-800: #963f11;
+  --color-orange-900: #78320e;
+
+  /* DUE Brand – Green (success) */
+  --color-emerald-50: #e6f5ed;
+  --color-emerald-100: #cceadb;
+  --color-emerald-200: #99d5b7;
+  --color-emerald-300: #66c093;
+  --color-emerald-400: #33ab6f;
+  --color-emerald-500: #009444;
+  --color-emerald-600: #007a38;
+  --color-emerald-700: #00602c;
+  --color-emerald-800: #004720;
+  --color-emerald-900: #002f15;
+
+  --color-due: #005faf;
+  --color-due-dark: #004a8a;
+  --color-due-navy: #003d70;
+  --color-due-light: #e8f1fa;
+  --color-due-orange: #f37021;
+  --color-due-orange-dark: #d45f1a;
+  --color-due-orange-light: #fef0e7;
+  --color-due-green: #009444;
+  --color-due-green-dark: #007a38;
+  --color-due-green-light: #e6f5ed;
+}
+
+@layer base {
+  :root {
+    --due-primary: #005FAF;
+    --due-primary-hover: #004A8A;
+    --due-primary-dark: #003D70;
+    --due-primary-navy: #002B52;
+    --due-primary-light: #E8F1FA;
+    --due-secondary: #F37021;
+    --due-secondary-hover: #D45F1A;
+    --due-secondary-light: #FEF0E7;
+    --due-success: #009444;
+    --due-success-hover: #007A38;
+    --due-success-light: #E6F5ED;
+    --due-danger: #DC2626;
+    --due-danger-light: #FEF2F2;
+    --due-muted: #64748B;
+    --due-border: #E2E8F0;
+    --due-foreground: #1E293B;
+    --due-background: #F6F8FB;
+    --due-surface: #FFFFFF;
+
+    /* Legacy aliases kept for compatibility */
+    --color-due-blue: #005FAF;
+    --color-due-blue-dark: #004A8A;
+    --color-due-blue-light: #E8F1FA;
+    --color-due-green: #009444;
+    --color-due-green-dark: #007A38;
+    --color-due-orange: #F37021;
+    --color-due-orange-dark: #D45F1A;
+    --color-due-danger: #DC2626;
+    --color-surface: #FFFFFF;
+    --color-bg-app: #F6F8FB;
+    --color-border: #E2E8F0;
+  }
+
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body {
+    background-color: var(--due-background);
+    color: var(--due-foreground);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Dual-mode Keyboard-only high-visibility focus ring */
+  *:focus-visible {
+    outline: 2px solid var(--due-primary) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(0, 95, 175, 0.25) !important;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Sticky Action Bar according to Fitts's Law */
+.sticky-action-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 25;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--due-border);
+  box-shadow: 0 -4px 16px -2px rgba(15, 23, 42, 0.08);
+}

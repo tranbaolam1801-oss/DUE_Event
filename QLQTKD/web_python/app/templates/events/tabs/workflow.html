@@ -1,0 +1,74 @@
+<!-- TAB 5: LUỒNG XÉT DUYỆT & LỊCH SỬ LUÂN CHUYỂN BPMN -->
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span>Nhật ký luân chuyển & Xét duyệt hồ sơ (BPMN Audit Trail)</span>
+        </h2>
+        <span class="badge {{ event.StateCode | status_badge_class }}">{{ event.StateName }}</span>
+    </div>
+    <div class="card-body">
+        <!-- TRẠNG THÁI HIỆN TẠI -->
+        <div style="background-color: #F8FAFC; border-left: 4px solid var(--due-blue-primary); border-radius: 4px; padding: 14px 18px; margin-bottom: 24px;">
+            <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Giai đoạn quy trình hiện tại</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--due-blue-primary); margin: 4px 0;">
+                {{ event.StateName }} (Mã trạng thái: <span class="font-monospace">{{ event.StateCode }}</span>)
+            </div>
+            <div style="font-size: 13px; color: var(--text-main);">
+                Mọi hành động chuyển trạng thái được kiểm soát chặt chẽ bởi Stored Procedure <code>usp_TransitionEvent</code> trong Microsoft SQL Server.
+            </div>
+        </div>
+
+        <!-- DÒNG THỜI GIAN TIMELINE DỌC -->
+        <div class="workflow-timeline">
+            {% for h in history %}
+            <div class="workflow-timeline-item">
+                <div class="workflow-timeline-marker">
+                    {% if h.ActionCode in ('APPROVE', 'APPROVE_UNION', 'AUTHORIZE_PAYMENT') %}
+                        <div class="marker-dot marker-approved">✓</div>
+                    {% elif h.ActionCode in ('REJECT', 'REJECT_UNION', 'REJECT_PAYMENT') %}
+                        <div class="marker-dot marker-rejected">✕</div>
+                    {% elif h.ActionCode in ('REQUEST_REVISION', 'REQUEST_DOCUMENTS', 'REVISION_FACILITY') %}
+                        <div class="marker-dot marker-revision">!</div>
+                    {% else %}
+                        <div class="marker-dot marker-default">•</div>
+                    {% endif %}
+                </div>
+                <div class="workflow-timeline-card">
+                    <div class="workflow-timeline-header">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <strong style="font-size: 14px; color: var(--text-main);">{{ h.ActorName }}</strong>
+                            <span class="badge {% if h.ActionCode in ('APPROVE', 'APPROVE_UNION') %}badge-approved{% elif h.ActionCode in ('REJECT', 'REJECT_UNION') %}badge-rejected{% elif h.ActionCode in ('REQUEST_REVISION', 'REQUEST_DOCUMENTS') %}badge-revision{% else %}badge-pending{% endif %}">
+                                {{ h.ActionCode }}
+                            </span>
+                        </div>
+                        <span class="workflow-timeline-time">{{ h.PerformedAt | datetime_vn }}</span>
+                    </div>
+
+                    <div style="font-size: 13px; margin: 6px 0; color: var(--text-muted);">
+                        Luân chuyển trạng thái: 
+                        <span class="badge badge-draft" style="font-size: 11px;">{{ h.FromStateName or 'Khởi tạo' }}</span>
+                        &rarr;
+                        <span class="badge badge-pending" style="font-size: 11px;">{{ h.ToStateName }}</span>
+                    </div>
+
+                    {% if h.Comment %}
+                    <div class="workflow-comment-box {% if h.ActionCode in ('REJECT', 'REJECT_UNION') %}comment-rejected{% elif h.ActionCode in ('REQUEST_REVISION', 'REQUEST_DOCUMENTS') %}comment-revision{% endif %}">
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px;">
+                            Ý kiến chỉ đạo / Lý do:
+                        </div>
+                        <div style="font-style: italic; line-height: 1.5;">"{{ h.Comment }}"</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 30px 0;">
+                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <div class="empty-state-title">Chưa có lịch sử luân chuyển</div>
+                <div class="empty-state-text">Hồ sơ này chưa thực hiện thao tác luân chuyển qua các làn bơi BPMN.</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

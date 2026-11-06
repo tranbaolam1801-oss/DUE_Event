@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Lập báo cáo tổng kết: {{ event.TicketCode }} | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('events.index') }}" style="color: inherit; text-decoration: none;">Hồ sơ sự kiện</a>
+<span class="breadcrumb-separator">/</span>
+<a href="{{ url_for('events.detail', event_id=event.EventId) }}" style="color: inherit; text-decoration: none;">{{ event.TicketCode }}</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Lập báo cáo</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Lập báo cáo tổng kết: {{ event.TicketCode }}</span>
+        </h1>
+        <p class="page-subtitle">Soạn thảo và xác nhận báo cáo kết quả tổ chức sự kiện trình Đoàn Trường nghiệm thu (BPMN: ReviewReport)</p>
+    </div>
+    <div class="header-actions">
+        <!-- Nút AI Tạo bản nháp báo cáo tự động -->
+        <button type="button" class="btn btn-outline" onclick="runAIReportDraft()" style="border-color: #075F9F; color: #075F9F;">
+            <span class="ai-badge">AI Assistant</span>
+            <span>Tự động tạo bản nháp</span>
+        </button>
+        <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Quay lại</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 900px;">
+    <div class="card-header">
+        <h2 class="card-title">Nội dung báo cáo tổng kết sự kiện</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('reports.create', event_id=event.EventId) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="reportContent" class="form-label">
+                    Nội dung báo cáo chi tiết <span class="required" aria-hidden="true">*</span>
+                </label>
+                <textarea id="reportContent" name="content" class="form-control" rows="16" placeholder="Nhập hoặc sử dụng nút 'AI Tự động tạo bản nháp' để điền sẵn mẫu báo cáo chuẩn..." required style="font-family: inherit; font-size: 13.5px; line-height: 1.6;">{{ report.Content if report else '' }}</textarea>
+                <div class="form-help">Báo cáo cần tóm tắt kết quả đạt được, số liệu tham gia thực tế, kinh phí đã dùng và kiến nghị.</div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Hủy bỏ</a>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Lưu & Gửi báo cáo cho Đoàn Trường</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function runAIReportDraft() {
+    const textarea = document.getElementById('reportContent');
+    textarea.value = "Đang tổng hợp dữ liệu kịch bản, thời gian và dự toán từ CSDL để tạo dự thảo...";
+
+    fetch("{{ url_for('reports.ai_draft', event_id=event.EventId) }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.draft) {
+            textarea.value = data.draft;
+            textarea.focus();
+        }
+    })
+    .catch(err => {
+        alert("Lỗi khi kết nối dịch vụ tạo dự thảo.");
+    });
+}
+</script>
+{% endblock %}

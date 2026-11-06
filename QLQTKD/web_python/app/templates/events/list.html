@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý hồ sơ sự kiện | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Hồ sơ sự kiện</span>
+{% endblock %}
+
+{% block content %}
+<!-- HEADER TRANG & TÁC VỤ CHÍNH -->
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            <span>Quản lý hồ sơ sự kiện</span>
+        </h1>
+        <p class="page-subtitle">Theo dõi, tìm kiếm và xử lý hồ sơ sự kiện theo quy trình chuẩn của Trường Đại học Kinh tế</p>
+    </div>
+    <div class="header-actions">
+        {% if current_user.has_permission('events.create') %}
+        <a href="{{ url_for('events.create') }}" class="btn btn-primary" id="btnCreateEvent">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>+ Tạo hồ sơ</span>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- CÁC TAB LỌC TRẠNG THÁI (STATUS TABS - SỐ LIỆU CHÍNH XÁC TỪ CSDL) -->
+<div class="filter-tabs" role="tablist" aria-label="Bộ lọc phân loại hồ sơ">
+    <a href="{{ url_for('events.index', tab='ALL', q=search_query, department_id=current_dept) }}" class="filter-tab-btn {% if current_tab == 'ALL' and current_state == 'ALL' %}active{% endif %}">
+        <span>Tất cả hồ sơ</span>
+        <span class="tab-count">{{ tab_counts.ALL }}</span>
+    </a>
+    <a href="{{ url_for('events.index', tab='REVISION', q=search_query, department_id=current_dept) }}" class="filter-tab-btn {% if current_tab == 'REVISION' %}active{% endif %}">
+        <span style="color: var(--due-orange-primary);">Cần bổ sung / Sửa</span>
+        <span class="tab-count" style="color: var(--due-orange-primary); background: var(--due-orange-light);">{{ tab_counts.REVISION }}</span>
+    </a>
+    <a href="{{ url_for('events.index', tab='PENDING', q=search_query, department_id=current_dept) }}" class="filter-tab-btn {% if current_tab == 'PENDING' %}active{% endif %}">
+        <span>Đang chờ thẩm định</span>
+        <span class="tab-count">{{ tab_counts.PENDING }}</span>
+    </a>
+    <a href="{{ url_for('events.index', tab='APPROVED', q=search_query, department_id=current_dept) }}" class="filter-tab-btn {% if current_tab == 'APPROVED' %}active{% endif %}">
+        <span style="color: var(--due-green-primary);">Đã cấp phép</span>
+        <span class="tab-count" style="color: var(--due-green-primary); background: var(--due-green-light);">{{ tab_counts.APPROVED }}</span>
+    </a>
+    <a href="{{ url_for('events.index', tab='COMPLETED', q=search_query, department_id=current_dept) }}" class="filter-tab-btn {% if current_tab == 'COMPLETED' %}active{% endif %}">
+        <span>Đã hoàn tất</span>
+        <span class="tab-count">{{ tab_counts.COMPLETED }}</span>
+    </a>
+</div>
+
+<!-- THANH TÌM KIẾM VÀ BỘ LỌC TINH GỌN (CO GIÃN THEO MÀN HÌNH) -->
+<div class="card" style="margin-bottom: 16px;">
+    <div class="card-body" style="padding: 12px 16px;">
+        <form method="GET" action="{{ url_for('events.index') }}" class="events-search-filter-form">
+            <input type="hidden" name="tab" value="{{ current_tab }}">
+            
+            <!-- Tìm kiếm theo mã hồ sơ hoặc tên sự kiện -->
+            <div class="filter-search-box">
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Tìm theo mã hồ sơ, tên sự kiện..." aria-label="Tìm kiếm hồ sơ">
+            </div>
+
+            <!-- Bộ lọc đơn vị tổ chức -->
+            <div class="filter-select-box">
+                <select name="department_id" class="form-control" onchange="this.form.submit()" aria-label="Lọc theo đơn vị tổ chức">
+                    <option value="ALL" {% if current_dept == 'ALL' %}selected{% endif %}>-- Đơn vị tổ chức --</option>
+                    {% for d in departments %}
+                    <option value="{{ d.DepartmentId }}" {% if current_dept|string == d.DepartmentId|string %}selected{% endif %}>
+                        {{ d.Name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Bộ lọc trạng thái chi tiết -->
+            <div class="filter-select-box">
+                <select name="state" class="form-control" onchange="this.form.submit()" aria-label="Lọc theo trạng thái">
+                    <option value="ALL" {% if current_state == 'ALL' %}selected{% endif %}>-- Trạng thái xét duyệt --</option>
+                    {% for st in states %}
+                    <option value="{{ st.StateCode }}" {% if current_state == st.StateCode %}selected{% endif %}>
+                        {{ st.StateName }} ({{ st.TotalEvents }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Nút tìm kiếm & đặt lại -->
+            <div class="filter-btn-group">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <span>Tìm kiếm</span>
+                </button>
+                {% if search_query or current_state != 'ALL' or current_tab != 'ALL' or current_dept != 'ALL' %}
+                <a href="{{ url_for('events.index') }}" class="btn btn-outline btn-sm">Đặt lại</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- BẢNG DỮ LIỆU CHUẨN 6 CỘT (DESKTOP & LAPTOP - KHÔNG CUỘN NGANG) -->
+<div class="card events-table-container">
+    <div class="card-body" style="padding: 0;">
+        <div class="events-table-wrapper">
+            <table class="table events-table">
+                <thead>
+                    <tr>
+                        <th class="col-code">Mã hồ sơ</th>
+                        <th class="col-title">Tên sự kiện</th>
+                        <th class="col-dept">Đơn vị tổ chức</th>
+                        <th class="col-time">Thời gian</th>
+                        <th class="col-status">Trạng thái</th>
+                        <th class="col-actions text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evt in events %}
+                    <tr>
+                        <!-- 1. Mã hồ sơ (Identifier) -->
+                        <td class="col-code">
+                            <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="font-monospace event-code-link">
+                                {{ evt.TicketCode }}
+                            </a>
+                        </td>
+
+                        <!-- 2. Tên sự kiện (Giới hạn tối đa 2 dòng kèm title tooltip) -->
+                        <td class="col-title">
+                            <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="event-title-clamp" title="{{ evt.Title }}">
+                                {{ evt.Title }}
+                            </a>
+                        </td>
+
+                        <!-- 3. Đơn vị tổ chức -->
+                        <td class="col-dept">
+                            <span class="dept-text" title="{{ evt.DepartmentName }}">{{ evt.DepartmentName }}</span>
+                        </td>
+
+                        <!-- 4. Thời gian (Ngày và khung giờ rõ ràng) -->
+                        <td class="col-time">
+                            <div class="event-time-block">
+                                <span class="time-main">{{ evt.StartsAt | datetime_vn }}</span>
+                                {% if evt.EndsAt %}
+                                <span class="time-sub">đến {{ evt.EndsAt | datetime_vn }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- 5. Trạng thái (Semantic Badge) -->
+                        <td class="col-status">
+                            <span class="badge {{ evt.StateCode | status_badge_class }}">
+                                {{ evt.StateName }}
+                            </span>
+                        </td>
+
+                        <!-- 6. Thao tác: Mặc định [Chi tiết] [...] -->
+                        <td class="col-actions text-end">
+                            <div class="action-btn-group">
+                                <!-- Nút Chi tiết chính -->
+                                <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="btn btn-outline btn-sm action-btn-detail" aria-label="Xem chi tiết {{ evt.TicketCode }}">
+                                    Chi tiết
+                                </a>
+
+                                <!-- Menu ba chấm [...] chứa các hành động theo quyền -->
+                                <div class="action-dropdown">
+                                    <button type="button" class="action-dropdown-toggle" aria-label="Thao tác khác cho {{ evt.TicketCode }}" title="Thao tác khác">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                                    </button>
+                                    <div class="action-dropdown-menu">
+                                        <!-- Xem trang tổng quan -->
+                                        <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="action-dropdown-item">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                                            <span>Xem tổng quan</span>
+                                        </a>
+
+                                        <!-- Xem kế hoạch chi tiết -->
+                                        <a href="{{ url_for('events.detail', event_id=evt.EventId, tab='plan') }}" class="action-dropdown-item">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
+                                            <span>Kế hoạch chi tiết</span>
+                                        </a>
+
+                                        <!-- Chỉnh sửa khi trạng thái cho phép -->
+                                        {% if evt.StateCode in ('DRAFT', 'REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.edit') and (current_user.id == evt.CreatedBy or current_user.has_role('BCH_LIEN_CHI_DOAN')) %}
+                                        <div class="action-dropdown-divider"></div>
+                                        <a href="{{ url_for('events.edit', event_id=evt.EventId) }}" class="action-dropdown-item">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            <span>Chỉnh sửa kế hoạch</span>
+                                        </a>
+                                        <a href="{{ url_for('events.budget', event_id=evt.EventId) }}" class="action-dropdown-item">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                            <span>Dự trù kinh phí</span>
+                                        </a>
+                                        {% endif %}
+
+                                        <!-- Nộp duyệt trực tiếp -->
+                                        {% if evt.StateCode == 'DRAFT' and current_user.has_permission('events.submit') and (current_user.id == evt.CreatedBy or current_user.has_role('BCH_LIEN_CHI_DOAN')) %}
+                                        <div class="action-dropdown-divider"></div>
+                                        <form method="POST" action="{{ url_for('events.action', event_id=evt.EventId, action_code='SUBMIT') }}" onsubmit="return confirm('Bạn có chắc chắn muốn nộp hồ sơ này lên Ban Chủ nhiệm Khoa?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="action-dropdown-item" style="color: var(--due-blue-primary); font-weight: 600;">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                                <span>Nộp hồ sơ lên Khoa</span>
+                                            </button>
+                                        </form>
+                                        {% elif evt.StateCode in ('REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.submit') and (current_user.id == evt.CreatedBy or current_user.has_role('BCH_LIEN_CHI_DOAN')) %}
+                                        <div class="action-dropdown-divider"></div>
+                                        <form method="POST" action="{{ url_for('events.action', event_id=evt.EventId, action_code='RESUBMIT') }}" onsubmit="return confirm('Bạn có chắc chắn muốn nộp lại hồ sơ sau khi đã bổ sung/chỉnh sửa?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="action-dropdown-item" style="color: var(--due-orange-primary); font-weight: 600;">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                                                <span>Nộp lại hồ sơ</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+
+                                        <!-- Lối tắt thẩm định Khoa -->
+                                        {% if evt.StateCode in ('SUBMITTED_FACULTY', 'PENDING_FACULTY') and current_user.has_permission('approvals.department.review') %}
+                                        <div class="action-dropdown-divider"></div>
+                                        <a href="{{ url_for('approvals.faculty_review', event_id=evt.EventId) }}" class="action-dropdown-item" style="color: var(--due-blue-primary); font-weight: 600;">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline></svg>
+                                            <span>Thẩm định cấp Khoa</span>
+                                        </a>
+                                        {% endif %}
+
+                                        <!-- Lối tắt phê duyệt Đoàn Trường -->
+                                        {% if evt.StateCode in ('SUBMITTED_UNION', 'PENDING_UNION') and current_user.has_permission('approvals.union.review') %}
+                                        <div class="action-dropdown-divider"></div>
+                                        <a href="{{ url_for('approvals.union_review', event_id=evt.EventId) }}" class="action-dropdown-item" style="color: var(--due-green-primary); font-weight: 600;">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                            <span>Phê duyệt Đoàn Trường</span>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                <div class="empty-state-title">Không tìm thấy hồ sơ sự kiện nào</div>
+                                <div class="empty-state-text">Hiện tại không có hồ sơ nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc đã chọn.</div>
+                                {% if current_user.has_permission('events.create') %}
+                                <a href="{{ url_for('events.create') }}" class="btn btn-primary btn-sm">+ Tạo hồ sơ</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- DANH SÁCH DẠNG CARD CHO MOBILE (< 768px - MỤC 4.5 RESPONSIVE) -->
+        <div class="events-mobile-card-list">
+            {% for evt in events %}
+            <div class="event-mobile-card">
+                <div class="card-top-row">
+                    <span class="font-monospace event-code-link">{{ evt.TicketCode }}</span>
+                    <span class="badge {{ evt.StateCode | status_badge_class }}">{{ evt.StateName }}</span>
+                </div>
+                <h3 class="card-event-title">
+                    <a href="{{ url_for('events.detail', event_id=evt.EventId) }}">{{ evt.Title }}</a>
+                </h3>
+                <div class="card-meta-row">
+                    <div class="meta-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                        <span>{{ evt.DepartmentName }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>{{ evt.StartsAt | datetime_vn }}</span>
+                    </div>
+                </div>
+                <div class="card-bottom-actions">
+                    <a href="{{ url_for('events.detail', event_id=evt.EventId) }}" class="btn btn-primary btn-sm" style="flex: 1; justify-content: center;">
+                        Xem chi tiết
+                    </a>
+                    {% if evt.StateCode in ('DRAFT', 'REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.edit') and (current_user.id == evt.CreatedBy or current_user.has_role('BCH_LIEN_CHI_DOAN')) %}
+                    <a href="{{ url_for('events.edit', event_id=evt.EventId) }}" class="btn btn-outline btn-sm">
+                        Sửa
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding: 30px 16px;">
+                <div class="empty-state-title">Không tìm thấy hồ sơ sự kiện nào</div>
+                <div class="empty-state-text">Thử tìm kiếm với từ khóa khác hoặc bỏ các bộ lọc đã chọn.</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- PHÂN TRANG (PAGINATION) -->
+        {% if total_pages > 1 %}
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                Hiển thị <strong>{{ (page - 1) * per_page + 1 }}</strong> - <strong>{{ [page * per_page, total_items] | min }}</strong> trên tổng số <strong>{{ total_items }}</strong> hồ sơ
+            </div>
+            <nav class="pagination-nav" aria-label="Phân trang danh sách hồ sơ">
+                <a href="{{ url_for('events.index', page=prev_page, q=search_query, tab=current_tab, state=current_state, department_id=current_dept) }}" class="pagination-btn {% if not has_prev %}disabled{% endif %}" aria-label="Trang trước">
+                    &laquo; Trước
+                </a>
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="pagination-btn active" aria-current="page">{{ p }}</span>
+                    {% elif p <= 2 or p >= total_pages - 1 or (p >= page - 1 and p <= page + 1) %}
+                        <a href="{{ url_for('events.index', page=p, q=search_query, tab=current_tab, state=current_state, department_id=current_dept) }}" class="pagination-btn">{{ p }}</a>
+                    {% elif p == 3 and page > 4 %}
+                        <span class="pagination-btn disabled">...</span>
+                    {% elif p == total_pages - 2 and page < total_pages - 3 %}
+                        <span class="pagination-btn disabled">...</span>
+                    {% endif %}
+                {% endfor %}
+                <a href="{{ url_for('events.index', page=next_page, q=search_query, tab=current_tab, state=current_state, department_id=current_dept) }}" class="pagination-btn {% if not has_next %}disabled{% endif %}" aria-label="Trang sau">
+                    Sau &raquo;
+                </a>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

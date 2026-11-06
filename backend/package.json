@@ -1,0 +1,57 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "EventFlow Backend API",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "npm run build:postgres",
+    "start": "node dist/server.js",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:init": "tsx scripts/initialize.ts",
+    "test:sync": "npm run build:sqlite && node scripts/test-sync.cjs",
+    "build:postgres": "prisma generate --schema prisma/schema.postgresql.prisma && tsc",
+    "build:sqlite": "prisma generate --schema prisma/schema.prisma && tsc",
+    "db:inspect": "node scripts/inspect-supabase.cjs",
+    "test:serialization": "npm run build && node --test scripts/serialization.test.cjs",
+    "vercel-build": "npm run build:postgres",
+    "typecheck": "tsc --noEmit --incremental false"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "@types/nodemailer": "^8.0.2",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^10.3.1",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.13.5",
+    "@types/uuid": "^10.0.0",
+    "prisma": "5.22.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

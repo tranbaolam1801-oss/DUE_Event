@@ -1,0 +1,102 @@
+<!-- TAB 3: DỰ TRÙ KINH PHÍ SỰ KIỆN -->
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <h2 class="card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Dự trù kinh phí sự kiện</span>
+        </h2>
+        {% if current_user.id == event.CreatedBy and event.StateCode in ('DRAFT', 'REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.edit') %}
+        <a href="{{ url_for('events.budget', event_id=event.EventId) }}" class="btn btn-primary btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Cập nhật dự toán</span>
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- KHỐI THỐNG KÊ KINH PHÍ TỔNG HỢP -->
+    <div style="background-color: #F8FAFC; border-bottom: 1px solid var(--border-color); padding: 18px 24px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: center;">
+            <div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Tổng kinh phí dự kiến</span>
+                <div style="font-size: 26px; font-weight: 800; color: var(--due-blue-primary); margin-top: 4px;" class="font-monospace">
+                    {{ total_budget | currency }}
+                </div>
+            </div>
+            <div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Số lượng khoản mục chi</span>
+                <div style="font-size: 24px; font-weight: 700; color: var(--text-main); margin-top: 4px;">
+                    {{ budget_items|length }} mục
+                </div>
+            </div>
+            <div>
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Định mức trung bình / mục</span>
+                <div style="font-size: 20px; font-weight: 600; color: var(--text-muted); margin-top: 4px;" class="font-monospace">
+                    {% if budget_items|length > 0 %}
+                        {{ (total_budget / budget_items|length) | currency }}
+                    {% else %}
+                        0 ₫
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BẢNG CHI TIẾT CÁC KHOẢN MỤC DỰ TOÁN -->
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Khoản mục chi tiêu</th>
+                        <th style="width: 120px;" class="text-center">Số lượng</th>
+                        <th style="width: 160px;" class="text-end">Đơn giá</th>
+                        <th style="width: 180px;" class="text-end">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in budget_items %}
+                    <tr>
+                        <td class="text-muted" style="font-size: 12px;">{{ loop.index }}</td>
+                        <td>
+                            <strong style="color: var(--text-main);">{{ b.ItemName }}</strong>
+                        </td>
+                        <td class="text-center font-monospace">{{ b.Quantity }}</td>
+                        <td class="text-end font-monospace">{{ b.UnitPrice | currency }}</td>
+                        <td class="text-end font-monospace" style="font-weight: 700; color: var(--due-blue-primary);">
+                            {{ b.EstimatedAmount | currency }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="padding: 40px 20px; text-align: center;">
+                            <div class="empty-state" style="padding: 0;">
+                                <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                <div class="empty-state-title">Chưa có danh mục dự trù kinh phí</div>
+                                <div class="empty-state-text">Vui lòng cập nhật các khoản chi như âm thanh, ánh sáng, in ấn backdrop, nước uống... để hoàn thiện hồ sơ.</div>
+                                {% if current_user.id == event.CreatedBy and event.StateCode in ('DRAFT', 'REVISION_FACULTY', 'REVISION_UNION') and current_user.has_permission('events.edit') %}
+                                <a href="{{ url_for('events.budget', event_id=event.EventId) }}" class="btn btn-primary btn-sm" style="margin-top: 10px;">
+                                    + Thêm danh mục dự toán
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if budget_items|length > 0 %}
+                <tfoot>
+                    <tr style="background-color: #F8FAFC; font-weight: 700;">
+                        <td colspan="4" class="text-end" style="padding: 14px 18px; font-size: 13.5px; text-transform: uppercase;">
+                            TỔNG KINH PHÍ DỰ TRÙ:
+                        </td>
+                        <td class="text-end font-monospace" style="color: var(--due-blue-primary); font-size: 16px; padding: 14px 18px;">
+                            {{ total_budget | currency }}
+                        </td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+</div>

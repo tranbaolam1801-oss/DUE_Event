@@ -1,0 +1,2637 @@
+[
+  {
+    "file": "ToBe_Nhom3.bpmn",
+    "nodes": [
+      {
+        "type": "definitions",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Definitions_AI_ToBe",
+        "target": ""
+      },
+      {
+        "type": "process",
+        "text": null,
+        "source": "",
+        "name": "To-Be tổ chức sự kiện có AI",
+        "id": "Process_AI_ToBe",
+        "target": ""
+      },
+      {
+        "type": "laneSet",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "LaneSet_AI",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "CheckPay",
+          "SubmitApproval",
+          "ApprovePayment",
+          "RefusePay",
+          "PerformPay",
+          "GPay",
+          "GApproval"
+        ],
+        "source": "",
+        "name": "PHÒNG KẾ HOẠCH TÀI CHÍNH",
+        "id": "Lane_kt",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "AISuggest",
+          "FacilityUser",
+          "VerifyReturn",
+          "CheckSchedule",
+          "ApproveFacility",
+          "GFacility"
+        ],
+        "source": "",
+        "name": "PHÒNG CƠ SỞ VẬT CHẤT",
+        "id": "Lane_csvc",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "GDoan",
+          "MergeReport",
+          "ReviewDoan",
+          "RejectDoan",
+          "GReport",
+          "ApproveDoan"
+        ],
+        "source": "",
+        "name": "ĐOÀN TRƯỜNG",
+        "id": "Lane_doan",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "ReviewKhoa",
+          "SignKhoa",
+          "ForwardDoan",
+          "GKhoa",
+          "RejectKhoa"
+        ],
+        "source": "",
+        "name": "BAN CHỦ NHIỆM KHOA",
+        "id": "Lane_khoa",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "FacilityForm",
+          "AIReport",
+          "ReviewReport",
+          "AutoReport",
+          "PayPackage",
+          "AutoForwardPay",
+          "FixPay",
+          "Close",
+          "AdjustFacility",
+          "Prepare",
+          "CheckFields",
+          "AIReview",
+          "Gateway_0q4ts0h",
+          "End",
+          "FixKhoa",
+          "FixDoan",
+          "ReturnFacility",
+          "PrepareEvent",
+          "Start",
+          "BCHConfirm",
+          "SubmitKhoa"
+        ],
+        "source": "",
+        "name": "BCH LIÊN CHI ĐOÀN",
+        "id": "Lane_bch",
+        "target": ""
+      },
+      {
+        "type": "startEvent",
+        "text": null,
+        "source": "",
+        "name": "Khởi tạo yêu cầu tổ chức",
+        "id": "Start",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Lập kế hoạch, dự trù và hồ sơ",
+        "id": "Prepare",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "Kiểm tra trường bắt buộc",
+        "id": "CheckFields",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "AI rà soát nội dung và gợi ý sửa",
+        "id": "AIReview",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH kiểm chứng, hoàn thiện hồ sơ",
+        "id": "BCHConfirm",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "Chuyển hồ sơ đến BCN Khoa",
+        "id": "SubmitKhoa",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Thẩm định kế hoạch / nội dung",
+        "id": "ReviewKhoa",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Kết quả?",
+        "id": "GKhoa",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Tổng hợp góp ý và sửa hồ sơ",
+        "id": "FixKhoa",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Không chấp thuận",
+        "id": "RejectKhoa",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Khoa ký xác nhận",
+        "id": "SignKhoa",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "Chuyển hồ sơ đến Đoàn trường",
+        "id": "ForwardDoan",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Đoàn trường thẩm định hồ sơ",
+        "id": "ReviewDoan",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Kết quả?",
+        "id": "GDoan",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Chỉnh sửa theo góp ý Đoàn trường",
+        "id": "FixDoan",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Không chấp thuận",
+        "id": "RejectDoan",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Ký duyệt, đóng dấu kế hoạch",
+        "id": "ApproveDoan",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "Tạo đơn mượn CSVC",
+        "id": "FacilityForm",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "Đối chiếu lịch / danh mục thiết bị",
+        "id": "CheckSchedule",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "AI gợi ý bố trí phòng và thiết bị",
+        "id": "AISuggest",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "CSVC xác minh và quyết định",
+        "id": "FacilityUser",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Đáp ứng?",
+        "id": "GFacility",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH điều chỉnh lịch / thiết bị",
+        "id": "AdjustFacility",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "CSVC xác nhận đặt phòng, thiết bị",
+        "id": "ApproveFacility",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH chuẩn bị và tổ chức sự kiện",
+        "id": "PrepareEvent",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH hoàn trả cơ sở vật chất",
+        "id": "ReturnFacility",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "CSVC kiểm tra tình trạng hoàn trả",
+        "id": "VerifyReturn",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Yêu cầu báo cáo?",
+        "id": "GReport",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "AI tạo bản nháp báo cáo",
+        "id": "AIReport",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH kiểm tra và xác nhận báo cáo",
+        "id": "ReviewReport",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "Gửi báo cáo đến Đoàn trường",
+        "id": "AutoReport",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Tiếp tục",
+        "id": "MergeReport",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH lập và rà soát chứng từ",
+        "id": "PayPackage",
+        "target": ""
+      },
+      {
+        "type": "serviceTask",
+        "text": null,
+        "source": "",
+        "name": "Chuyển hồ sơ đến KHTC",
+        "id": "AutoForwardPay",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "KHTC kiểm tra chứng từ",
+        "id": "CheckPay",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Đầy đủ?",
+        "id": "GPay",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH bổ sung hồ sơ thanh toán",
+        "id": "FixPay",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "KHTC trình cấp có thẩm quyền duyệt",
+        "id": "SubmitApproval",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Phê duyệt thanh toán theo thẩm quyền",
+        "id": "ApprovePayment",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Được duyệt?",
+        "id": "GApproval",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Thông báo không thanh toán",
+        "id": "RefusePay",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "KHTC thực hiện thanh toán",
+        "id": "PerformPay",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "BCH nhận xác nhận, lưu hồ sơ",
+        "id": "Close",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Hoàn tất quy trình",
+        "id": "End",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Start",
+        "name": "",
+        "id": "Flow_000",
+        "target": "Prepare"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Prepare",
+        "name": "",
+        "id": "Flow_001",
+        "target": "CheckFields"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "CheckFields",
+        "name": "",
+        "id": "Flow_002",
+        "target": "AIReview"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "BCHConfirm",
+        "name": "",
+        "id": "Flow_004",
+        "target": "SubmitKhoa"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "SubmitKhoa",
+        "name": "",
+        "id": "Flow_005",
+        "target": "ReviewKhoa"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ReviewKhoa",
+        "name": "",
+        "id": "Flow_006",
+        "target": "GKhoa"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GKhoa",
+        "name": "Sửa",
+        "id": "Flow_007",
+        "target": "FixKhoa"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "FixKhoa",
+        "name": "",
+        "id": "Flow_008",
+        "target": "Gateway_0q4ts0h"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GKhoa",
+        "name": "Từ chối",
+        "id": "Flow_009",
+        "target": "RejectKhoa"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GKhoa",
+        "name": "Duyệt",
+        "id": "Flow_010",
+        "target": "SignKhoa"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "SignKhoa",
+        "name": "",
+        "id": "Flow_011",
+        "target": "ForwardDoan"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ForwardDoan",
+        "name": "",
+        "id": "Flow_012",
+        "target": "ReviewDoan"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ReviewDoan",
+        "name": "",
+        "id": "Flow_013",
+        "target": "GDoan"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GDoan",
+        "name": "Duyệt",
+        "id": "Flow_014",
+        "target": "ApproveDoan"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GDoan",
+        "name": "Sửa",
+        "id": "Flow_015",
+        "target": "FixDoan"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "FixDoan",
+        "name": "",
+        "id": "Flow_016",
+        "target": "Gateway_0q4ts0h"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GDoan",
+        "name": "Từ chối",
+        "id": "Flow_017",
+        "target": "RejectDoan"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ApproveDoan",
+        "name": "",
+        "id": "Flow_018",
+        "target": "FacilityForm"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "FacilityForm",
+        "name": "",
+        "id": "Flow_019",
+        "target": "CheckSchedule"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "CheckSchedule",
+        "name": "",
+        "id": "Flow_020",
+        "target": "AISuggest"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "AISuggest",
+        "name": "",
+        "id": "Flow_021",
+        "target": "FacilityUser"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "FacilityUser",
+        "name": "",
+        "id": "Flow_022",
+        "target": "GFacility"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GFacility",
+        "name": "Có",
+        "id": "Flow_023",
+        "target": "ApproveFacility"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GFacility",
+        "name": "Chưa",
+        "id": "Flow_024",
+        "target": "AdjustFacility"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "AdjustFacility",
+        "name": "",
+        "id": "Flow_025",
+        "target": "FacilityForm"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ApproveFacility",
+        "name": "",
+        "id": "Flow_026",
+        "target": "PrepareEvent"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "PrepareEvent",
+        "name": "",
+        "id": "Flow_027",
+        "target": "ReturnFacility"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ReturnFacility",
+        "name": "",
+        "id": "Flow_028",
+        "target": "VerifyReturn"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "VerifyReturn",
+        "name": "",
+        "id": "Flow_029",
+        "target": "GReport"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GReport",
+        "name": "Không",
+        "id": "Flow_030",
+        "target": "MergeReport"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GReport",
+        "name": "Có",
+        "id": "Flow_031",
+        "target": "AIReport"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "AIReport",
+        "name": "",
+        "id": "Flow_032",
+        "target": "ReviewReport"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ReviewReport",
+        "name": "",
+        "id": "Flow_033",
+        "target": "AutoReport"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "AutoReport",
+        "name": "",
+        "id": "Flow_034",
+        "target": "MergeReport"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "MergeReport",
+        "name": "",
+        "id": "Flow_035",
+        "target": "PayPackage"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "PayPackage",
+        "name": "",
+        "id": "Flow_036",
+        "target": "AutoForwardPay"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "AutoForwardPay",
+        "name": "",
+        "id": "Flow_037",
+        "target": "CheckPay"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "CheckPay",
+        "name": "",
+        "id": "Flow_038",
+        "target": "GPay"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GPay",
+        "name": "Đủ",
+        "id": "Flow_039",
+        "target": "SubmitApproval"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GPay",
+        "name": "Thiếu",
+        "id": "Flow_040",
+        "target": "FixPay"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "FixPay",
+        "name": "",
+        "id": "Flow_041",
+        "target": "AutoForwardPay"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "SubmitApproval",
+        "name": "",
+        "id": "Flow_042",
+        "target": "ApprovePayment"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ApprovePayment",
+        "name": "",
+        "id": "Flow_043",
+        "target": "GApproval"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GApproval",
+        "name": "Không",
+        "id": "Flow_044",
+        "target": "RefusePay"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "RefusePay",
+        "name": "",
+        "id": "Flow_045",
+        "target": "Close"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "GApproval",
+        "name": "Có",
+        "id": "Flow_046",
+        "target": "PerformPay"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "PerformPay",
+        "name": "",
+        "id": "Flow_047",
+        "target": "Close"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Close",
+        "name": "",
+        "id": "Flow_048",
+        "target": "End"
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Gateway_0q4ts0h",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "AIReview",
+        "name": "",
+        "id": "Flow_0vqvedn",
+        "target": "Gateway_0q4ts0h"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Gateway_0q4ts0h",
+        "name": "",
+        "id": "Flow_03x58u6",
+        "target": "BCHConfirm"
+      }
+    ]
+  },
+  {
+    "file": "QLQT_Nhom3_to-be.bpmn",
+    "nodes": [
+      {
+        "type": "definitions",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Definitions_ToBe_Repaired",
+        "target": ""
+      },
+      {
+        "type": "error",
+        "text": null,
+        "source": "",
+        "name": "Từ chối hoàn toàn tại doan",
+        "id": "Error_Reject_doan",
+        "target": ""
+      },
+      {
+        "type": "error",
+        "text": null,
+        "source": "",
+        "name": "Từ chối hoàn toàn tại khoa",
+        "id": "Error_Reject_khoa",
+        "target": ""
+      },
+      {
+        "type": "collaboration",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Collaboration_Event",
+        "target": ""
+      },
+      {
+        "type": "participant",
+        "text": null,
+        "source": "",
+        "name": "TỔ CHỨC SỰ KIỆN LIÊN CHI ĐOÀN KHOA",
+        "id": "Participant_Event",
+        "target": ""
+      },
+      {
+        "type": "process",
+        "text": "Mô hình nghiệp vụ không cấu hình cho engine tự động. Các biến quyết định được xác lập khi hoạt động xét duyệt hoàn tất. Sub-process phân công đa bộ phận; lane ở cấp cha chỉ đầu mối điều phối, lane bên trong xác định người thực hiện. Không có thời hạn hoặc quy định bồi thường được xác nhận.",
+        "source": "",
+        "name": "QUY TRÌNH TỔ CHỨC SỰ KIỆN LIÊN CHI ĐOÀN KHOA",
+        "id": "Process_SuKienLienChiDoan",
+        "target": ""
+      },
+      {
+        "type": "laneSet",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Tong_the_LaneSet",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "StartEvent_start",
+          "Event_0rt48pj"
+        ],
+        "source": "",
+        "name": "BCH Liên chi đoàn",
+        "id": "Tong_the_Lane_0",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "khoa",
+          "Boundary_Reject_khoa",
+          "EndEvent_end_khoa_reject"
+        ],
+        "source": "",
+        "name": "Ban Chủ nhiệm khoa",
+        "id": "Tong_the_Lane_1",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "doan",
+          "Boundary_Reject_doan",
+          "EndEvent_end_doan_reject"
+        ],
+        "source": "",
+        "name": "Đoàn trường",
+        "id": "Tong_the_Lane_2",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "csvc",
+          "return"
+        ],
+        "source": "",
+        "name": "Phòng Cơ sở vật chất",
+        "id": "Tong_the_Lane_3",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "EndEvent_2lj1aZfJYfbVwQsqGLI7_86",
+          "post"
+        ],
+        "source": "",
+        "name": "Phòng Kế hoạch Tài chính",
+        "id": "Tong_the_Lane_4",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "StartEvent_start",
+        "name": "",
+        "id": "Flow_New_1",
+        "target": "khoa"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Boundary_Reject_khoa",
+        "name": "",
+        "id": "Flow_New_3",
+        "target": "EndEvent_end_khoa_reject"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "khoa",
+        "name": "",
+        "id": "Flow_01oobo9",
+        "target": "doan"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "csvc",
+        "name": "",
+        "id": "Flow_New_10",
+        "target": "Event_0rt48pj"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Event_0rt48pj",
+        "name": "",
+        "id": "Flow_08f4wa9",
+        "target": "return"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Boundary_Reject_doan",
+        "name": "",
+        "id": "Flow_New_8",
+        "target": "EndEvent_end_doan_reject"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "return",
+        "name": "",
+        "id": "Flow_New_14",
+        "target": "post"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "post",
+        "name": "",
+        "id": "Flow_New_15",
+        "target": "EndEvent_2lj1aZfJYfbVwQsqGLI7_86"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "doan",
+        "name": "",
+        "id": "Flow_173wpzw",
+        "target": "csvc"
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Hoàn thành",
+        "id": "EndEvent_2lj1aZfJYfbVwQsqGLI7_86",
+        "target": ""
+      },
+      {
+        "type": "startEvent",
+        "text": null,
+        "source": "",
+        "name": "Nhu cầu tổ chức",
+        "id": "StartEvent_start",
+        "target": ""
+      },
+      {
+        "type": "subProcess",
+        "text": "Quyết định approve/revise/reject chỉ được ghi nhận tại Task xét duyệt và phân nhánh bằng XOR bên trong. Cần sửa: BCH sửa, nộp lại rồi xét duyệt. Phê duyệt: kết thúc thường; từ chối hoàn toàn: Error End REJECT_DOAN được Boundary Error của chính Sub-process bắt. Không truyền kết quả bằng ghi chú biến trạng thái hoặc XOR xét duyệt ở cha.",
+        "source": "",
+        "name": "2. Xét duyệt Đoàn trường",
+        "id": "doan",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_1pe9w9u",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_13pq1sx",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_1gh9i76",
+        "target": ""
+      },
+      {
+        "type": "laneSet",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "S_02_Doan_truong_LaneSet",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "ds",
+          "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_46",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_43",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_41",
+          "dprep"
+        ],
+        "source": "",
+        "name": "BCH Liên chi đoàn",
+        "id": "S_02_Doan_truong_Lane_0",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "dno",
+          "Event_0eb30js",
+          "ExclusiveGateway_g_doan",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_34",
+          "dok",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_31"
+        ],
+        "source": "",
+        "name": "Đoàn trường",
+        "id": "S_02_Doan_truong_Lane_2",
+        "target": ""
+      },
+      {
+        "type": "startEvent",
+        "text": null,
+        "source": "",
+        "name": "Bắt đầu",
+        "id": "ds",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_46",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "ExclusiveGateway_g_doan",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": "Kết thúc bình thường duy nhất của Sub-process: hồ sơ đã phê duyệt. Quy trình cha đi theo Sequence Flow thông thường, không xét duyệt lại.",
+        "source": "",
+        "name": "Đã phê duyệt",
+        "id": "dok",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": "Từ chối hoàn toàn được chủ ý mô hình hóa như ngoại lệ nghiệp vụ BPMN Error (không phải lỗi phần mềm). Phát REJECT_DOAN; Boundary Error gắn trên doan bắt đúng Error này và dẫn quy trình cha tới kết thúc từ chối. Không hoàn thành bình thường, không phát token theo luồng phê duyệt.",
+        "source": "",
+        "name": "Đoàn trường từ chối",
+        "id": "dno",
+        "target": ""
+      },
+      {
+        "type": "errorEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Throw_Reject_doan",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ds",
+        "name": "",
+        "id": "Flow_New_27",
+        "target": "dprep"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "dprep",
+        "name": "",
+        "id": "Flow_New_28",
+        "target": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_46"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_46",
+        "name": "",
+        "id": "Flow_New_29",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_43"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_43",
+        "name": "",
+        "id": "Flow_New_30",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_31"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_34",
+        "name": "",
+        "id": "Flow_New_33",
+        "target": "dok"
+      },
+      {
+        "type": "userTask",
+        "text": "Tài liệu nghiệp vụ (từ mô hình gốc): Hồ sơ chỉnh đã sửa theo yêu cầu Đoàn",
+        "source": "",
+        "name": "Nộp hồ sơ cho Đoàn trường",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_43",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_0jk26gf",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_1f1a59f",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_0g8x37y",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": "Người xét duyệt xác lập review_doan thuộc approve/revise/reject mỗi lần xử lý. Đây là quyết định nghiệp vụ duy nhất; XOR nội bộ chỉ định tuyến theo kết quả này. Cấu hình ánh xạ biểu mẫu/biến khi triển khai engine; isExecutable=false.",
+        "source": "",
+        "name": "Tiếp nhận và xét duyệt hồ sơ",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_31",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_31",
+        "name": "",
+        "id": "Flow_0urqqoo",
+        "target": "ExclusiveGateway_g_doan"
+      },
+      {
+        "type": "intermediateThrowEvent",
+        "text": null,
+        "source": "",
+        "name": "Gửi yêu cầu\n chỉnh sửa",
+        "id": "Event_0eb30js",
+        "target": ""
+      },
+      {
+        "type": "messageEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "MessageEventDefinition_0m6tlll",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": "review_doan == 'revise'",
+        "source": "ExclusiveGateway_g_doan",
+        "name": "Cần chỉnh sửa",
+        "id": "Flow_0giue4e",
+        "target": "Event_0eb30js"
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Chỉnh sửa hồ sơ theo yêu cầu",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_41",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_0i73i51",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_41",
+        "name": "",
+        "id": "Flow_1ockjnq",
+        "target": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_46"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": "review_doan == 'approve'",
+        "source": "ExclusiveGateway_g_doan",
+        "name": "Phê duyệt",
+        "id": "Flow_1s3lthl",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_34"
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Ký và đóng dấu",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_34",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": "review_doan == 'reject'",
+        "source": "ExclusiveGateway_g_doan",
+        "name": "Từ chối hoàn toàn",
+        "id": "Flow_0mg41mr",
+        "target": "dno"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Event_0eb30js",
+        "name": "",
+        "id": "Flow_1yn1n8n",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_41"
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ đã ký",
+        "id": "DataObjectReference_0gpq1rp",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_1chlc3d",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ chỉnh sửa theo yêu cầu Đoàn trường",
+        "id": "DataObjectReference_1vhfa91",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_0pkw745",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Chuẩn bị hồ sơ đã được khoa phê duyệt",
+        "id": "dprep",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_18ytobk",
+        "target": ""
+      },
+      {
+        "type": "boundaryEvent",
+        "text": "Bắt đúng REJECT_DOAN từ Sub-process đính kèm; ngắt Sub-process và chỉ chạy nhánh kết thúc từ chối. Boundary Event được kích hoạt bằng Error, không có Sequence Flow đi vào.",
+        "source": "",
+        "name": "",
+        "id": "Boundary_Reject_doan",
+        "target": ""
+      },
+      {
+        "type": "errorEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Catch_Reject_doan",
+        "target": ""
+      },
+      {
+        "type": "subProcess",
+        "text": "Quyết định approve/revise/reject chỉ được ghi nhận tại Task xét duyệt và phân nhánh bằng XOR bên trong. Cần sửa: BCH sửa, nộp lại rồi xét duyệt. Phê duyệt: kết thúc thường; từ chối hoàn toàn: Error End REJECT_KHOA được Boundary Error của chính Sub-process bắt. Không truyền kết quả bằng ghi chú biến trạng thái hoặc XOR xét duyệt ở cha.",
+        "source": "",
+        "name": "1. Hồ sơ và xét duyệt cấp khoa",
+        "id": "khoa",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_18fn9sg",
+        "target": ""
+      },
+      {
+        "type": "laneSet",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "S_01_Khoa_LaneSet",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "ks",
+          "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_5",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_3",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_7",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_28"
+        ],
+        "source": "",
+        "name": "BCH Liên chi đoàn",
+        "id": "S_01_Khoa_Lane_0",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "ExclusiveGateway_g_khoa",
+          "kok",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_9",
+          "Event_0sdiu82",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_12",
+          "Event_09h53yp"
+        ],
+        "source": "",
+        "name": "Ban Chủ nhiệm khoa",
+        "id": "S_01_Khoa_Lane_1",
+        "target": ""
+      },
+      {
+        "type": "startEvent",
+        "text": null,
+        "source": "",
+        "name": "Bắt đầu",
+        "id": "ks",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_5",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "ExclusiveGateway_g_khoa",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": "Kết thúc bình thường duy nhất của Sub-process: hồ sơ đã phê duyệt. Quy trình cha đi theo Sequence Flow thông thường, không xét duyệt lại.",
+        "source": "",
+        "name": "Đã phê duyệt",
+        "id": "kok",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_7",
+        "name": "",
+        "id": "Flow_2lj1aZfJYfbVwQsqGLI7_10",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_9"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_12",
+        "name": "",
+        "id": "Flow_New_22",
+        "target": "kok"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_28",
+        "name": "",
+        "id": "Flow_2lj1aZfJYfbVwQsqGLI7_30",
+        "target": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_5"
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Chuẩn bị hồ sơ",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_3",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Nộp hồ sơ cho BCN Khoa",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_7",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_0616y33",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ks",
+        "name": "",
+        "id": "Flow_13i9sfc",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_3"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_3",
+        "name": "",
+        "id": "Flow_1d40w80",
+        "target": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_5"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_5",
+        "name": "",
+        "id": "Flow_1vwy16g",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_7"
+      },
+      {
+        "type": "userTask",
+        "text": "Người xét duyệt xác lập review_khoa thuộc approve/revise/reject mỗi lần xử lý. Đây là quyết định nghiệp vụ duy nhất; XOR nội bộ chỉ định tuyến theo kết quả này. Cấu hình ánh xạ biểu mẫu/biến khi triển khai engine; isExecutable=false.",
+        "source": "",
+        "name": "Tiếp nhận và xét duyệt hồ sơ",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_9",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_1k07fju",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_1xyixsp",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_0c3ln8u",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_9",
+        "name": "",
+        "id": "Flow_0rxqnfz",
+        "target": "ExclusiveGateway_g_khoa"
+      },
+      {
+        "type": "intermediateThrowEvent",
+        "text": null,
+        "source": "",
+        "name": "Gửi yêu cầu",
+        "id": "Event_0sdiu82",
+        "target": ""
+      },
+      {
+        "type": "messageEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "MessageEventDefinition_0ev0bpl",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": "review_khoa == 'revise'",
+        "source": "ExclusiveGateway_g_khoa",
+        "name": "Cần chỉnh sửa",
+        "id": "Flow_04fucjw",
+        "target": "Event_0sdiu82"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Event_0sdiu82",
+        "name": "",
+        "id": "Flow_17hncxs",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_28"
+      },
+      {
+        "type": "userTask",
+        "text": "Tài liệu nghiệp vụ (từ mô hình gốc): Hồ sơ đã chỉnh sửa",
+        "source": "",
+        "name": "Chỉnh sửa hồ sơ theo yêu cầu",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_28",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_0k8etcj",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Ký xác nhận hồ sơ",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_12",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": "review_khoa == 'approve'",
+        "source": "ExclusiveGateway_g_khoa",
+        "name": "Phê duyệt",
+        "id": "Flow_07i4gw3",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_12"
+      },
+      {
+        "type": "endEvent",
+        "text": "Từ chối hoàn toàn được chủ ý mô hình hóa như ngoại lệ nghiệp vụ BPMN Error (không phải lỗi phần mềm). Phát REJECT_KHOA; Boundary Error gắn trên khoa bắt đúng Error này và dẫn quy trình cha tới kết thúc từ chối. Không hoàn thành bình thường, không phát token theo luồng phê duyệt.",
+        "source": "",
+        "name": "Khoa từ chối",
+        "id": "Event_09h53yp",
+        "target": ""
+      },
+      {
+        "type": "errorEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Throw_Reject_khoa",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway_g_khoa",
+        "name": "Từ chối",
+        "id": "Flow_011le4i",
+        "target": "Event_09h53yp"
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ tổ chức sự kiện",
+        "id": "DataObjectReference_11odb5k",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_12f78kp",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ đã chỉnh sửa",
+        "id": "DataObjectReference_0cdsmjm",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_0qzuklj",
+        "target": ""
+      },
+      {
+        "type": "boundaryEvent",
+        "text": "Bắt đúng REJECT_KHOA từ Sub-process đính kèm; ngắt Sub-process và chỉ chạy nhánh kết thúc từ chối. Boundary Event được kích hoạt bằng Error, không có Sequence Flow đi vào.",
+        "source": "",
+        "name": "",
+        "id": "Boundary_Reject_khoa",
+        "target": ""
+      },
+      {
+        "type": "errorEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "Catch_Reject_khoa",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Đoàn trường từ chối",
+        "id": "EndEvent_end_doan_reject",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ đã ký",
+        "id": "DataObjectReference_1txamg1",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_1b5ay69",
+        "target": ""
+      },
+      {
+        "type": "subProcess",
+        "text": null,
+        "source": "",
+        "name": "3. Đăng ký cơ sở vật chất",
+        "id": "csvc",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_1bx1ly6",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_0mvaebu",
+        "target": ""
+      },
+      {
+        "type": "laneSet",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "S_03_Co_so_vat_chat_LaneSet",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_63",
+          "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_65",
+          "ce",
+          "Event_1r2l5nd",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_72"
+        ],
+        "source": "",
+        "name": "Phòng Cơ sở vật chất",
+        "id": "S_03_Co_so_vat_chat_Lane_3",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "cs",
+          "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_58",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_54",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_60",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_77"
+        ],
+        "source": "",
+        "name": "BCH Liên chi đoàn",
+        "id": "S_03_Co_so_vat_chat_Lane_0",
+        "target": ""
+      },
+      {
+        "type": "startEvent",
+        "text": null,
+        "source": "",
+        "name": "Bắt đầu",
+        "id": "cs",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_58",
+        "target": ""
+      },
+      {
+        "type": "manualTask",
+        "text": "Tài liệu nghiệp vụ (từ mô hình gốc): Đơn mượn cơ sở vật chất",
+        "source": "",
+        "name": "Kiểm tra thời gian, phòng và thiết bị",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_63",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_089qcgf",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_03n5x0d",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_65",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Đã phê duyệt; chờ giữ lịch",
+        "id": "ce",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "cs",
+        "name": "",
+        "id": "Flow_New_38",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_54"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_54",
+        "name": "",
+        "id": "Flow_2lj1aZfJYfbVwQsqGLI7_59",
+        "target": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_58"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_58",
+        "name": "",
+        "id": "Flow_2lj1aZfJYfbVwQsqGLI7_79",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_60"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_60",
+        "name": "",
+        "id": "Flow_2lj1aZfJYfbVwQsqGLI7_64",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_63"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_63",
+        "name": "",
+        "id": "Flow_2lj1aZfJYfbVwQsqGLI7_71",
+        "target": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_65"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_77",
+        "name": "",
+        "id": "Flow_2lj1aZfJYfbVwQsqGLI7_78",
+        "target": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_58"
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Lập đơn mượn CSVC",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_54",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_1hm6ahc",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Gửi yêu cầu sử dụng CSVC",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_60",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_65",
+        "name": "Đáp ứng",
+        "id": "Flow_15ctnav",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_72"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_72",
+        "name": "",
+        "id": "Flow_0bwto5o",
+        "target": "ce"
+      },
+      {
+        "type": "intermediateThrowEvent",
+        "text": null,
+        "source": "",
+        "name": "Gửi yêu cầu chỉnh sửa",
+        "id": "Event_1r2l5nd",
+        "target": ""
+      },
+      {
+        "type": "messageEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "MessageEventDefinition_0j6rlu8",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway_2lj1aZfJYfbVwQsqGLI7_65",
+        "name": "Không đáp ứng",
+        "id": "Flow_12d124z",
+        "target": "Event_1r2l5nd"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Event_1r2l5nd",
+        "name": "",
+        "id": "Flow_11js5le",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_77"
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Phê duyệt yêu cầu CSVC",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_72",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Điều chỉnh thời gian / thiết bị",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_77",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Đơn mượn có sở vật chất",
+        "id": "DataObjectReference_1bo21vq",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_0n121q5",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ đã được Đoàn trường ký",
+        "id": "DataObjectReference_03hstp4",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_0ig0ud1",
+        "target": ""
+      },
+      {
+        "type": "subProcess",
+        "text": null,
+        "source": "",
+        "name": "5. Hoàn trả và kiểm tra CSVC",
+        "id": "return",
+        "target": ""
+      },
+      {
+        "type": "laneSet",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "S_05_Hoan_tra_LaneSet",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "rs",
+          "ManualTask_2lj1aZfJYfbVwQsqGLI7_84"
+        ],
+        "source": "",
+        "name": "BCH Liên chi đoàn",
+        "id": "S_05_Hoan_tra_Lane_0",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "ManualTask_6yCIU__P6wFLAvRWuqIa_1",
+          "re"
+        ],
+        "source": "",
+        "name": "Phòng Cơ sở vật chất",
+        "id": "S_05_Hoan_tra_Lane_3",
+        "target": ""
+      },
+      {
+        "type": "startEvent",
+        "text": null,
+        "source": "",
+        "name": "Sự kiện đã kết thúc",
+        "id": "rs",
+        "target": ""
+      },
+      {
+        "type": "manualTask",
+        "text": null,
+        "source": "",
+        "name": "Hoàn trả cơ sở vật chất",
+        "id": "ManualTask_2lj1aZfJYfbVwQsqGLI7_84",
+        "target": ""
+      },
+      {
+        "type": "manualTask",
+        "text": "Tài liệu nguồn không quy định xử lý thiết bị hỏng/thiếu, mức bồi thường hoặc phê duyệt khắc phục. Không tự bổ sung nhánh này. Hoàn thành khi kiểm tra và ghi nhận tình trạng xong; không hàm ý thiết bị luôn đạt.",
+        "source": "",
+        "name": "Kiểm tra tình trạng sau hoàn trả",
+        "id": "ManualTask_6yCIU__P6wFLAvRWuqIa_1",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Đã kiểm tra hoàn trả",
+        "id": "re",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "rs",
+        "name": "",
+        "id": "Flow_New_56",
+        "target": "ManualTask_2lj1aZfJYfbVwQsqGLI7_84"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_2lj1aZfJYfbVwQsqGLI7_84",
+        "name": "",
+        "id": "Flow_6yCIU__P6wFLAvRWuqIa_2",
+        "target": "ManualTask_6yCIU__P6wFLAvRWuqIa_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_6yCIU__P6wFLAvRWuqIa_1",
+        "name": "",
+        "id": "Flow_New_58",
+        "target": "re"
+      },
+      {
+        "type": "subProcess",
+        "text": null,
+        "source": "",
+        "name": "6. Báo cáo và thanh toán",
+        "id": "post",
+        "target": ""
+      },
+      {
+        "type": "laneSet",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "S_06_Hau_su_kien_LaneSet",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "hs",
+          "InclusiveGateway_McwwxcbU_po__o7lmGLA_7",
+          "ExclusiveGateway_ysT7zLdbebemVu1k6NMW_1",
+          "InclusiveGateway_N49dorceUJFIUuo8xNSA_5",
+          "he",
+          "ManualTask_j5CQ427YrQ_OrgwdMDJo_3",
+          "ManualTask_j5CQ427YrQ_OrgwdMDJo_1",
+          "ManualTask_11qoBzOlPV5dCuflGNZH_1",
+          "ManualTask_YfVIbR_ojzkTTZTUInbJ_1",
+          "ManualTask_N49dorceUJFIUuo8xNSA_3",
+          "ManualTask_N49dorceUJFIUuo8xNSA_1"
+        ],
+        "source": "",
+        "name": "BCH Liên chi đoàn",
+        "id": "S_06_Hau_su_kien_Lane_0",
+        "target": ""
+      },
+      {
+        "type": "lane",
+        "text": [
+          "ExclusiveGateway__rVyEVFRzBZAJlz84OYJ_1",
+          "ManualTask_g8VynshPkfJBZEbgHp4x_1",
+          "ManualTask_WoOXjZgyyv_3bo7iKEsF_1",
+          "Event_0k725et",
+          "ManualTask_YfVIbR_ojzkTTZTUInbJ_3"
+        ],
+        "source": "",
+        "name": "Phòng Kế hoạch Tài chính",
+        "id": "S_06_Hau_su_kien_Lane_4",
+        "target": ""
+      },
+      {
+        "type": "startEvent",
+        "text": null,
+        "source": "",
+        "name": "Đã kiểm tra hoàn trả",
+        "id": "hs",
+        "target": ""
+      },
+      {
+        "type": "inclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Báo cáo nếu có yêu cầu",
+        "id": "InclusiveGateway_McwwxcbU_po__o7lmGLA_7",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Gộp lần gửi",
+        "id": "ExclusiveGateway_ysT7zLdbebemVu1k6NMW_1",
+        "target": ""
+      },
+      {
+        "type": "exclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Chứng từ\nđầy đủ?",
+        "id": "ExclusiveGateway__rVyEVFRzBZAJlz84OYJ_1",
+        "target": ""
+      },
+      {
+        "type": "manualTask",
+        "text": "Phòng KHTC chịu trách nhiệm trình và nhận kết quả phê duyệt; thẩm quyền phê duyệt vẫn thuộc BGH như file gốc. Không chuyển thẩm quyền cho KHTC và không thêm lane thứ sáu. Chưa có quy định nhánh BGH bác thanh toán trong nguồn.",
+        "source": "",
+        "name": "Trình BGH và nhận phê duyệt thanh toán",
+        "id": "ManualTask_g8VynshPkfJBZEbgHp4x_1",
+        "target": ""
+      },
+      {
+        "type": "manualTask",
+        "text": null,
+        "source": "",
+        "name": "Tiến hành thanh toán",
+        "id": "ManualTask_WoOXjZgyyv_3bo7iKEsF_1",
+        "target": ""
+      },
+      {
+        "type": "manualTask",
+        "text": null,
+        "source": "",
+        "name": "Nhận kinh phí thanh toán",
+        "id": "ManualTask_N49dorceUJFIUuo8xNSA_1",
+        "target": ""
+      },
+      {
+        "type": "inclusiveGateway",
+        "text": null,
+        "source": "",
+        "name": "Đồng bộ nhánh đã mở",
+        "id": "InclusiveGateway_N49dorceUJFIUuo8xNSA_5",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Hoàn tất hậu sự kiện",
+        "id": "he",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "hs",
+        "name": "",
+        "id": "Flow_New_59",
+        "target": "InclusiveGateway_McwwxcbU_po__o7lmGLA_7"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": "True",
+        "source": "InclusiveGateway_McwwxcbU_po__o7lmGLA_7",
+        "name": "",
+        "id": "Flow_McwwxcbU_po__o7lmGLA_9",
+        "target": "ManualTask_j5CQ427YrQ_OrgwdMDJo_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_j5CQ427YrQ_OrgwdMDJo_3",
+        "name": "",
+        "id": "Flow_N49dorceUJFIUuo8xNSA_4",
+        "target": "ManualTask_N49dorceUJFIUuo8xNSA_3"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_N49dorceUJFIUuo8xNSA_3",
+        "name": "",
+        "id": "Flow_N49dorceUJFIUuo8xNSA_6",
+        "target": "InclusiveGateway_N49dorceUJFIUuo8xNSA_5"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_YfVIbR_ojzkTTZTUInbJ_1",
+        "name": "",
+        "id": "Flow_YfVIbR_ojzkTTZTUInbJ_4",
+        "target": "ManualTask_YfVIbR_ojzkTTZTUInbJ_3"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_YfVIbR_ojzkTTZTUInbJ_3",
+        "name": "",
+        "id": "Flow__rVyEVFRzBZAJlz84OYJ_2",
+        "target": "ExclusiveGateway__rVyEVFRzBZAJlz84OYJ_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": "docs_ok",
+        "source": "ExclusiveGateway__rVyEVFRzBZAJlz84OYJ_1",
+        "name": "Đầy đủ",
+        "id": "Flow_g8VynshPkfJBZEbgHp4x_3",
+        "target": "ManualTask_g8VynshPkfJBZEbgHp4x_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_g8VynshPkfJBZEbgHp4x_1",
+        "name": "",
+        "id": "Flow_WoOXjZgyyv_3bo7iKEsF_2",
+        "target": "ManualTask_WoOXjZgyyv_3bo7iKEsF_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_WoOXjZgyyv_3bo7iKEsF_1",
+        "name": "",
+        "id": "Flow_N49dorceUJFIUuo8xNSA_2",
+        "target": "ManualTask_N49dorceUJFIUuo8xNSA_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_N49dorceUJFIUuo8xNSA_1",
+        "name": "",
+        "id": "Flow_N49dorceUJFIUuo8xNSA_7",
+        "target": "InclusiveGateway_N49dorceUJFIUuo8xNSA_5"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "InclusiveGateway_N49dorceUJFIUuo8xNSA_5",
+        "name": "",
+        "id": "Flow_New_72",
+        "target": "he"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_11qoBzOlPV5dCuflGNZH_1",
+        "name": "",
+        "id": "Flow_ysT7zLdbebemVu1k6NMW_4",
+        "target": "ExclusiveGateway_ysT7zLdbebemVu1k6NMW_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "InclusiveGateway_McwwxcbU_po__o7lmGLA_7",
+        "name": "",
+        "id": "Flow_03aihup",
+        "target": "ManualTask_j5CQ427YrQ_OrgwdMDJo_3"
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Lập báo cáo tổng kết",
+        "id": "ManualTask_j5CQ427YrQ_OrgwdMDJo_3",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_13l8n0g",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Chuẩn bị hồ sơ thanh toán",
+        "id": "ManualTask_j5CQ427YrQ_OrgwdMDJo_1",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_1xdlyyc",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ManualTask_j5CQ427YrQ_OrgwdMDJo_1",
+        "name": "",
+        "id": "Flow_0mdant3",
+        "target": "ExclusiveGateway_ysT7zLdbebemVu1k6NMW_1"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway_ysT7zLdbebemVu1k6NMW_1",
+        "name": "",
+        "id": "Flow_1ucpdwh",
+        "target": "ManualTask_YfVIbR_ojzkTTZTUInbJ_1"
+      },
+      {
+        "type": "userTask",
+        "text": "Tài liệu nghiệp vụ (từ mô hình gốc): Hồ sơ thanh toán đã chỉnh sửa",
+        "source": "",
+        "name": "Bổ sung / chỉnh sửa chứng từ",
+        "id": "ManualTask_11qoBzOlPV5dCuflGNZH_1",
+        "target": ""
+      },
+      {
+        "type": "dataOutputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataOutputAssociation_0hi7hmi",
+        "target": ""
+      },
+      {
+        "type": "intermediateThrowEvent",
+        "text": null,
+        "source": "",
+        "name": "Gửi yêu cầu\nchỉnh sửa",
+        "id": "Event_0k725et",
+        "target": ""
+      },
+      {
+        "type": "messageEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "MessageEventDefinition_0bzm1k1",
+        "target": ""
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "ExclusiveGateway__rVyEVFRzBZAJlz84OYJ_1",
+        "name": "",
+        "id": "Flow_0fcv81m",
+        "target": "Event_0k725et"
+      },
+      {
+        "type": "sequenceFlow",
+        "text": null,
+        "source": "Event_0k725et",
+        "name": "",
+        "id": "Flow_11dymeb",
+        "target": "ManualTask_11qoBzOlPV5dCuflGNZH_1"
+      },
+      {
+        "type": "userTask",
+        "text": null,
+        "source": "",
+        "name": "Gửi hồ sơ cho Phòng KHTC",
+        "id": "ManualTask_YfVIbR_ojzkTTZTUInbJ_1",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_06ii121",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_15zg5ol",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": "Tài liệu nghiệp vụ (từ mô hình gốc): Báo cáo tổng kết",
+        "source": "",
+        "name": "Gửi báo cáo cho Đoàn trường",
+        "id": "ManualTask_N49dorceUJFIUuo8xNSA_3",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_0zxlbkw",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_1my79ez",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ thanh toán",
+        "id": "DataObjectReference_1sno7ob",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_0sxy40t",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Hồ sơ thanh toán đã chỉnh sửa/ bổ sung",
+        "id": "DataObjectReference_1k1hqnr",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_0em0bpb",
+        "target": ""
+      },
+      {
+        "type": "dataObjectReference",
+        "text": null,
+        "source": "",
+        "name": "Báo cáo tổng kết",
+        "id": "DataObjectReference_0yr6j4l",
+        "target": ""
+      },
+      {
+        "type": "dataObject",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataObject_1cl8979",
+        "target": ""
+      },
+      {
+        "type": "userTask",
+        "text": "Tài liệu nghiệp vụ (từ mô hình gốc): Hồ sơ thanh toán",
+        "source": "",
+        "name": "Kiểm tra hồ sơ thanh toán",
+        "id": "ManualTask_YfVIbR_ojzkTTZTUInbJ_3",
+        "target": ""
+      },
+      {
+        "type": "property",
+        "text": null,
+        "source": "",
+        "name": "__targetRef_placeholder",
+        "id": "Property_1pynral",
+        "target": ""
+      },
+      {
+        "type": "dataInputAssociation",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "DataInputAssociation_1amldzk",
+        "target": ""
+      },
+      {
+        "type": "intermediateCatchEvent",
+        "text": null,
+        "source": "",
+        "name": "Quá trình tổ chức",
+        "id": "Event_0rt48pj",
+        "target": ""
+      },
+      {
+        "type": "timerEventDefinition",
+        "text": null,
+        "source": "",
+        "name": "",
+        "id": "TimerEventDefinition_0zk6q1e",
+        "target": ""
+      },
+      {
+        "type": "endEvent",
+        "text": null,
+        "source": "",
+        "name": "Khoa từ chối",
+        "id": "EndEvent_end_khoa_reject",
+        "target": ""
+      }
+    ]
+  }
+]

@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Kiểm tra hồ sơ thanh toán: {{ payment.TicketCode }} | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('payments.index') }}" style="color: inherit; text-decoration: none;">Tài chính & Chứng từ</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">{{ payment.TicketCode }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span style="font-size: 15px; font-weight: 800; color: var(--due-blue-primary);">{{ payment.TicketCode }}</span>
+            <span class="badge {{ payment.Status | status_badge_class }}">{{ payment.Status }}</span>
+        </div>
+        <h1 class="page-title">{{ payment.EventTitle }}</h1>
+        <p class="page-subtitle">Đơn vị đề nghị: <strong>{{ payment.DepartmentName }}</strong> &bull; Người lập: <strong>{{ payment.SubmittedByName }}</strong></p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('payments.index') }}" class="btn btn-outline">Quay lại danh sách</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+    <div>
+        <!-- Thẻ 1: Thông tin số tiền quyết toán -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Chi tiết số tiền đề nghị quyết toán</h2>
+            </div>
+            <div class="card-body">
+                <div style="background-color: #F8FAFC; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Số tiền quyết toán thực tế</div>
+                        <div style="font-size: 28px; font-weight: 800; color: var(--due-blue-primary); margin-top: 4px;" class="font-monospace">
+                            {{ payment.Amount | currency }}
+                        </div>
+                    </div>
+                    <div>
+                        {% if payment.PaidAt %}
+                            <span class="badge badge-completed" style="font-size: 13px; padding: 6px 14px;">Đã giải ngân: {{ payment.PaidAt | datetime_vn }}</span>
+                        {% elif payment.ApprovedAt %}
+                            <span class="badge badge-approved" style="font-size: 13px; padding: 6px 14px;">Đã duyệt chi</span>
+                        {% else %}
+                            <span class="badge badge-pending" style="font-size: 13px; padding: 6px 14px;">Đang thẩm tra</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+                    Đối chiếu với danh mục dự toán ban đầu:
+                </h3>
+                <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 4px;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Khoản mục</th>
+                                <th>Số lượng</th>
+                                <th>Đơn giá</th>
+                                <th class="text-end">Dự toán</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in budget_items %}
+                            <tr>
+                                <td>{{ b.ItemName }}</td>
+                                <td>{{ b.Quantity }}</td>
+                                <td>{{ b.UnitPrice | currency }}</td>
+                                <td class="text-end font-monospace">{{ b.EstimatedAmount | currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thẻ 2: Lịch sử quyết định duyệt chi (dbo.PaymentDecisions) -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Nhật ký phê duyệt chi của Cấp thẩm quyền</h2>
+            </div>
+            <div class="card-body">
+                {% for d in decisions %}
+                <div style="padding: 12px 16px; background-color: #F8FAFC; border-left: 3px solid {% if d.DecisionCode == 'APPROVED' %}var(--due-green-primary){% else %}#DC2626{% endif %}; border-radius: 4px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--text-main);">{{ d.DecidedByName }}</strong>
+                        <span class="badge {% if d.DecisionCode == 'APPROVED' %}badge-approved{% else %}badge-rejected{% endif %}">{{ d.DecisionCode }}</span>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">{{ d.DecidedAt | datetime_vn }}</div>
+                    {% if d.Reason %}
+                    <div style="font-size: 13px; color: var(--text-main); margin-top: 6px;">
+                        Ghi chú / Lý do: <em>"{{ d.Reason }}"</em>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 13px;">Chưa có quyết định chi từ cấp thẩm quyền.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: Các khối tác vụ cho KHTC và Cấp thẩm quyền -->
+    <div>
+        <!-- Khối 1: Thao tác của KHTC -->
+        {% if current_user.has_role('PHONG_KHTC', 'SYSTEM_ADMIN') %}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Xử lý chứng từ (Phòng KHTC)</h2>
+            </div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+                    Phòng KHTC kiểm tra tính hợp lệ của hóa đơn VAT, chứng từ gốc đối chiếu với quy chế chi tiêu nội bộ DUE.
+                </p>
+
+                <!-- Trình cấp thẩm quyền -->
+                {% if payment.Status not in ('APPROVED', 'RECORDED_PAID') %}
+                <form method="POST" action="{{ url_for('events.action', event_id=payment.EventId, action_code='SUBMIT_TO_AUTHORITY') }}" style="margin-bottom: 10px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                        <span>Trình Cấp thẩm quyền duyệt chi</span>
+                    </button>
+                </form>
+
+                <!-- Yêu cầu bổ sung chứng từ -->
+                <form method="POST" action="{{ url_for('events.action', event_id=payment.EventId, action_code='REQUEST_DOCUMENTS') }}" style="margin-bottom: 10px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="comment" value="Hóa đơn chứng từ chưa đủ hoặc cần làm rõ hạng mục thực chi.">
+                    <button type="submit" class="btn btn-warning" style="width: 100%;">
+                        <span>Yêu cầu bổ sung chứng từ</span>
+                    </button>
+                </form>
+                {% endif %}
+
+                <!-- Ghi nhận giải ngân (PerformPay) -->
+                {% if payment.Status == 'APPROVED' %}
+                <form method="POST" action="{{ url_for('payments.record_paid', payment_request_id=payment.PaymentRequestId) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Ghi nhận hoàn tất giải ngân (PerformPay)</span>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Khối 2: Thao tác của Cấp thẩm quyền (APPROVAL_AUTHORITY / Ban Giám hiệu) -->
+        {% if current_user.has_role('APPROVAL_AUTHORITY', 'SYSTEM_ADMIN') and payment.Status != 'RECORDED_PAID' %}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Phê duyệt chi (Cấp thẩm quyền)</h2>
+            </div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+                    Căn cứ tờ trình quyết toán và ý kiến của Phòng KHTC, chủ tài khoản ra quyết định đồng ý hoặc không chấp thuận thanh toán.
+                </p>
+
+                <form method="POST" action="{{ url_for('payments.authorize', payment_request_id=payment.PaymentRequestId) }}" style="margin-bottom: 10px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="decision_code" value="APPROVED">
+                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Đồng ý phê duyệt chi (Approve)</span>
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ url_for('payments.authorize', payment_request_id=payment.PaymentRequestId) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="decision_code" value="REJECTED">
+                    <input type="hidden" name="reason" value="Kinh phí vượt khung hoặc chứng từ không phù hợp quy định.">
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">
+                        <span>Không chấp thuận thanh toán</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

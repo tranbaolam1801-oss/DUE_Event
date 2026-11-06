@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Dự trù kinh phí | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('events.index') }}" style="color: inherit; text-decoration: none;">Hồ sơ sự kiện</a>
+<span class="breadcrumb-separator">/</span>
+<a href="{{ url_for('events.detail', event_id=event.EventId) }}" style="color: inherit; text-decoration: none;">{{ event.TicketCode }}</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Dự trù kinh phí</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Dự trù kinh phí: {{ event.TicketCode }}</span>
+        </h1>
+        <p class="page-subtitle">Kê khai các hạng mục chi tiêu dự kiến phục vụ công tác thẩm định và quyết toán</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Quay lại hồ sơ</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 960px;">
+    <div class="card-header">
+        <h2 class="card-title">
+            <span>Bảng danh mục dự toán kinh phí</span>
+        </h2>
+        <button type="button" class="btn btn-outline btn-sm" id="btnAddBudgetRow">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Thêm khoản mục</span>
+        </button>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('events.budget', event_id=event.EventId) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="table-responsive" style="margin-bottom: 20px;">
+                <table class="table" id="budgetTable">
+                    <thead>
+                        <tr>
+                            <th>Nội dung chi / Khoản mục</th>
+                            <th style="width: 140px;">Số lượng</th>
+                            <th style="width: 180px;">Đơn giá (VNĐ)</th>
+                            <th style="width: 180px;" class="text-end">Thành tiền</th>
+                            <th style="width: 60px;" class="text-center">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for it in items %}
+                        <tr class="budget-row">
+                            <td>
+                                <input type="text" name="item_name[]" class="form-control" value="{{ it.ItemName }}" placeholder="Tên khoản mục..." required>
+                            </td>
+                            <td>
+                                <input type="number" name="quantity[]" class="form-control budget-qty" value="{{ it.Quantity }}" min="0.1" step="any" required>
+                            </td>
+                            <td>
+                                <input type="number" name="unit_price[]" class="form-control budget-price" value="{{ it.UnitPrice | int }}" min="0" step="1000" required>
+                            </td>
+                            <td class="budget-amount text-end font-monospace" style="font-weight: 600;">
+                                {{ it.EstimatedAmount | currency }}
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-outline btn-sm text-danger btn-remove-row" title="Xóa dòng" aria-label="Xóa dòng">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr class="budget-row">
+                            <td>
+                                <input type="text" name="item_name[]" class="form-control" placeholder="Ví dụ: In ấn backdrop và tài liệu" required>
+                            </td>
+                            <td>
+                                <input type="number" name="quantity[]" class="form-control budget-qty" value="1" min="0.1" step="any" required>
+                            </td>
+                            <td>
+                                <input type="number" name="unit_price[]" class="form-control budget-price" value="500000" min="0" step="1000" required>
+                            </td>
+                            <td class="budget-amount text-end font-monospace" style="font-weight: 600;">
+                                500.000 đ
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-outline btn-sm text-danger btn-remove-row" title="Xóa dòng" aria-label="Xóa dòng">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background-color: #F8FAFC; font-weight: 700;">
+                            <td colspan="3" class="text-end" style="padding: 14px 16px;">TỔNG DỰ TOÁN KINH PHÍ:</td>
+                            <td class="text-end font-monospace" id="budgetTotalDisplay" style="color: var(--due-blue-primary); font-size: 15px; padding: 14px 16px;">
+                                0 đ
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Hủy bỏ</a>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <span>Lưu dự toán kinh phí</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

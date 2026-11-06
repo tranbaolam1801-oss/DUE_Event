@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Hồ sơ chờ phê duyệt cấp trường | Đoàn Trường | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-current">Hồ sơ chờ phê duyệt cấp trường</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>Hồ sơ chờ phê duyệt cấp trường: Đoàn Trường DUE</span>
+        </h1>
+        <p class="page-subtitle">Thẩm định quy mô, kế hoạch an ninh và cấp văn bản phê duyệt tổ chức sự kiện cho các đơn vị</p>
+    </div>
+    <div class="header-actions">
+        <span class="badge badge-pending" style="font-size: 13px; padding: 6px 12px;">
+            Đang chờ duyệt: <strong>{{ events | length }}</strong> hồ sơ
+        </span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <span>Danh sách hồ sơ sự kiện đã qua thẩm định cấp Khoa</span>
+        </h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive" style="border: none;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 125px;">Mã hồ sơ</th>
+                        <th>Tên sự kiện</th>
+                        <th>Đơn vị chủ trì</th>
+                        <th>Thời gian tổ chức</th>
+                        <th>Kinh phí dự kiến</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end" style="width: 140px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evt in events %}
+                    <tr>
+                        <td>
+                            <strong class="font-monospace" style="color: var(--due-blue-primary);">{{ evt.TicketCode }}</strong>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('approvals.union_review', event_id=evt.EventId) }}" style="font-weight: 600; color: var(--text-main); text-decoration: none;">
+                                {{ evt.Title }}
+                            </a>
+                        </td>
+                        <td>
+                            <span>{{ evt.DepartmentName }}</span>
+                        </td>
+                        <td>
+                            <small>{{ evt.StartsAt | datetime_vn }}</small>
+                        </td>
+                        <td class="font-monospace">
+                            <span style="font-weight: 600; color: var(--text-main);">{{ evt.EstimatedBudget | currency }}</span>
+                        </td>
+                        <td>
+                            <span class="badge {{ evt.StateCode | status_badge_class }}">
+                                {{ evt.StateName }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('approvals.union_review', event_id=evt.EventId) }}" class="btn btn-success btn-sm" aria-label="Xét duyệt {{ evt.TicketCode }}">
+                                <span>Phê duyệt ngay</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <svg class="empty-state-icon" style="color: var(--due-green-primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <div class="empty-state-title">Không có hồ sơ nào đang chờ Đoàn Trường duyệt</div>
+                                <div class="empty-state-text">Hiện tại không có đề án sự kiện nào đang chờ cấp phép cấp Trường.</div>
+                                <a href="{{ url_for('events.index') }}" class="btn btn-outline btn-sm">Xem tất cả hồ sơ sự kiện DUE</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

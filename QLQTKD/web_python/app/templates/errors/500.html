@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}500 - Lỗi máy chủ nội bộ | MY DUE{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 60px 20px;">
+    <div style="font-size: 64px; font-weight: 800; color: var(--due-orange-primary); line-height: 1;">500</div>
+    <h1 style="font-size: 22px; margin: 16px 0 8px; color: var(--text-main);">Đã xảy ra lỗi máy chủ nội bộ</h1>
+    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 24px;">
+        Hệ thống gặp sự cố trong quá trình xử lý yêu cầu hoặc kết nối cơ sở dữ liệu. Vui lòng thử lại sau.
+    </p>
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+        Quay lại Bàn làm việc
+    </a>
+</div>
+{% endblock %}

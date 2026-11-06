@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block title %}Lịch sử dụng Cơ sở vật chất | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('facilities.index') }}" style="color: inherit; text-decoration: none;">Cơ sở vật chất</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Lịch sử dụng</span>
+{% endblock %}
+
+{% block content %}
+<!-- TIÊU ĐỀ GỌN VÀ TABS ĐIỀU HƯỚNG -->
+{% include 'facilities/_tabs_nav.html' %}
+
+<!-- KHUNG CALENDAR CHUYÊN NGHIỆP (GOOGLE / OUTLOOK STYLE) -->
+<div class="calendar-card">
+    <!-- THANH ĐIỀU KHIỂN BỔ TRỢ TRÊN CÙNG (CHỌN PHÒNG & KIỂM TRA PHÒNG TRỐNG) -->
+    <div class="calendar-top-controls">
+        <!-- Bộ lọc địa điểm phòng -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label for="filter_facility_id" style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 0;">Địa điểm:</label>
+            <select id="filter_facility_id" class="form-control form-control-sm" style="width: auto; min-width: 200px; height: 34px;" onchange="onFacilityFilterChange(this.value)">
+                <option value="ALL" {% if current_facility_id == 'ALL' %}selected{% endif %}>Tất cả giảng đường & hội trường</option>
+                {% for f in facilities %}
+                <option value="{{ f.FacilityId }}" {% if current_facility_id == f.FacilityId|string %}selected{% endif %}>
+                    {{ f.Name }} ({{ f.Capacity }} chỗ)
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Nút kiểm tra phòng trống & Chú giải nhanh -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="openModal('checkAvailabilityModal')" style="height: 34px; border-color: var(--due-blue-primary); color: var(--due-blue-primary);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Kiểm tra phòng trống</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- KHUNG RENDER FULLCALENDAR -->
+    <div id="facilityCalendar" style="min-height: 600px;"></div>
+
+    <!-- CHÚ GIẢI MÀU SẮC LỊCH SỬ DỤNG -->
+    <div class="calendar-legend">
+        <span style="font-weight: 700; color: var(--text-main);">Chú giải trạng thái:</span>
+        <div class="calendar-legend-item">
+            <span class="calendar-legend-color" style="background: #0E9045;"></span>
+            <span>Đã xác nhận cấp phòng (CONFIRMED)</span>
+        </div>
+        <div class="calendar-legend-item">
+            <span class="calendar-legend-color" style="background: #FE751E;"></span>
+            <span>Đang giữ chỗ tạm thời (HELD / PENDING)</span>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 1: CHI TIẾT LỊCH ĐẶT PHÒNG KHI CLICK VÀO SỰ KIỆN TRÊN CALENDAR -->
+<div class="modal-overlay" id="eventDetailModal" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+    <div class="modal-box" style="max-width: 520px;">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="detailBadge" class="badge">Đã xác nhận</span>
+                <span id="detailTicket" class="font-monospace" style="font-weight: 800; color: var(--due-blue-primary); font-size: 13.5px;">EVT-00000001</span>
+            </div>
+            <button type="button" class="modal-close" onclick="closeModal('eventDetailModal')" aria-label="Đóng">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 18px 20px;">
+            <h2 id="detailTitle" style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 14px; line-height: 1.4;">Tên sự kiện</h2>
+            
+            <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px;">
+                <div style="margin-bottom: 8px;">
+                    <span style="color: var(--text-muted);">Địa điểm:</span>
+                    <strong id="detailFacility" style="color: var(--due-blue-primary); margin-left: 6px;">Hội trường A</strong>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span style="color: var(--text-muted);">Thời gian:</span>
+                    <strong id="detailTime" style="margin-left: 6px; color: var(--text-main);">08:00 - 11:30</strong>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted);">Đơn vị tổ chức:</span>
+                    <strong id="detailDept" style="margin-left: 6px; color: var(--text-main);">BCH Đoàn trường</strong>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('eventDetailModal')">Đóng</button>
+            <a id="detailLink" href="#" class="btn btn-primary btn-sm">Xem hồ sơ sự kiện</a>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 2: KIỂM TRA PHÒNG TRỐNG & XUNG ĐỘT TRỰC TUYẾN -->
+<div class="modal-overlay" id="checkAvailabilityModal" role="dialog" aria-modal="true" aria-labelledby="checkModalTitle">
+    <div class="modal-box" style="max-width: 560px;">
+        <div class="modal-header">
+            <h2 id="checkModalTitle" class="modal-title" style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--due-blue-primary);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Kiểm tra phòng trống & Xung đột lịch</span>
+            </h2>
+            <button type="button" class="modal-close" onclick="closeModal('checkAvailabilityModal')" aria-label="Đóng">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="checkForm" onsubmit="handleAvailabilityCheck(event)">
+                <div class="form-group">
+                    <label for="modal_facility_id" class="form-label">Hội trường / Giảng đường <span class="required">*</span></label>
+                    <select id="modal_facility_id" class="form-control" required>
+                        <option value="">-- Chọn địa điểm kiểm tra --</option>
+                        {% for f in facilities %}
+                        <option value="{{ f.FacilityId }}">{{ f.Name }} (Sức chứa: {{ f.Capacity }} chỗ)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modal_starts_at" class="form-label">Thời gian bắt đầu <span class="required">*</span></label>
+                        <input type="datetime-local" id="modal_starts_at" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal_ends_at" class="form-label">Thời gian kết thúc <span class="required">*</span></label>
+                        <input type="datetime-local" id="modal_ends_at" class="form-control" required>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('checkAvailabilityModal')">Hủy</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Kiểm tra ngay</button>
+                </div>
+            </form>
+
+            <div id="checkResultBox" style="display: none; margin-top: 14px; padding: 12px 14px; border-radius: 6px; font-size: 13px;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FULLCALENDAR SCRIPTS CỤC BỘ (KHÔNG PHỤ THUỘC MẠNG NGOÀI) -->
+<script src="{{ url_for('static', filename='vendor/fullcalendar/index.global.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/fullcalendar/vi.global.min.js') }}"></script>
+
+<script>
+let calendarInstance = null;
+const initialEvents = {{ calendar_events | tojson }};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('facilityCalendar');
+    if (!calendarEl) return;
+
+    calendarInstance = new FullCalendar.Calendar(calendarEl, {
+        locale: 'vi',
+        initialView: 'timeGridWeek',
+        headerToolbar: {
+            left: 'today prev,next',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today: 'Hôm nay',
+            month: 'Tháng',
+            week: 'Tuần',
+            day: 'Ngày'
+        },
+        allDaySlot: false,
+        slotMinTime: '06:00:00',
+        slotMaxTime: '22:00:00',
+        slotDuration: '00:30:00',
+        slotLabelFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        },
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        },
+        height: 'auto',
+        events: initialEvents,
+        nowIndicator: true,
+        eventClick: function(info) {
+            info.jsEvent.preventDefault();
+            showEventDetail(info.event);
+        }
+    });
+
+    calendarInstance.render();
+});
+
+function onFacilityFilterChange(facilityId) {
+    // Chuyển URL và tải lại theo bộ lọc phòng
+    const url = new URL(window.location.href);
+    url.searchParams.set('facility_id', facilityId);
+    window.location.href = url.toString();
+}
+
+function showEventDetail(eventObj) {
+    const props = eventObj.extendedProps || {};
+    document.getElementById('detailTicket').innerText = props.ticketCode || 'EVT';
+    document.getElementById('detailTitle').innerText = props.eventTitle || eventObj.title;
+    document.getElementById('detailFacility').innerText = props.facilityName || 'Chưa rõ';
+    
+    // Format thời gian
+    const startStr = eventObj.start ? eventObj.start.toLocaleString('vi-VN') : '';
+    const endStr = eventObj.end ? eventObj.end.toLocaleString('vi-VN') : '';
+    document.getElementById('detailTime').innerText = startStr + ' - ' + endStr;
+    
+    document.getElementById('detailDept').innerText = props.departmentName || '—';
+    
+    const badge = document.getElementById('detailBadge');
+    if (props.status === 'CONFIRMED') {
+        badge.className = 'badge badge-approved';
+        badge.innerText = 'Đã xác nhận cấp';
+    } else {
+        badge.className = 'badge badge-pending';
+        badge.innerText = 'Đang giữ chỗ';
+    }
+    
+    const linkBtn = document.getElementById('detailLink');
+    if (props.eventId) {
+        linkBtn.href = '/events/' + props.eventId;
+        linkBtn.style.display = 'inline-flex';
+    } else {
+        linkBtn.style.display = 'none';
+    }
+    
+    openModal('eventDetailModal');
+}
+
+function handleAvailabilityCheck(e) {
+    e.preventDefault();
+    const facilityId = document.getElementById('modal_facility_id').value;
+    const startsAt = document.getElementById('modal_starts_at').value;
+    const endsAt = document.getElementById('modal_ends_at').value;
+    const resBox = document.getElementById('checkResultBox');
+
+    if (!facilityId || !startsAt || !endsAt) {
+        alert('Vui lòng điền đầy đủ địa điểm và thời gian.');
+        return;
+    }
+
+    if (new Date(endsAt) <= new Date(startsAt)) {
+        resBox.style.display = 'block';
+        resBox.style.background = '#FEF2F2';
+        resBox.style.color = '#B91C1C';
+        resBox.style.border = '1px solid #FCA5A5';
+        resBox.innerHTML = '<strong>Lỗi:</strong> Thời gian kết thúc phải lớn hơn thời gian bắt đầu!';
+        return;
+    }
+
+    resBox.style.display = 'block';
+    resBox.style.background = '#F8FAFC';
+    resBox.style.color = 'var(--text-muted)';
+    resBox.style.border = '1px solid var(--border-color)';
+    resBox.innerHTML = 'Đang kiểm tra dữ liệu SQL Server...';
+
+    fetch("{{ url_for('facilities.check_collision') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            facility_id: facilityId,
+            starts_at: startsAt,
+            ends_at: endsAt
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.has_conflict) {
+            resBox.style.background = '#FFFBEB';
+            resBox.style.color = '#92400E';
+            resBox.style.border = '1px solid #FDE68A';
+            resBox.innerHTML = `
+                <strong>Trùng lịch!</strong> Phòng này đã có lịch đặt bởi sự kiện: <strong>${data.conflict_event}</strong> (${data.organizer}).<br>
+                <small style="color: #78350F;">Thời gian: ${data.starts_at} đến ${data.ends_at}</small>
+            `;
+        } else {
+            resBox.style.background = '#F0FDF4';
+            resBox.style.color = '#166534';
+            resBox.style.border = '1px solid #BBF7D0';
+            resBox.innerHTML = `<strong>Hoàn toàn khả dụng!</strong> Hội trường không có sự kiện nào trùng lặp trong khung giờ này.`;
+        }
+    })
+    .catch(err => {
+        resBox.style.background = '#FEF2F2';
+        resBox.style.color = '#B91C1C';
+        resBox.innerHTML = 'Lỗi kết nối kiểm tra: ' + err;
+    });
+}
+</script>
+{% endblock %}

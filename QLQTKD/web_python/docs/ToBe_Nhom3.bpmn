@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_AI_ToBe" targetNamespace="https://example.org/qlqt/ai-tobe" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.29.0">
+  <bpmn:process id="Process_AI_ToBe" name="To-Be tổ chức sự kiện có AI" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_AI">
+      <bpmn:lane id="Lane_kt" name="PHÒNG KẾ HOẠCH TÀI CHÍNH">
+        <bpmn:flowNodeRef>CheckPay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubmitApproval</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ApprovePayment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>RefusePay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>PerformPay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GPay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GApproval</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_csvc" name="PHÒNG CƠ SỞ VẬT CHẤT">
+        <bpmn:flowNodeRef>AISuggest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>FacilityUser</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>VerifyReturn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>CheckSchedule</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ApproveFacility</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GFacility</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_doan" name="ĐOÀN TRƯỜNG">
+        <bpmn:flowNodeRef>GDoan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>MergeReport</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ReviewDoan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>RejectDoan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GReport</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ApproveDoan</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_khoa" name="BAN CHỦ NHIỆM KHOA">
+        <bpmn:flowNodeRef>ReviewKhoa</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SignKhoa</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ForwardDoan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GKhoa</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>RejectKhoa</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_bch" name="BCH LIÊN CHI ĐOÀN">
+        <bpmn:flowNodeRef>FacilityForm</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>AIReport</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ReviewReport</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>AutoReport</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>PayPackage</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>AutoForwardPay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>FixPay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Close</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>AdjustFacility</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Prepare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>CheckFields</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>AIReview</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_0q4ts0h</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>FixKhoa</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>FixDoan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ReturnFacility</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>PrepareEvent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>BCHConfirm</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>SubmitKhoa</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start" name="Khởi tạo yêu cầu tổ chức">
+      <bpmn:outgoing>Flow_000</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Prepare" name="Lập kế hoạch, dự trù và hồ sơ">
+      <bpmn:incoming>Flow_000</bpmn:incoming>
+      <bpmn:outgoing>Flow_001</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="CheckFields" name="Kiểm tra trường bắt buộc">
+      <bpmn:incoming>Flow_001</bpmn:incoming>
+      <bpmn:outgoing>Flow_002</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="AIReview" name="AI rà soát nội dung và gợi ý sửa">
+      <bpmn:incoming>Flow_002</bpmn:incoming>
+      <bpmn:outgoing>Flow_0vqvedn</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="BCHConfirm" name="BCH kiểm chứng, hoàn thiện hồ sơ">
+      <bpmn:incoming>Flow_03x58u6</bpmn:incoming>
+      <bpmn:outgoing>Flow_004</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="SubmitKhoa" name="Chuyển hồ sơ đến BCN Khoa">
+      <bpmn:incoming>Flow_004</bpmn:incoming>
+      <bpmn:outgoing>Flow_005</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="ReviewKhoa" name="Thẩm định kế hoạch / nội dung">
+      <bpmn:incoming>Flow_005</bpmn:incoming>
+      <bpmn:outgoing>Flow_006</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GKhoa" name="Kết quả?">
+      <bpmn:incoming>Flow_006</bpmn:incoming>
+      <bpmn:outgoing>Flow_007</bpmn:outgoing>
+      <bpmn:outgoing>Flow_009</bpmn:outgoing>
+      <bpmn:outgoing>Flow_010</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="FixKhoa" name="Tổng hợp góp ý và sửa hồ sơ">
+      <bpmn:incoming>Flow_007</bpmn:incoming>
+      <bpmn:outgoing>Flow_008</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="RejectKhoa" name="Không chấp thuận">
+      <bpmn:incoming>Flow_009</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="SignKhoa" name="Khoa ký xác nhận">
+      <bpmn:incoming>Flow_010</bpmn:incoming>
+      <bpmn:outgoing>Flow_011</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="ForwardDoan" name="Chuyển hồ sơ đến Đoàn trường">
+      <bpmn:incoming>Flow_011</bpmn:incoming>
+      <bpmn:outgoing>Flow_012</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="ReviewDoan" name="Đoàn trường thẩm định hồ sơ">
+      <bpmn:incoming>Flow_012</bpmn:incoming>
+      <bpmn:outgoing>Flow_013</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GDoan" name="Kết quả?">
+      <bpmn:incoming>Flow_013</bpmn:incoming>
+      <bpmn:outgoing>Flow_014</bpmn:outgoing>
+      <bpmn:outgoing>Flow_015</bpmn:outgoing>
+      <bpmn:outgoing>Flow_017</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="FixDoan" name="Chỉnh sửa theo góp ý Đoàn trường">
+      <bpmn:incoming>Flow_015</bpmn:incoming>
+      <bpmn:outgoing>Flow_016</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="RejectDoan" name="Không chấp thuận">
+      <bpmn:incoming>Flow_017</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="ApproveDoan" name="Ký duyệt, đóng dấu kế hoạch">
+      <bpmn:incoming>Flow_014</bpmn:incoming>
+      <bpmn:outgoing>Flow_018</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="FacilityForm" name="Tạo đơn mượn CSVC">
+      <bpmn:incoming>Flow_018</bpmn:incoming>
+      <bpmn:incoming>Flow_025</bpmn:incoming>
+      <bpmn:outgoing>Flow_019</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="CheckSchedule" name="Đối chiếu lịch / danh mục thiết bị">
+      <bpmn:incoming>Flow_019</bpmn:incoming>
+      <bpmn:outgoing>Flow_020</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="AISuggest" name="AI gợi ý bố trí phòng và thiết bị">
+      <bpmn:incoming>Flow_020</bpmn:incoming>
+      <bpmn:outgoing>Flow_021</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="FacilityUser" name="CSVC xác minh và quyết định">
+      <bpmn:incoming>Flow_021</bpmn:incoming>
+      <bpmn:outgoing>Flow_022</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GFacility" name="Đáp ứng?">
+      <bpmn:incoming>Flow_022</bpmn:incoming>
+      <bpmn:outgoing>Flow_023</bpmn:outgoing>
+      <bpmn:outgoing>Flow_024</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="AdjustFacility" name="BCH điều chỉnh lịch / thiết bị">
+      <bpmn:incoming>Flow_024</bpmn:incoming>
+      <bpmn:outgoing>Flow_025</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="ApproveFacility" name="CSVC xác nhận đặt phòng, thiết bị">
+      <bpmn:incoming>Flow_023</bpmn:incoming>
+      <bpmn:outgoing>Flow_026</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="PrepareEvent" name="BCH chuẩn bị và tổ chức sự kiện">
+      <bpmn:incoming>Flow_026</bpmn:incoming>
+      <bpmn:outgoing>Flow_027</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="ReturnFacility" name="BCH hoàn trả cơ sở vật chất">
+      <bpmn:incoming>Flow_027</bpmn:incoming>
+      <bpmn:outgoing>Flow_028</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="VerifyReturn" name="CSVC kiểm tra tình trạng hoàn trả">
+      <bpmn:incoming>Flow_028</bpmn:incoming>
+      <bpmn:outgoing>Flow_029</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GReport" name="Yêu cầu báo cáo?">
+      <bpmn:incoming>Flow_029</bpmn:incoming>
+      <bpmn:outgoing>Flow_030</bpmn:outgoing>
+      <bpmn:outgoing>Flow_031</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="AIReport" name="AI tạo bản nháp báo cáo">
+      <bpmn:incoming>Flow_031</bpmn:incoming>
+      <bpmn:outgoing>Flow_032</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="ReviewReport" name="BCH kiểm tra và xác nhận báo cáo">
+      <bpmn:incoming>Flow_032</bpmn:incoming>
+      <bpmn:outgoing>Flow_033</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="AutoReport" name="Gửi báo cáo đến Đoàn trường">
+      <bpmn:incoming>Flow_033</bpmn:incoming>
+      <bpmn:outgoing>Flow_034</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="MergeReport" name="Tiếp tục">
+      <bpmn:incoming>Flow_030</bpmn:incoming>
+      <bpmn:incoming>Flow_034</bpmn:incoming>
+      <bpmn:outgoing>Flow_035</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="PayPackage" name="BCH lập và rà soát chứng từ">
+      <bpmn:incoming>Flow_035</bpmn:incoming>
+      <bpmn:outgoing>Flow_036</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="AutoForwardPay" name="Chuyển hồ sơ đến KHTC">
+      <bpmn:incoming>Flow_036</bpmn:incoming>
+      <bpmn:incoming>Flow_041</bpmn:incoming>
+      <bpmn:outgoing>Flow_037</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="CheckPay" name="KHTC kiểm tra chứng từ">
+      <bpmn:incoming>Flow_037</bpmn:incoming>
+      <bpmn:outgoing>Flow_038</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GPay" name="Đầy đủ?">
+      <bpmn:incoming>Flow_038</bpmn:incoming>
+      <bpmn:outgoing>Flow_039</bpmn:outgoing>
+      <bpmn:outgoing>Flow_040</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="FixPay" name="BCH bổ sung hồ sơ thanh toán">
+      <bpmn:incoming>Flow_040</bpmn:incoming>
+      <bpmn:outgoing>Flow_041</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="SubmitApproval" name="KHTC trình cấp có thẩm quyền duyệt">
+      <bpmn:incoming>Flow_039</bpmn:incoming>
+      <bpmn:outgoing>Flow_042</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="ApprovePayment" name="Phê duyệt thanh toán theo thẩm quyền">
+      <bpmn:incoming>Flow_042</bpmn:incoming>
+      <bpmn:outgoing>Flow_043</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GApproval" name="Được duyệt?">
+      <bpmn:incoming>Flow_043</bpmn:incoming>
+      <bpmn:outgoing>Flow_044</bpmn:outgoing>
+      <bpmn:outgoing>Flow_046</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="RefusePay" name="Thông báo không thanh toán">
+      <bpmn:incoming>Flow_044</bpmn:incoming>
+      <bpmn:outgoing>Flow_045</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="PerformPay" name="KHTC thực hiện thanh toán">
+      <bpmn:incoming>Flow_046</bpmn:incoming>
+      <bpmn:outgoing>Flow_047</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Close" name="BCH nhận xác nhận, lưu hồ sơ">
+      <bpmn:incoming>Flow_045</bpmn:incoming>
+      <bpmn:incoming>Flow_047</bpmn:incoming>
+      <bpmn:outgoing>Flow_048</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End" name="Hoàn tất quy trình">
+      <bpmn:incoming>Flow_048</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_000" sourceRef="Start" targetRef="Prepare" />
+    <bpmn:sequenceFlow id="Flow_001" sourceRef="Prepare" targetRef="CheckFields" />
+    <bpmn:sequenceFlow id="Flow_002" sourceRef="CheckFields" targetRef="AIReview" />
+    <bpmn:sequenceFlow id="Flow_004" sourceRef="BCHConfirm" targetRef="SubmitKhoa" />
+    <bpmn:sequenceFlow id="Flow_005" sourceRef="SubmitKhoa" targetRef="ReviewKhoa" />
+    <bpmn:sequenceFlow id="Flow_006" sourceRef="ReviewKhoa" targetRef="GKhoa" />
+    <bpmn:sequenceFlow id="Flow_007" name="Sửa" sourceRef="GKhoa" targetRef="FixKhoa" />
+    <bpmn:sequenceFlow id="Flow_008" sourceRef="FixKhoa" targetRef="Gateway_0q4ts0h" />
+    <bpmn:sequenceFlow id="Flow_009" name="Từ chối" sourceRef="GKhoa" targetRef="RejectKhoa" />
+    <bpmn:sequenceFlow id="Flow_010" name="Duyệt" sourceRef="GKhoa" targetRef="SignKhoa" />
+    <bpmn:sequenceFlow id="Flow_011" sourceRef="SignKhoa" targetRef="ForwardDoan" />
+    <bpmn:sequenceFlow id="Flow_012" sourceRef="ForwardDoan" targetRef="ReviewDoan" />
+    <bpmn:sequenceFlow id="Flow_013" sourceRef="ReviewDoan" targetRef="GDoan" />
+    <bpmn:sequenceFlow id="Flow_014" name="Duyệt" sourceRef="GDoan" targetRef="ApproveDoan" />
+    <bpmn:sequenceFlow id="Flow_015" name="Sửa" sourceRef="GDoan" targetRef="FixDoan" />
+    <bpmn:sequenceFlow id="Flow_016" sourceRef="FixDoan" targetRef="Gateway_0q4ts0h" />
+    <bpmn:sequenceFlow id="Flow_017" name="Từ chối" sourceRef="GDoan" targetRef="RejectDoan" />
+    <bpmn:sequenceFlow id="Flow_018" sourceRef="ApproveDoan" targetRef="FacilityForm" />
+    <bpmn:sequenceFlow id="Flow_019" sourceRef="FacilityForm" targetRef="CheckSchedule" />
+    <bpmn:sequenceFlow id="Flow_020" sourceRef="CheckSchedule" targetRef="AISuggest" />
+    <bpmn:sequenceFlow id="Flow_021" sourceRef="AISuggest" targetRef="FacilityUser" />
+    <bpmn:sequenceFlow id="Flow_022" sourceRef="FacilityUser" targetRef="GFacility" />
+    <bpmn:sequenceFlow id="Flow_023" name="Có" sourceRef="GFacility" targetRef="ApproveFacility" />
+    <bpmn:sequenceFlow id="Flow_024" name="Chưa" sourceRef="GFacility" targetRef="AdjustFacility" />
+    <bpmn:sequenceFlow id="Flow_025" sourceRef="AdjustFacility" targetRef="FacilityForm" />
+    <bpmn:sequenceFlow id="Flow_026" sourceRef="ApproveFacility" targetRef="PrepareEvent" />
+    <bpmn:sequenceFlow id="Flow_027" sourceRef="PrepareEvent" targetRef="ReturnFacility" />
+    <bpmn:sequenceFlow id="Flow_028" sourceRef="ReturnFacility" targetRef="VerifyReturn" />
+    <bpmn:sequenceFlow id="Flow_029" sourceRef="VerifyReturn" targetRef="GReport" />
+    <bpmn:sequenceFlow id="Flow_030" name="Không" sourceRef="GReport" targetRef="MergeReport" />
+    <bpmn:sequenceFlow id="Flow_031" name="Có" sourceRef="GReport" targetRef="AIReport" />
+    <bpmn:sequenceFlow id="Flow_032" sourceRef="AIReport" targetRef="ReviewReport" />
+    <bpmn:sequenceFlow id="Flow_033" sourceRef="ReviewReport" targetRef="AutoReport" />
+    <bpmn:sequenceFlow id="Flow_034" sourceRef="AutoReport" targetRef="MergeReport" />
+    <bpmn:sequenceFlow id="Flow_035" sourceRef="MergeReport" targetRef="PayPackage" />
+    <bpmn:sequenceFlow id="Flow_036" sourceRef="PayPackage" targetRef="AutoForwardPay" />
+    <bpmn:sequenceFlow id="Flow_037" sourceRef="AutoForwardPay" targetRef="CheckPay" />
+    <bpmn:sequenceFlow id="Flow_038" sourceRef="CheckPay" targetRef="GPay" />
+    <bpmn:sequenceFlow id="Flow_039" name="Đủ" sourceRef="GPay" targetRef="SubmitApproval" />
+    <bpmn:sequenceFlow id="Flow_040" name="Thiếu" sourceRef="GPay" targetRef="FixPay" />
+    <bpmn:sequenceFlow id="Flow_041" sourceRef="FixPay" targetRef="AutoForwardPay" />
+    <bpmn:sequenceFlow id="Flow_042" sourceRef="SubmitApproval" targetRef="ApprovePayment" />
+    <bpmn:sequenceFlow id="Flow_043" sourceRef="ApprovePayment" targetRef="GApproval" />
+    <bpmn:sequenceFlow id="Flow_044" name="Không" sourceRef="GApproval" targetRef="RefusePay" />
+    <bpmn:sequenceFlow id="Flow_045" sourceRef="RefusePay" targetRef="Close" />
+    <bpmn:sequenceFlow id="Flow_046" name="Có" sourceRef="GApproval" targetRef="PerformPay" />
+    <bpmn:sequenceFlow id="Flow_047" sourceRef="PerformPay" targetRef="Close" />
+    <bpmn:sequenceFlow id="Flow_048" sourceRef="Close" targetRef="End" />
+    <bpmn:exclusiveGateway id="Gateway_0q4ts0h">
+      <bpmn:incoming>Flow_0vqvedn</bpmn:incoming>
+      <bpmn:incoming>Flow_016</bpmn:incoming>
+      <bpmn:incoming>Flow_008</bpmn:incoming>
+      <bpmn:outgoing>Flow_03x58u6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0vqvedn" sourceRef="AIReview" targetRef="Gateway_0q4ts0h" />
+    <bpmn:sequenceFlow id="Flow_03x58u6" sourceRef="Gateway_0q4ts0h" targetRef="BCHConfirm" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_AI">
+    <bpmndi:BPMNPlane id="Plane_AI" bpmnElement="Process_AI_ToBe">
+      <bpmndi:BPMNShape id="Shape_Lane_bch" bpmnElement="Lane_bch" isHorizontal="true">
+        <dc:Bounds x="160" y="40" width="6060" height="505" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_khoa" bpmnElement="Lane_khoa" isHorizontal="true">
+        <dc:Bounds x="160" y="545" width="6060" height="360" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_doan" bpmnElement="Lane_doan" isHorizontal="true">
+        <dc:Bounds x="160" y="905" width="6060" height="370" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_csvc" bpmnElement="Lane_csvc" isHorizontal="true">
+        <dc:Bounds x="160" y="1275" width="6060" height="370" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Lane_kt" bpmnElement="Lane_kt" isHorizontal="true">
+        <dc:Bounds x="160" y="1645" width="6060" height="440" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start">
+        <dc:Bounds x="218" y="164" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="198" y="226" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Prepare" bpmnElement="Prepare">
+        <dc:Bounds x="310" y="143" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CheckFields" bpmnElement="CheckFields">
+        <dc:Bounds x="560" y="143" width="220" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AIReview" bpmnElement="AIReview">
+        <dc:Bounds x="810" y="143" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ReviewKhoa" bpmnElement="ReviewKhoa">
+        <dc:Bounds x="1575" y="645" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GKhoa" bpmnElement="GKhoa" isMarkerVisible="true">
+        <dc:Bounds x="1835" y="666" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1835" y="710" width="45" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_FixKhoa" bpmnElement="FixKhoa">
+        <dc:Bounds x="1747" y="294" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_RejectKhoa" bpmnElement="RejectKhoa">
+        <dc:Bounds x="1835" y="808" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1812" y="852" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_SignKhoa" bpmnElement="SignKhoa">
+        <dc:Bounds x="2040" y="645" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ForwardDoan" bpmnElement="ForwardDoan">
+        <dc:Bounds x="2280" y="645" width="220" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ReviewDoan" bpmnElement="ReviewDoan">
+        <dc:Bounds x="2280" y="1011" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GDoan" bpmnElement="GDoan" isMarkerVisible="true">
+        <dc:Bounds x="2785" y="1032" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2785" y="1076" width="45" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_FixDoan" bpmnElement="FixDoan">
+        <dc:Bounds x="2670" y="57" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_RejectDoan" bpmnElement="RejectDoan">
+        <dc:Bounds x="2785" y="1178" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2762" y="1222" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ApproveDoan" bpmnElement="ApproveDoan">
+        <dc:Bounds x="3140" y="1011" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_FacilityForm" bpmnElement="FacilityForm">
+        <dc:Bounds x="3190" y="143" width="220" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CheckSchedule" bpmnElement="CheckSchedule">
+        <dc:Bounds x="3190" y="1390" width="220" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AISuggest" bpmnElement="AISuggest">
+        <dc:Bounds x="3455" y="1390" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_FacilityUser" bpmnElement="FacilityUser">
+        <dc:Bounds x="3695" y="1390" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GFacility" bpmnElement="GFacility" isMarkerVisible="true">
+        <dc:Bounds x="4138" y="1411" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4136" y="1455" width="49" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AdjustFacility" bpmnElement="AdjustFacility">
+        <dc:Bounds x="3720" y="143" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ApproveFacility" bpmnElement="ApproveFacility">
+        <dc:Bounds x="4230" y="1390" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_PrepareEvent" bpmnElement="PrepareEvent">
+        <dc:Bounds x="4230" y="143" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ReturnFacility" bpmnElement="ReturnFacility">
+        <dc:Bounds x="4490" y="143" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_VerifyReturn" bpmnElement="VerifyReturn">
+        <dc:Bounds x="4490" y="1390" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GReport" bpmnElement="GReport" isMarkerVisible="true">
+        <dc:Bounds x="4838" y="1078" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4743" y="1093" width="89" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AIReport" bpmnElement="AIReport">
+        <dc:Bounds x="4750" y="374" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ReviewReport" bpmnElement="ReviewReport">
+        <dc:Bounds x="5010" y="374" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AutoReport" bpmnElement="AutoReport">
+        <dc:Bounds x="5270" y="374" width="220" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_MergeReport" bpmnElement="MergeReport" isMarkerVisible="true">
+        <dc:Bounds x="5358" y="1078" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="5361" y="1126" width="39" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_PayPackage" bpmnElement="PayPackage">
+        <dc:Bounds x="5420" y="143" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AutoForwardPay" bpmnElement="AutoForwardPay">
+        <dc:Bounds x="5830" y="374" width="220" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CheckPay" bpmnElement="CheckPay">
+        <dc:Bounds x="3220" y="1778" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GPay" bpmnElement="GPay" isMarkerVisible="true">
+        <dc:Bounds x="2985" y="1799" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2987" y="1843" width="41" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_FixPay" bpmnElement="FixPay">
+        <dc:Bounds x="5570" y="374" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_SubmitApproval" bpmnElement="SubmitApproval">
+        <dc:Bounds x="2740" y="1778" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ApprovePayment" bpmnElement="ApprovePayment">
+        <dc:Bounds x="2500" y="1778" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GApproval" bpmnElement="GApproval" isMarkerVisible="true">
+        <dc:Bounds x="2290" y="1799" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2287" y="1775" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_RefusePay" bpmnElement="RefusePay">
+        <dc:Bounds x="2202" y="1957" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_PerformPay" bpmnElement="PerformPay">
+        <dc:Bounds x="1970" y="1778" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Close" bpmnElement="Close">
+        <dc:Bounds x="920" y="374" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End" bpmnElement="End">
+        <dc:Bounds x="758" y="395" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="736" y="439" width="88" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1oxtphd" bpmnElement="Gateway_0q4ts0h" isMarkerVisible="true">
+        <dc:Bounds x="1058" y="164" width="44" height="44" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="968" y="208" width="45" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_BCHConfirm" bpmnElement="BCHConfirm">
+        <dc:Bounds x="1130" y="237" width="220" height="86" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_SubmitKhoa" bpmnElement="SubmitKhoa">
+        <dc:Bounds x="1390" y="237" width="220" height="86" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_000" bpmnElement="Flow_000">
+        <di:waypoint x="262" y="186" />
+        <di:waypoint x="310" y="186" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_001" bpmnElement="Flow_001">
+        <di:waypoint x="530" y="186" />
+        <di:waypoint x="560" y="186" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_002" bpmnElement="Flow_002">
+        <di:waypoint x="780" y="186" />
+        <di:waypoint x="810" y="186" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_004" bpmnElement="Flow_004">
+        <di:waypoint x="1350" y="280" />
+        <di:waypoint x="1390" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_005" bpmnElement="Flow_005">
+        <di:waypoint x="1610" y="280" />
+        <di:waypoint x="1685" y="280" />
+        <di:waypoint x="1685" y="645" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_006" bpmnElement="Flow_006">
+        <di:waypoint x="1795" y="688" />
+        <di:waypoint x="1835" y="688" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_007" bpmnElement="Flow_007">
+        <di:waypoint x="1857" y="666" />
+        <di:waypoint x="1857" y="380" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1860" y="602" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_008" bpmnElement="Flow_008">
+        <di:waypoint x="1857" y="294" />
+        <di:waypoint x="1857" y="186" />
+        <di:waypoint x="1102" y="186" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_009" bpmnElement="Flow_009">
+        <di:waypoint x="1857" y="710" />
+        <di:waypoint x="1857" y="808" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1856" y="753" width="38" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_010" bpmnElement="Flow_010">
+        <di:waypoint x="1879" y="688" />
+        <di:waypoint x="2040" y="688" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1945" y="663" width="29" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_011" bpmnElement="Flow_011">
+        <di:waypoint x="2260" y="688" />
+        <di:waypoint x="2280" y="688" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_012" bpmnElement="Flow_012">
+        <di:waypoint x="2390" y="731" />
+        <di:waypoint x="2390" y="1011" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_013" bpmnElement="Flow_013">
+        <di:waypoint x="2500" y="1054" />
+        <di:waypoint x="2785" y="1054" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_014" bpmnElement="Flow_014">
+        <di:waypoint x="2829" y="1054" />
+        <di:waypoint x="3140" y="1054" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2971" y="1029" width="29" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_015" bpmnElement="Flow_015">
+        <di:waypoint x="2807" y="1032" />
+        <di:waypoint x="2807" y="143" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2805" y="999" width="21" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_016" bpmnElement="Flow_016">
+        <di:waypoint x="2670" y="100" />
+        <di:waypoint x="1080" y="100" />
+        <di:waypoint x="1080" y="164" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_017" bpmnElement="Flow_017">
+        <di:waypoint x="2807" y="1076" />
+        <di:waypoint x="2807" y="1178" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2806" y="1120" width="38" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_018" bpmnElement="Flow_018">
+        <di:waypoint x="3250" y="1011" />
+        <di:waypoint x="3250" y="229" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_019" bpmnElement="Flow_019">
+        <di:waypoint x="3380" y="229" />
+        <di:waypoint x="3380" y="1390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_020" bpmnElement="Flow_020">
+        <di:waypoint x="3410" y="1433" />
+        <di:waypoint x="3455" y="1433" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_021" bpmnElement="Flow_021">
+        <di:waypoint x="3675" y="1433" />
+        <di:waypoint x="3695" y="1433" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_022" bpmnElement="Flow_022">
+        <di:waypoint x="3915" y="1433" />
+        <di:waypoint x="4138" y="1433" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_023" bpmnElement="Flow_023">
+        <di:waypoint x="4182" y="1433" />
+        <di:waypoint x="4230" y="1433" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4198" y="1408" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_024" bpmnElement="Flow_024">
+        <di:waypoint x="4160" y="1411" />
+        <di:waypoint x="4160" y="186" />
+        <di:waypoint x="3940" y="186" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4128" y="792" width="28" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_025" bpmnElement="Flow_025">
+        <di:waypoint x="3720" y="186" />
+        <di:waypoint x="3410" y="186" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_026" bpmnElement="Flow_026">
+        <di:waypoint x="4340" y="1390" />
+        <di:waypoint x="4340" y="229" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_027" bpmnElement="Flow_027">
+        <di:waypoint x="4450" y="186" />
+        <di:waypoint x="4490" y="186" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_028" bpmnElement="Flow_028">
+        <di:waypoint x="4600" y="229" />
+        <di:waypoint x="4600" y="1390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_029" bpmnElement="Flow_029">
+        <di:waypoint x="4710" y="1433" />
+        <di:waypoint x="4860" y="1433" />
+        <di:waypoint x="4860" y="1122" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_030" bpmnElement="Flow_030">
+        <di:waypoint x="4882" y="1100" />
+        <di:waypoint x="5358" y="1100" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4990" y="1076" width="32" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_031" bpmnElement="Flow_031">
+        <di:waypoint x="4860" y="1078" />
+        <di:waypoint x="4860" y="460" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4866" y="1040" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_032" bpmnElement="Flow_032">
+        <di:waypoint x="4970" y="417" />
+        <di:waypoint x="5010" y="417" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_033" bpmnElement="Flow_033">
+        <di:waypoint x="5230" y="417" />
+        <di:waypoint x="5270" y="417" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_034" bpmnElement="Flow_034">
+        <di:waypoint x="5380" y="460" />
+        <di:waypoint x="5380" y="1078" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_035" bpmnElement="Flow_035">
+        <di:waypoint x="5402" y="1100" />
+        <di:waypoint x="5530" y="1100" />
+        <di:waypoint x="5530" y="229" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_036" bpmnElement="Flow_036">
+        <di:waypoint x="5640" y="186" />
+        <di:waypoint x="5940" y="186" />
+        <di:waypoint x="5940" y="374" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_037" bpmnElement="Flow_037">
+        <di:waypoint x="5940" y="460" />
+        <di:waypoint x="5940" y="1821" />
+        <di:waypoint x="3440" y="1821" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_038" bpmnElement="Flow_038">
+        <di:waypoint x="3220" y="1821" />
+        <di:waypoint x="3029" y="1821" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_039" bpmnElement="Flow_039">
+        <di:waypoint x="2985" y="1821" />
+        <di:waypoint x="2960" y="1821" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2965" y="1796" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_040" bpmnElement="Flow_040">
+        <di:waypoint x="3007" y="1799" />
+        <di:waypoint x="3007" y="1702" />
+        <di:waypoint x="5680" y="1702" />
+        <di:waypoint x="5680" y="460" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3210" y="1677" width="28" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_041" bpmnElement="Flow_041">
+        <di:waypoint x="5790" y="417" />
+        <di:waypoint x="5830" y="417" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_042" bpmnElement="Flow_042">
+        <di:waypoint x="2740" y="1821" />
+        <di:waypoint x="2720" y="1821" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_043" bpmnElement="Flow_043">
+        <di:waypoint x="2500" y="1821" />
+        <di:waypoint x="2334" y="1821" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_044" bpmnElement="Flow_044">
+        <di:waypoint x="2312" y="1843" />
+        <di:waypoint x="2312" y="1957" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2314" y="1893" width="32" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_045" bpmnElement="Flow_045">
+        <di:waypoint x="2202" y="2000" />
+        <di:waypoint x="1030" y="2000" />
+        <di:waypoint x="1030" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_046" bpmnElement="Flow_046">
+        <di:waypoint x="2290" y="1821" />
+        <di:waypoint x="2190" y="1821" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2235" y="1796" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_047" bpmnElement="Flow_047">
+        <di:waypoint x="1970" y="1821" />
+        <di:waypoint x="1500" y="1821" />
+        <di:waypoint x="1500" y="417" />
+        <di:waypoint x="1140" y="417" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_048" bpmnElement="Flow_048">
+        <di:waypoint x="920" y="417" />
+        <di:waypoint x="802" y="417" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vqvedn_di" bpmnElement="Flow_0vqvedn">
+        <di:waypoint x="1030" y="186" />
+        <di:waypoint x="1058" y="186" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03x58u6_di" bpmnElement="Flow_03x58u6">
+        <di:waypoint x="1080" y="208" />
+        <di:waypoint x="1080" y="280" />
+        <di:waypoint x="1130" y="280" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

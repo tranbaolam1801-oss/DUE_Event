@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Nộp hồ sơ thanh toán: {{ event.TicketCode }} | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('events.index') }}" style="color: inherit; text-decoration: none;">Hồ sơ sự kiện</a>
+<span class="breadcrumb-separator">/</span>
+<a href="{{ url_for('events.detail', event_id=event.EventId) }}" style="color: inherit; text-decoration: none;">{{ event.TicketCode }}</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">Nộp hồ sơ thanh toán</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Lập hồ sơ thanh toán kinh phí: {{ event.TicketCode }}</span>
+        </h1>
+        <p class="page-subtitle">Kê khai số tiền thực chi và gửi chứng từ kèm theo cho Phòng Kế hoạch - Tài chính (BPMN: PayPackage)</p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Quay lại</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px;">
+    <div class="card-header">
+        <h2 class="card-title">Tờ trình đề nghị thanh quyết toán</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('payments.create', event_id=event.EventId) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div style="background-color: #F8FAFC; padding: 16px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">{{ event.Title }}</div>
+                <div style="font-size: 13px; color: var(--text-muted); display: flex; gap: 20px;">
+                    <span>Đơn vị: <strong>{{ event.DepartmentName }}</strong></span>
+                    <span>Dự toán ban đầu: <strong style="color: var(--due-blue-primary);">{{ total_estimated | currency }}</strong></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="amount" class="form-label">
+                    Tổng số tiền thực chi đề nghị quyết toán (VNĐ) <span class="required" aria-hidden="true">*</span>
+                </label>
+                <input type="number" id="amount" name="amount" class="form-control" value="{{ payment.Amount | int if payment else total_estimated | int }}" min="0" step="1000" required autofocus>
+                <div class="form-help">Số tiền phải khớp với tổng giá trị trên các hóa đơn tài chính VAT và phiếu chi kèm theo.</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Minh chứng & Hóa đơn chứng từ điện tử</label>
+                <div style="padding: 16px; border: 2px dashed var(--border-color); border-radius: 6px; text-align: center; background-color: #F8FAFC;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-muted); margin-bottom: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <div style="font-size: 13px; color: var(--text-main); font-weight: 600;">Hồ sơ đính kèm hóa đơn bán lẻ, biên lai, hóa đơn điện tử</div>
+                    <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 2px;">Các tệp PDF/JPG/PNG được bảo quản nguyên trạng trong hệ thống lưu trữ minh chứng.</div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <a href="{{ url_for('events.detail', event_id=event.EventId) }}" class="btn btn-outline">Hủy bỏ</a>
+                <button type="submit" class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <span>Gửi hồ sơ quyết toán đến Phòng KHTC</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

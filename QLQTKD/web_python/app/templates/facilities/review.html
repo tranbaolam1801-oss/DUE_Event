@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}Thẩm định & Bàn giao CSVC: {{ req_info.TicketCode }} | MY DUE{% endblock %}
+
+{% block breadcrumb %}
+<a href="{{ url_for('facilities.index') }}" style="color: inherit; text-decoration: none;">Cơ sở vật chất</a>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-current">{{ req_info.TicketCode }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+    <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span style="font-size: 15px; font-weight: 800; color: var(--due-blue-primary);">{{ req_info.TicketCode }}</span>
+            <span class="badge {% if req_info.Status == 'APPROVED' %}badge-approved{% else %}badge-pending{% endif %}">
+                {{ 'Đã phê duyệt' if req_info.Status == 'APPROVED' else 'Chờ thẩm định' }}
+            </span>
+        </div>
+        <h1 class="page-title">{{ req_info.EventTitle }}</h1>
+        <p class="page-subtitle">Đơn vị: <strong>{{ req_info.DepartmentName }}</strong> &bull; Người đề xuất: <strong>{{ req_info.RequestedByName }}</strong> &bull; Ngày gửi: <strong>{{ req_info.RequestedAt | datetime_vn }}</strong></p>
+    </div>
+    <div class="header-actions">
+        <a href="{{ url_for('facilities.index') }}" class="btn btn-outline">Quay lại danh sách</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+    <div>
+        <!-- Thẻ 1: Thông tin phòng giữ chỗ -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 class="card-title" style="margin-bottom: 0;">Địa điểm & Giảng đường đã đăng ký</h2>
+                <a href="{{ url_for('facilities.schedule') }}" class="btn btn-outline btn-sm" target="_blank">Xem lưới lịch</a>
+            </div>
+            <div class="card-body">
+                {% for r in reservations %}
+                <div style="padding: 14px 16px; background-color: #F8FAFC; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size: 14px; color: var(--due-blue-primary);">{{ r.FacilityName }} ({{ r.FacilityCode }})</strong>
+                        <span class="badge {% if r.Status == 'CONFIRMED' %}badge-approved{% else %}badge-info{% endif %}">
+                            {{ 'Đã xác nhận cấp' if r.Status == 'CONFIRMED' else 'Đang giữ chỗ' }}
+                        </span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">
+                        Thời gian sử dụng: <strong>{{ r.StartsAt | datetime_vn }}</strong> &rarr; <strong>{{ r.EndsAt | datetime_vn }}</strong>
+                    </div>
+                </div>
+                {% else %}
+                <div style="padding: 14px 16px; background: #FFFBEB; border-radius: 6px; border: 1px solid #FDE68A; color: #92400E; font-size: 13px;">
+                    Chưa có phòng nào được phân bổ cho yêu cầu này.
+                </div>
+                {% endfor %}
+
+                {% if req_info.Note %}
+                <div style="margin-top: 14px; font-size: 13px; color: var(--text-main); background: #F1F5F9; padding: 10px 14px; border-radius: 4px;">
+                    <strong>Ghi chú từ BTC sự kiện:</strong> {{ req_info.Note }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Thẻ 2: Thiết bị yêu cầu -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">Thiết bị âm thanh, ánh sáng yêu cầu mượn</h2>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div class="table-responsive" style="border: none;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Mã thiết bị</th>
+                                <th>Tên thiết bị</th>
+                                <th class="text-end">Số lượng mượn</th>
+                                <th class="text-end">Tổng kho DUE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for eq in equipment_items or equipment %}
+                            <tr>
+                                <td><span class="font-monospace">{{ eq.EquipmentCode }}</span></td>
+                                <td><strong>{{ eq.EquipmentName }}</strong></td>
+                                <td class="text-end font-monospace"><strong style="color: var(--due-blue-primary);">{{ eq.Quantity }}</strong></td>
+                                <td class="text-end font-monospace text-muted">{{ eq.TotalQuantity }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center" style="padding: 20px; color: var(--text-muted);">Không yêu cầu thêm thiết bị ngoài hội trường.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thẻ 3: Biên bản bàn giao & hoàn trả (BPMN: VerifyReturn) -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Ghi nhận Bàn giao & Nghiệm thu hoàn trả tài sản</h2>
+            </div>
+            <div class="card-body">
+                {% if current_user.has_permission('facilities.handover') %}
+                <form method="POST" action="{{ url_for('facilities.handover_action', request_id=req_info.RequestId) }}" style="margin-bottom: 20px; background: #F8FAFC; padding: 16px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="handover_type" class="form-label">Loại biên bản bàn giao <span class="required">*</span></label>
+                            <select id="handover_type" name="handover_type" class="form-control" required>
+                                <option value="ISSUE">1. Bàn giao CSVC trước sự kiện (ISSUE)</option>
+                                <option value="RETURN">2. Nghiệm thu hoàn trả sau sự kiện (RETURN)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="condition_note" class="form-label">Tình trạng tài sản & Ghi chú kiểm tra</label>
+                        <textarea id="condition_note" name="condition_note" class="form-control" rows="2" placeholder="Ví dụ: Hội trường sạch sẽ, hệ thống âm thanh, micro, máy chiếu hoạt động bình thường..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Lưu biên bản bàn giao / hoàn trả</span>
+                    </button>
+                </form>
+                {% endif %}
+
+                <h3 style="font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+                    Lịch sử các lần lập biên bản:
+                </h3>
+                {% for h in handovers %}
+                <div style="padding: 12px 14px; background: #FFFFFF; border: 1px solid var(--border-color); border-left: 3px solid var(--due-blue-primary); border-radius: 4px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="color: var(--text-main); font-size: 13.5px;">
+                            {{ 'Biên bản Bàn giao tài sản' if h.HandoverType == 'ISSUE' else 'Biên bản Nghiệm thu hoàn trả' }}
+                        </strong>
+                        <small class="text-muted">{{ h.RecordedAt | datetime_vn }} &bull; Người lập: {{ h.RecordedByName }}</small>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-main); margin-top: 4px;">
+                        Tình trạng: {{ h.ConditionNote or 'Tất cả thiết bị bình thường' }}
+                    </div>
+                </div>
+                {% else %}
+                <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 0;">Chưa có biên bản bàn giao/hoàn trả nào được lập.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: Thao tác Thẩm định CSVC -->
+    <div>
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Quyết định của Phòng CSVC</h2>
+            </div>
+            <div class="card-body">
+                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+                    Phòng Cơ sở vật chất đối chiếu lịch phòng và kiểm tra tình trạng kho thiết bị để ra quyết định phê duyệt cấp hoặc yêu cầu điều chỉnh.
+                </p>
+
+                {% if current_user.has_permission('facilities.approve') or current_user.has_permission('facilities.assign') %}
+                <!-- NÚT PHÊ DUYỆT CẤP CSVC -->
+                <form method="POST" action="{{ url_for('facilities.review_request', request_id=req_info.RequestId) }}" style="margin-bottom: 12px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="APPROVE">
+                    <button type="submit" class="btn btn-success" style="width: 100%; justify-content: center;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Xác nhận cấp CSVC & Đặt phòng</span>
+                    </button>
+                </form>
+
+                <!-- FORM ĐỀ NGHỊ ĐIỀU CHỈNH -->
+                <form method="POST" action="{{ url_for('facilities.review_request', request_id=req_info.RequestId) }}" style="margin-bottom: 12px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="REVISION">
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <textarea name="note" class="form-control form-control-sm" rows="2" placeholder="Lý do điều chỉnh (trùng lịch, hội trường sửa chữa...)" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline" style="width: 100%; justify-content: center; color: var(--due-orange-primary); border-color: var(--due-orange-primary);">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        <span>Đề nghị điều chỉnh CSVC</span>
+                    </button>
+                </form>
+                {% endif %}
+
+                <a href="{{ url_for('events.detail', event_id=req_info.EventId) }}" class="btn btn-outline" style="width: 100%; justify-content: center;">
+                    Xem toàn bộ hồ sơ sự kiện
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
