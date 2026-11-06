@@ -82,7 +82,7 @@ export async function createSettlement(data: {
   }
 
   const totalBudgeted = items.reduce((s, i) => s + i.budgetedAmount, 0);
-  const totalActual = data.totalActual ?? items.reduce((s, i) => s + i.actualAmount, 0);
+  const totalActual = items.reduce((s, i) => s + i.actualAmount, 0);
   const difference = totalActual - totalBudgeted;
 
   return prisma.settlement.create({
@@ -138,6 +138,10 @@ export async function updateSettlement(id: string, data: {
       throw new Error('Khoản chi không thuộc hồ sơ quyết toán này');
     }
   }
+  const actualFromItems = (data.items || settlement.items).reduce((sum, item) => sum + item.actualAmount, 0);
+  if (data.totalActual !== undefined && Math.abs(data.totalActual - actualFromItems) >= 0.01) {
+    throw new Error('Tổng kinh phí thực tế phải bằng tổng các khoản chi chi tiết');
+  }
 
   return prisma.$transaction(async (tx) => {
     if (data.items) {
@@ -158,7 +162,7 @@ export async function updateSettlement(id: string, data: {
       }
 
       const totalBudgeted = data.items.reduce((s, i) => s + i.budgetedAmount, 0);
-      const totalActual = data.totalActual ?? data.items.reduce((s, i) => s + i.actualAmount, 0);
+      const totalActual = data.items.reduce((s, i) => s + i.actualAmount, 0);
       const difference = totalActual - totalBudgeted;
 
       return tx.settlement.update({
@@ -177,10 +181,8 @@ export async function updateSettlement(id: string, data: {
     return tx.settlement.update({
       where: { id },
       data: {
-        ...(data.totalActual !== undefined ? {
-          totalActual: data.totalActual,
-          difference: data.totalActual - settlement.totalBudgeted,
-        } : {}),
+        totalActual: actualFromItems,
+        difference: actualFromItems - settlement.totalBudgeted,
         settlementDate: parseSettlementDate(data.settlementDate),
         notes: data.notes,
       },

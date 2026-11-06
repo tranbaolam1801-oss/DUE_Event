@@ -2,6 +2,11 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import { randomUUID } from 'crypto';
 import { config } from '../config';
+import { isProductionRuntime } from '../config/runtime';
+
+function usesPersistentStorage(): boolean {
+  return isProductionRuntime();
+}
 
 export function validateAttachment(name: string, mime: string, bytes: Buffer) {
   const extension = path.extname(name).toLowerCase();
@@ -37,7 +42,8 @@ async function privateBucket() {
 export async function saveAttachment(eventId: string, name: string, mime: string, bytes: Buffer) {
   const extension = validateAttachment(name, mime, bytes);
   const fileName = randomUUID() + extension;
-  if (process.env.STORAGE_DRIVER === 'supabase') {
+  if (usesPersistentStorage()) {
+    if (process.env.STORAGE_DRIVER !== 'supabase') throw new Error('Production yêu cầu Storage bền vững');
     const cfg = await privateBucket();
     const objectKey = `${encodeURIComponent(eventId)}/${fileName}`;
     const response = await fetch(`${cfg.base}/object/${encodeURIComponent(cfg.bucket)}/${objectKey}`, {
@@ -47,7 +53,6 @@ export async function saveAttachment(eventId: string, name: string, mime: string
     if (!response.ok) throw new Error('Không lưu được tệp vào Storage');
     return { fileName, filePath: `supabase://${cfg.bucket}/${objectKey}` };
   }
-  if (process.env.NODE_ENV === 'production' || process.env.VERCEL) throw new Error('Production yêu cầu Storage bền vững');
   const directory = path.resolve(config.uploadDir);
   await fs.mkdir(directory, { recursive: true });
   const filePath = path.join(directory, fileName);
@@ -56,6 +61,9 @@ export async function saveAttachment(eventId: string, name: string, mime: string
 }
 export async function removeAttachment(filePath: string) {
   if (filePath.startsWith('supabase://')) {
+    if (!usesPersistentStorage()) {
+      throw new Error('Tệp thuộc Cloud Storage và không khả dụng trong chế độ local');
+    }
     const cfg = await privateBucket();
     const prefix = `supabase://${cfg.bucket}/`;
     if (!filePath.startsWith(prefix)) throw new Error('Storage bucket không khớp');
@@ -75,6 +83,9 @@ export async function removeAttachment(filePath: string) {
 }
 export async function resolveAttachment(filePath: string, download = false): Promise<{ url: string } | { localPath: string }> {
   if (filePath.startsWith('supabase://')) {
+    if (!usesPersistentStorage()) {
+      throw new Error('Tệp thuộc Cloud Storage và không khả dụng trong chế độ local');
+    }
     const cfg = await privateBucket();
     const prefix = `supabase://${cfg.bucket}/`;
     if (!filePath.startsWith(prefix)) throw new Error('Storage bucket không khớp');

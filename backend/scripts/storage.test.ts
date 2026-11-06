@@ -10,9 +10,9 @@ test('reject active file extensions, spoofed MIME, empty files and false signatu
 });
 test('private storage checks bucket, disables overwrite, and returns opaque metadata', async () => {
   const originalFetch = global.fetch;
-  const keys = ['STORAGE_DRIVER','SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','SUPABASE_STORAGE_BUCKET'];
+  const keys = ['NODE_ENV','STORAGE_DRIVER','SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','SUPABASE_STORAGE_BUCKET'];
   const originalEnv = keys.map(key=>process.env[key]);
-  Object.assign(process.env, { STORAGE_DRIVER:'supabase', SUPABASE_URL:'https://storage.invalid', SUPABASE_SERVICE_ROLE_KEY:'unit-test-only', SUPABASE_STORAGE_BUCKET:'private-test' });
+  Object.assign(process.env, { NODE_ENV:'production', STORAGE_DRIVER:'supabase', SUPABASE_URL:'https://storage.invalid', SUPABASE_SERVICE_ROLE_KEY:'unit-test-only', SUPABASE_STORAGE_BUCKET:'private-test' });
   const calls: {url:string,init?:RequestInit}[] = [];
   global.fetch = (async (url, init) => {
     calls.push({url:String(url),init});

@@ -4,7 +4,8 @@
  */
 import type { FinancialDocument } from '../types';
 
-const BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
+const environment = (import.meta as any).env || {};
+const BASE_URL = environment.DEV ? '/api' : environment.VITE_API_URL || '/api';
 
 const API_FIELD_LABELS: Record<string, string> = {
   title: 'Tên sự kiện',
@@ -108,6 +109,10 @@ export async function request<T>(endpoint: string, options: RequestInit = {}): P
       response.status,
       fieldErrors
     );
+  }
+
+  if (data?.success === false) {
+    throw new ApiRequestError(data.error || data.message || 'Yêu cầu API không được xác nhận thành công', response.status);
   }
 
   return data;
@@ -299,16 +304,19 @@ export const api = {
     }
     const token = getAuthToken();
     const response = await fetch(`${BASE_URL}/settlements/${settlementId}/documents/upload`, {
+      signal: AbortSignal.timeout(30000),
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Tải chứng từ thất bại');
+    if (!data.success || !data.data?.id) throw new Error('Máy chủ chưa xác nhận lưu metadata chứng từ');
     return data;
   },
   downloadFinancialDocument: async (settlementId: string, documentId: string, name: string) => {
     const response = await fetch(`${BASE_URL}/settlements/${settlementId}/documents/${documentId}/download`, {
+      signal: AbortSignal.timeout(30000),
       headers: { Authorization: `Bearer ${getAuthToken() || ''}` },
     });
     if (!response.ok) throw new Error('Không tải được chứng từ quyết toán');
@@ -343,6 +351,7 @@ export const api = {
       headers['Authorization'] = `Bearer ${token}`;
     }
     const response = await fetch(`${BASE_URL}/events/${eventId}/attachments`, {
+      signal: AbortSignal.timeout(30000),
       method: 'POST',
       headers,
       body: formData,
@@ -382,6 +391,7 @@ export const api = {
   },
   downloadAttachment: async (eventId: string, attachmentId: string, name: string) => {
     const response = await fetch(`${BASE_URL}/events/${eventId}/attachments/${attachmentId}/download`, {
+      signal: AbortSignal.timeout(30000),
       headers: { Authorization: `Bearer ${getAuthToken() || ''}` },
     });
     if (!response.ok) throw new Error('Không tải được tệp đính kèm');
@@ -414,6 +424,28 @@ export const api = {
   // Facilities & Equipment Management (Full CRUD)
   getFacilities: (all?: boolean) =>
     request<{ success: boolean; data: any[] }>(`/bookings/facilities${all ? '?all=true' : ''}`),
+  getFacility: (id: string) =>
+    request<{ success: boolean; data: any }>(`/bookings/facilities/${encodeURIComponent(id)}`),
+  getFacilityTypes: (all?: boolean) =>
+    request<{ success: boolean; data: Array<{ id: string; name: string; isActive: boolean }> }>(`/bookings/facility-types${all ? '?all=true' : ''}`),
+  createFacilityType: (name: string) =>
+    request<{ success: boolean; data: { id: string; name: string; isActive: boolean } }>('/bookings/facility-types', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }),
+  updateFacilityType: (id: string, name: string) =>
+    request<{ success: boolean; data: { id: string; name: string; isActive: boolean } }>(`/bookings/facility-types/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    }),
+  deleteFacilityType: (id: string) =>
+    request<{ success: boolean; data: { id: string; name: string; isActive: boolean } }>(`/bookings/facility-types/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+  restoreFacilityType: (id: string) =>
+    request<{ success: boolean; data: { id: string; name: string; isActive: boolean } }>(`/bookings/facility-types/${encodeURIComponent(id)}/restore`, {
+      method: 'PATCH',
+    }),
   createFacility: (data: any) =>
     request<{ success: boolean; data: any }>('/bookings/facilities', {
       method: 'POST',
@@ -432,9 +464,15 @@ export const api = {
     request<{ success: boolean; data: any }>(`/bookings/facilities/${id}/toggle`, {
       method: 'PATCH',
     }),
+  restoreFacility: (id: string) =>
+    request<{ success: boolean; data: any; message: string }>(`/bookings/facilities/${id}/restore`, {
+      method: 'PATCH',
+    }),
 
   getEquipment: (all?: boolean) =>
     request<{ success: boolean; data: any[] }>(`/bookings/equipment${all ? '?all=true' : ''}`),
+  getEquipmentById: (id: string) =>
+    request<{ success: boolean; data: any }>(`/bookings/equipment/${encodeURIComponent(id)}`),
   createEquipment: (data: any) =>
     request<{ success: boolean; data: any }>('/bookings/equipment', {
       method: 'POST',
@@ -451,6 +489,10 @@ export const api = {
     }),
   toggleEquipment: (id: string) =>
     request<{ success: boolean; data: any }>(`/bookings/equipment/${id}/toggle`, {
+      method: 'PATCH',
+    }),
+  restoreEquipment: (id: string) =>
+    request<{ success: boolean; data: any; message: string }>(`/bookings/equipment/${id}/restore`, {
       method: 'PATCH',
     }),
 };

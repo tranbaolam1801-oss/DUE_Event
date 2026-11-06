@@ -13,9 +13,10 @@ interface EventSubmissionData {
   expectedAttendees: number | null;
   startDate: Date | null;
   endDate: Date | null;
+  preferredVenue?: string | null;
   scheduleItems: Array<{ timeSlot: string; activity: string }>;
   budgetItems: Array<{ itemName: string; quantity: number; unitPrice: number }>;
-  resourceBookings: Array<{ facilityId: string; facility: { isActive: boolean } | null }>;
+  resourceBookings?: Array<{ facilityId?: string | null; facility?: { isActive?: boolean } | null }> | null;
   attachments?: Array<{ category: string | null }> | null;
 }
 
@@ -82,8 +83,12 @@ export function validateEventSubmission(
     addIssue('budgetItems', 'Vui lòng kiểm tra tên, số lượng và đơn giá của các khoản chi');
   }
 
-  if (!event.resourceBookings.some((booking) => booking.facilityId.trim() && booking.facility?.isActive)) {
-    addIssue('booking.facilityId', 'Vui lòng chọn địa điểm tổ chức');
+  const hasSelectedFacility = (event.resourceBookings || []).some((booking) =>
+    typeof booking.facilityId === 'string' && booking.facilityId.trim().length > 0 && booking.facility?.isActive !== false
+  );
+  const hasCustomVenue = Boolean(event.preferredVenue?.trim());
+  if (!hasSelectedFacility && !hasCustomVenue) {
+    addIssue('booking.facilityId', 'Vui lòng chọn địa điểm tổ chức hoặc nhập địa điểm khác');
   }
 
   return issues;

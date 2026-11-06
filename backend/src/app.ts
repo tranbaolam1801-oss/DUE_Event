@@ -5,7 +5,9 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { config } from './config';
+import { isProductionRuntime } from './config/runtime';
 import { errorHandler } from './middleware/errorHandler';
+import prisma from './config/database';
 
 import authRoutes from './routes/auth.routes';
 import eventRoutes from './routes/event.routes';
@@ -20,7 +22,7 @@ import userRoutes from './routes/user.routes';
 const app = express();
 app.set('json replacer', databaseJsonReplacer);
 
-const isSecureRuntime = process.env.NODE_ENV === 'production' && (process.env.FORCE_HTTPS === 'true' || process.env.USE_HTTPS === 'true');
+const isSecureRuntime = isProductionRuntime() && (process.env.FORCE_HTTPS === 'true' || process.env.USE_HTTPS === 'true');
 
 app.use(helmet({
   crossOriginResourcePolicy: false,
@@ -49,7 +51,17 @@ app.use(helmet({
   xFrameOptions: { action: 'sameorigin' },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
-app.use(cors({ origin: config.corsOrigin.split(',').map(origin => origin.trim()), credentials: true }));
+const allowedOrigins = config.corsOrigin.split(',').map((origin) => origin.trim()).filter(Boolean);
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || (allowedOrigins.includes('*') && !isProductionRuntime()) || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(null, false);
+  },
+  credentials: true,
+}));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -58,13 +70,25 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Attachments are served exclusively through authenticated event routes.
 
 // Healthcheck
-app.get('/api/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    name: 'EventFlow API Server - ĐH Kinh tế ĐHĐN',
-    database: process.env.DATABASE_URL?.startsWith('postgres') ? 'PostgreSQL (Cloud SQL)' : 'SQLite',
-    timestamp: new Date().toISOString(),
-  });
+app.get('/api/health', async (_req, res) => {
+  const isPostgres = /^postgres(?:ql)?:\/\//i.test(process.env.DATABASE_URL || '');
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: 'ok',
+      name: 'EventFlow API Server - ĐH Kinh tế ĐHĐN',
+      database: isPostgres ? 'PostgreSQL' : 'SQLite',
+      timestamp: new Date().toISOString(),
+    });
+  } catch {
+    res.status(503).json({
+      status: 'error',
+      name: 'EventFlow API Server - ĐH Kinh tế ĐHĐN',
+      database: isPostgres ? 'PostgreSQL' : 'SQLite',
+      error: 'Database connection unavailable',
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // API Routes

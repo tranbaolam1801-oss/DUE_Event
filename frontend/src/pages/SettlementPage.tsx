@@ -36,7 +36,6 @@ export const SettlementPage: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState('');
   const selectedEvent = events.find((event) => event.id === selectedEventId);
   const [items, setItems] = useState<SettlementItem[]>([]);
-  const [totalActualInput, setTotalActualInput] = useState(0);
   const [settlementDate, setSettlementDate] = useState('');
   const [settlementNotes, setSettlementNotes] = useState('');
   const [documentType, setDocumentType] = useState<FinancialDocument['documentType']>('INVOICE');
@@ -63,7 +62,6 @@ export const SettlementPage: React.FC = () => {
       notes: item.notes || '',
     }));
     setItems(initialItems);
-    setTotalActualInput(selectedEvent.settlement?.totalActual ?? initialItems.reduce((sum, item) => sum + item.actualAmount, 0));
     setSettlementDate(selectedEvent.settlement?.settlementDate?.slice(0, 10) || '');
     setSettlementNotes(selectedEvent.settlement?.notes || '');
   }, [selectedEvent?.id, selectedEvent?.settlement?.id]);
@@ -71,9 +69,8 @@ export const SettlementPage: React.FC = () => {
   const settlement = selectedEvent?.settlement;
   const totalBudgeted = useMemo(() => items.reduce((sum, item) => sum + (Number(item.budgetedAmount) || 0), 0), [items]);
   const itemActualTotal = useMemo(() => items.reduce((sum, item) => sum + (Number(item.actualAmount) || 0), 0), [items]);
-  const totalActual = Number(totalActualInput) || 0;
+  const totalActual = itemActualTotal;
   const difference = totalActual - totalBudgeted;
-  const amountsReconcile = Math.abs(itemActualTotal - totalActual) < 0.01;
   const canEdit = Boolean(
     selectedEvent &&
     editableSettlementStatuses.includes(settlement?.status || 'DRAFT') &&
@@ -98,10 +95,6 @@ export const SettlementPage: React.FC = () => {
       showToast('Tổng kinh phí thực tế phải là số hợp lệ và không âm.', 'error');
       return;
     }
-    if (!amountsReconcile) {
-      showToast('Tổng thực tế phải bằng tổng các khoản chi chi tiết.', 'error');
-      return;
-    }
     if (items.some((item) => item.actualAmount < 0 || item.budgetedAmount < 0)) {
       showToast('Số tiền không được nhỏ hơn 0.', 'error');
       return;
@@ -122,10 +115,6 @@ export const SettlementPage: React.FC = () => {
     }
     if (!items.length || items.some((item) => !item.itemName.trim()) || !settlementDate) {
       showToast('Trước khi tải chứng từ, hãy nhập các khoản chi và ngày quyết toán rồi lưu biểu mẫu.', 'error');
-      return;
-    }
-    if (!amountsReconcile) {
-      showToast('Tổng thực tế phải bằng tổng các khoản chi chi tiết.', 'error');
       return;
     }
     setDocumentSaving(true);
@@ -347,24 +336,6 @@ export const SettlementPage: React.FC = () => {
                     />
                   </span>
                 </label>
-                <div>
-                  <label htmlFor="settlement-total-actual" className="mb-1.5 block text-xs font-semibold text-slate-700">
-                    Tổng kinh phí thực tế đã chi (VNĐ)
-                  </label>
-                  <input
-                    id="settlement-total-actual"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={totalActualInput}
-                    onChange={(event) => setTotalActualInput(Number(event.target.value) || 0)}
-                    required
-                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800"
-                  />
-                  <p className={`mt-1 text-[10px] ${amountsReconcile ? 'text-slate-500' : 'text-rose-600'}`}>
-                    Tổng khoản chi chi tiết: {formatCurrency(itemActualTotal)}
-                  </p>
-                </div>
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-semibold text-slate-700">Ghi chú quyết toán</span>
                   <textarea

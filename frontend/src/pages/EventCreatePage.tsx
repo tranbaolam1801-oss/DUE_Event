@@ -251,7 +251,8 @@ export const EventCreatePage: React.FC = () => {
       Number(formData.expectedAttendees) || 0,
       selectedEquipment,
       equipment,
-      true
+      true,
+      formData.preferredVenue
     );
     setErrors(err);
     return Object.keys(err).length === 0;

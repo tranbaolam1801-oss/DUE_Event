@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Building2,
   Package,
@@ -39,10 +39,117 @@ const EQUIPMENT_TYPES = [
   'Khác',
 ];
 
+interface FacilityTypeOption {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
+
 export const FacilityListPage: React.FC = () => {
   const { facilities, equipment, refresh, showToast } = useEvents();
   const { currentUser } = useAuth();
   const canManage = ['CSVC', 'ADMIN'].includes(currentUser.role);
+  const [managementFacilities, setManagementFacilities] = useState<Facility[]>([]);
+  const [managementEquipment, setManagementEquipment] = useState<Equipment[]>([]);
+  const [facilityTypes, setFacilityTypes] = useState<FacilityTypeOption[]>([]);
+  const catalogFacilities = canManage ? managementFacilities : facilities;
+  const catalogEquipment = canManage ? managementEquipment : equipment;
+  const [facilityTypeModalOpen, setFacilityTypeModalOpen] = useState(false);
+  const [editingFacilityTypeId, setEditingFacilityTypeId] = useState<string | null>(null);
+  const [facilityTypeName, setFacilityTypeName] = useState('');
+  const [savingFacilityType, setSavingFacilityType] = useState(false);
+
+  const refreshCatalog = async () => {
+    if (!canManage) return;
+    const [facilityResult, equipmentResult, typeResult] = await Promise.all([
+      api.getFacilities(true),
+      api.getEquipment(true),
+      api.getFacilityTypes(true),
+    ]);
+    setManagementFacilities(facilityResult.data.map((item) => ({
+      ...item,
+      amenities: Array.isArray(item.amenities) ? item.amenities : [],
+      status: 'AVAILABLE',
+    })));
+    setManagementEquipment(equipmentResult.data.map((item) => ({
+      ...item,
+      availableQuantity: item.totalQuantity,
+    })));
+    setFacilityTypes(typeResult.data);
+  };
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      canManage ? api.getFacilities(true) : api.getFacilities(),
+      canManage ? api.getEquipment(true) : api.getEquipment(),
+      api.getFacilityTypes(canManage),
+    ])
+      .then(([facilityResult, equipmentResult, typeResult]) => {
+        if (!active) return;
+        if (canManage) {
+          setManagementFacilities(facilityResult.data.map((item) => ({
+            ...item,
+            amenities: Array.isArray(item.amenities) ? item.amenities : [],
+            status: 'AVAILABLE',
+          })));
+          setManagementEquipment(equipmentResult.data.map((item) => ({
+            ...item,
+            availableQuantity: item.totalQuantity,
+          })));
+        }
+        setFacilityTypes(typeResult.data);
+      })
+      .catch((error: unknown) => {
+        if (active) showToast(error instanceof Error ? error.message : 'Không tải được danh mục tài nguyên', 'error');
+      });
+    return () => { active = false; };
+  }, [canManage]);
+
+  const handleSaveFacilityType = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const name = facilityTypeName.trim();
+    if (!name) {
+      showToast('Vui lòng nhập tên loại cơ sở vật chất', 'error');
+      return;
+    }
+    setSavingFacilityType(true);
+    try {
+      if (editingFacilityTypeId) await api.updateFacilityType(editingFacilityTypeId, name);
+      else await api.createFacilityType(name);
+      showToast(editingFacilityTypeId ? 'Đã cập nhật loại cơ sở vật chất' : 'Đã thêm loại cơ sở vật chất');
+      setEditingFacilityTypeId(null);
+      setFacilityTypeName('');
+      try {
+        await refresh();
+        await refreshCatalog();
+      } catch {
+        showToast('Đã lưu loại cơ sở vật chất nhưng chưa tải lại được danh sách.', 'error');
+      }
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Không lưu được loại cơ sở vật chất', 'error');
+    } finally {
+      setSavingFacilityType(false);
+    }
+  };
+
+  const handleToggleFacilityType = async (type: FacilityTypeOption) => {
+    setSavingFacilityType(true);
+    try {
+      if (type.isActive) await api.deleteFacilityType(type.id);
+      else await api.restoreFacilityType(type.id);
+      showToast(type.isActive ? 'Đã vô hiệu hóa loại cơ sở vật chất' : 'Đã khôi phục loại cơ sở vật chất');
+      try {
+        await refreshCatalog();
+      } catch {
+        showToast('Đã đổi trạng thái nhưng chưa tải lại được danh sách.', 'error');
+      }
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Không đổi được trạng thái loại cơ sở vật chất', 'error');
+    } finally {
+      setSavingFacilityType(false);
+    }
+  };
 
   const [activeTab, setActiveTab] = useState<'facilities' | 'equipment'>('facilities');
   const [searchTerm, setSearchTerm] = useState('');
@@ -80,7 +187,7 @@ export const FacilityListPage: React.FC = () => {
 
   // Filtered facilities
   const filteredFacilities = useMemo(() => {
-    return facilities.filter((f) => {
+    return catalogFacilities.filter((f) => {
       const matchSearch =
         f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         f.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -92,11 +199,11 @@ export const FacilityListPage: React.FC = () => {
         (statusFilter === 'INACTIVE' && f.isActive === false);
       return matchSearch && matchType && matchStatus;
     });
-  }, [facilities, searchTerm, typeFilter, statusFilter]);
+  }, [catalogFacilities, searchTerm, typeFilter, statusFilter]);
 
   // Filtered equipment
   const filteredEquipment = useMemo(() => {
-    return equipment.filter((eq) => {
+    return catalogEquipment.filter((eq) => {
       const matchSearch =
         eq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         eq.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -108,7 +215,7 @@ export const FacilityListPage: React.FC = () => {
         (statusFilter === 'INACTIVE' && eq.isActive === false);
       return matchSearch && matchType && matchStatus;
     });
-  }, [equipment, searchTerm, typeFilter, statusFilter]);
+  }, [catalogEquipment, searchTerm, typeFilter, statusFilter]);
 
   // Open modal create facility
   const openCreateFacility = () => {
@@ -161,13 +268,17 @@ export const FacilityListPage: React.FC = () => {
 
       if (editingFacility) {
         await api.updateFacility(editingFacility.id, payload);
-        showToast('Cập nhật cơ sở vật chất thành công');
       } else {
         await api.createFacility(payload);
-        showToast('Thêm cơ sở vật chất mới thành công');
       }
       setFacilityModalOpen(false);
+      showToast(editingFacility ? 'Cập nhật cơ sở vật chất thành công' : 'Thêm cơ sở vật chất mới thành công');
       await refresh();
+      try {
+        await refreshCatalog();
+      } catch {
+        showToast('Đã lưu thành công nhưng chưa tải lại được danh sách. Vui lòng làm mới trang.', 'error');
+      }
     } catch (err: any) {
       showToast(err.message || 'Lỗi khi lưu cơ sở vật chất', 'error');
     } finally {
@@ -178,9 +289,15 @@ export const FacilityListPage: React.FC = () => {
   // Toggle facility active status
   const handleToggleFacility = async (f: Facility) => {
     try {
-      await api.toggleFacility(f.id);
+      if (f.isActive === false) await api.restoreFacility(f.id);
+      else await api.toggleFacility(f.id);
       showToast(`Đã ${f.isActive === false ? 'kích hoạt lại' : 'vô hiệu hóa'} ${f.name}`);
       await refresh();
+      try {
+        await refreshCatalog();
+      } catch {
+        showToast('Đã cập nhật trạng thái nhưng chưa tải lại được danh sách.', 'error');
+      }
     } catch (err: any) {
       showToast(err.message || 'Lỗi khi đổi trạng thái', 'error');
     }
@@ -234,13 +351,17 @@ export const FacilityListPage: React.FC = () => {
 
       if (editingEquipment) {
         await api.updateEquipment(editingEquipment.id, payload);
-        showToast('Cập nhật trang thiết bị thành công');
       } else {
         await api.createEquipment(payload);
-        showToast('Thêm trang thiết bị mới thành công');
       }
       setEquipmentModalOpen(false);
+      showToast(editingEquipment ? 'Cập nhật trang thiết bị thành công' : 'Thêm trang thiết bị mới thành công');
       await refresh();
+      try {
+        await refreshCatalog();
+      } catch {
+        showToast('Đã lưu thành công nhưng chưa tải lại được danh sách. Vui lòng làm mới trang.', 'error');
+      }
     } catch (err: any) {
       showToast(err.message || 'Lỗi khi lưu thiết bị', 'error');
     } finally {
@@ -251,9 +372,15 @@ export const FacilityListPage: React.FC = () => {
   // Toggle equipment active status
   const handleToggleEquipment = async (eq: Equipment) => {
     try {
-      await api.toggleEquipment(eq.id);
+      if (eq.isActive === false) await api.restoreEquipment(eq.id);
+      else await api.toggleEquipment(eq.id);
       showToast(`Đã ${eq.isActive === false ? 'kích hoạt lại' : 'vô hiệu hóa'} ${eq.name}`);
       await refresh();
+      try {
+        await refreshCatalog();
+      } catch {
+        showToast('Đã cập nhật trạng thái nhưng chưa tải lại được danh sách.', 'error');
+      }
     } catch (err: any) {
       showToast(err.message || 'Lỗi khi đổi trạng thái', 'error');
     }
@@ -273,6 +400,11 @@ export const FacilityListPage: React.FC = () => {
       }
       setDeleteTarget(null);
       await refresh();
+      try {
+        await refreshCatalog();
+      } catch {
+        showToast('Đã xóa mềm thành công nhưng chưa tải lại được danh sách.', 'error');
+      }
     } catch (err: any) {
       showToast(err.message || 'Lỗi khi xóa', 'error');
     } finally {
@@ -300,7 +432,7 @@ export const FacilityListPage: React.FC = () => {
                 activeTab === 'facilities' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Hội trường & Phòng ({facilities.length})
+              Hội trường & Phòng ({catalogFacilities.length})
             </button>
             <button
               onClick={() => { setActiveTab('equipment'); setTypeFilter('ALL'); }}
@@ -308,20 +440,34 @@ export const FacilityListPage: React.FC = () => {
                 activeTab === 'equipment' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Trang thiết bị ({equipment.length})
+              Trang thiết bị ({catalogEquipment.length})
             </button>
           </div>
 
           {canManage && (
             activeTab === 'facilities' ? (
-              <button
-                type="button"
-                onClick={openCreateFacility}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#005FAF] hover:bg-[#004A8A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Thêm địa điểm/phòng</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingFacilityTypeId(null);
+                    setFacilityTypeName('');
+                    setFacilityTypeModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold cursor-pointer transition-colors"
+                >
+                  <Wrench className="w-4 h-4" />
+                  <span>Loại CSVC</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={openCreateFacility}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-[#005FAF] hover:bg-[#004A8A] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Thêm địa điểm/phòng</span>
+                </button>
+              </>
             ) : (
               <button
                 type="button"
@@ -360,7 +506,9 @@ export const FacilityListPage: React.FC = () => {
             className="text-xs py-1.5 px-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer"
           >
             <option value="ALL">Tất cả phân loại</option>
-            {(activeTab === 'facilities' ? FACILITY_TYPES : EQUIPMENT_TYPES).map((t) => (
+            {(activeTab === 'facilities'
+              ? (facilityTypes.length ? facilityTypes.map((type) => type.name) : FACILITY_TYPES)
+              : EQUIPMENT_TYPES).map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
@@ -640,7 +788,10 @@ export const FacilityListPage: React.FC = () => {
                     onChange={(e) => setFacilityForm({ ...facilityForm, type: e.target.value })}
                     className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white"
                   >
-                    {FACILITY_TYPES.map((t) => (
+                    {facilityTypes.filter((type) => type.isActive || type.name === facilityForm.type).map((type) => (
+                      <option key={type.id} value={type.name} disabled={!type.isActive}>{type.name}</option>
+                    ))}
+                    {!facilityTypes.length && FACILITY_TYPES.map((t) => (
                       <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
@@ -834,6 +985,87 @@ export const FacilityListPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {facilityTypeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div className="font-bold text-sm text-slate-900">Quản lý loại cơ sở vật chất</div>
+              <button
+                type="button"
+                onClick={() => setFacilityTypeModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-5 space-y-4 text-xs">
+              <form onSubmit={handleSaveFacilityType} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={facilityTypeName}
+                  onChange={(event) => setFacilityTypeName(event.target.value)}
+                  placeholder="Tên loại CSVC"
+                  className="flex-1 p-2.5 rounded-xl border border-slate-200 bg-slate-50"
+                  maxLength={80}
+                  required
+                />
+                <button
+                  type="submit"
+                  disabled={savingFacilityType}
+                  className="px-3 py-2.5 rounded-xl bg-[#005FAF] text-white font-bold disabled:opacity-50"
+                >
+                  {savingFacilityType ? 'Đang lưu...' : editingFacilityTypeId ? 'Cập nhật' : 'Thêm'}
+                </button>
+                {editingFacilityTypeId && (
+                  <button
+                    type="button"
+                    disabled={savingFacilityType}
+                    onClick={() => { setEditingFacilityTypeId(null); setFacilityTypeName(''); }}
+                    className="px-3 py-2.5 rounded-xl border border-slate-200"
+                  >
+                    Hủy
+                  </button>
+                )}
+              </form>
+              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 border border-slate-100 rounded-xl">
+                {facilityTypes.map((type) => (
+                  <div key={type.id} className="flex items-center justify-between gap-3 p-3">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-800">{type.name}</div>
+                      <div className={type.isActive ? 'text-emerald-700' : 'text-slate-500'}>
+                        {type.isActive ? 'Đang hoạt động' : 'Đã vô hiệu hóa'}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={savingFacilityType}
+                        onClick={() => { setEditingFacilityTypeId(type.id); setFacilityTypeName(type.name); }}
+                        className="px-2.5 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-[#005FAF] disabled:opacity-50"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        type="button"
+                        disabled={savingFacilityType}
+                        onClick={() => void handleToggleFacilityType(type)}
+                        title={type.isActive ? 'Vô hiệu hóa' : 'Khôi phục'}
+                        className="p-1.5 rounded-lg border border-slate-200 text-slate-600 disabled:opacity-50"
+                      >
+                        {type.isActive ? <Power className="w-3.5 h-3.5" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {facilityTypes.length === 0 && (
+                  <div className="p-4 text-center text-slate-500">Chưa có loại cơ sở vật chất.</div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

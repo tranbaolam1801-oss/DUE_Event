@@ -677,6 +677,7 @@ export async function submitEvent(id: string, userId: string, userRole: string) 
       budgetItems: true,
       scheduleItems: true,
       resourceBookings: { include: { facility: true } },
+      attachments: { select: { category: true } },
     },
   });
 

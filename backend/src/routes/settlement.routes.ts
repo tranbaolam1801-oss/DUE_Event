@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { z } from 'zod';
 import { config } from '../config';
-import { resolveAttachment, saveAttachment } from '../services/storage.service';
+import { removeAttachment, resolveAttachment, saveAttachment } from '../services/storage.service';
 import prisma from '../config/database';
 import {
   createSettlement,
@@ -127,14 +127,24 @@ router.post('/:id/documents/upload', authenticate, upload.single('file'), async 
     }
     const originalName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
     const stored = await saveAttachment(settlement.eventId, originalName, req.file.mimetype, req.file.buffer);
-    const document = await uploadFinancialDocument(settlementId, {
-      documentType,
-      documentNumber: req.body.documentNumber || undefined,
-      amount,
-      description: req.body.description || undefined,
-      fileName: originalName,
-      filePath: stored.filePath,
-    });
+    let document;
+    try {
+      document = await uploadFinancialDocument(settlementId, {
+        documentType,
+        documentNumber: req.body.documentNumber || undefined,
+        amount,
+        description: req.body.description || undefined,
+        fileName: originalName,
+        filePath: stored.filePath,
+      });
+    } catch (error) {
+      try {
+        await removeAttachment(stored.filePath);
+      } catch (cleanupError) {
+        console.error('[UPLOAD_CLEANUP_FAILED]', cleanupError instanceof Error ? cleanupError.message : String(cleanupError));
+      }
+      throw error;
+    }
     res.status(201).json({ success: true, data: document, message: 'Tải chứng từ thành công' });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });

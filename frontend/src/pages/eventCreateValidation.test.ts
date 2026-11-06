@@ -54,9 +54,10 @@ describe('event creation validation', () => {
     assert.ok(validateDraftBasics({ title: '', organizingUnit: '' }).title);
   });
 
-  it('requires a real venue for submission and accepts no optional equipment selections', () => {
-    assert.equal(validateResources('', [], 20, [], [], true).facility, 'Vui lòng chọn địa điểm tổ chức');
+  it('requires a real venue for submission and accepts custom venue entries', () => {
+    assert.equal(validateResources('', [], 20, [], [], true).facility, 'Vui lòng chọn địa điểm tổ chức hoặc nhập địa điểm khác');
     assert.deepEqual(validateResources('', [], 20, [], [], false), {});
+    assert.deepEqual(validateResources('', [], 20, [], [], true, 'Phòng họp tầng 5'), {});
   });
 
   it('builds booking payloads only from selected valid facility and equipment IDs using event times', () => {

@@ -182,17 +182,24 @@ export function validateResources(
   expectedAttendees: number,
   selectedEquipment: SelectedEquipment[],
   equipment: EquipmentOption[],
-  requireFacility: boolean
+  requireFacility: boolean,
+  customLocationText?: string
 ): EventFormErrors {
   const errors: EventFormErrors = {};
   const selectedFacility = facilities.find((facility) => facility.id === facilityId);
-  if (requireFacility && !selectedFacility) {
-    errors.facility = 'Vui lòng chọn địa điểm tổ chức';
+  const hasCustomLocation = Boolean(customLocationText?.trim());
+
+  if (requireFacility && !selectedFacility && !hasCustomLocation) {
+    errors.facility = 'Vui lòng chọn địa điểm tổ chức hoặc nhập địa điểm khác';
   } else if (selectedFacility?.capacity && expectedAttendees > selectedFacility.capacity) {
     errors.facility = `Số người dự kiến (${expectedAttendees}) vượt quá sức chứa của ${selectedFacility.name} (${selectedFacility.capacity} chỗ)`;
   }
 
   for (const selection of selectedEquipment) {
+    if (!selection.equipmentId || !selection.equipmentId.trim()) {
+      errors.equipment = 'Vui lòng chọn thiết bị hoặc xóa dòng thiết bị rỗng';
+      break;
+    }
     const item = equipment.find((candidate) => candidate.id === selection.equipmentId);
     if (!item) {
       errors.equipment = 'Thiết bị đã chọn không còn khả dụng. Vui lòng kiểm tra lại danh sách thiết bị.';

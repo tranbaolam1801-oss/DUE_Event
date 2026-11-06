@@ -35,7 +35,7 @@ export async function checkEquipmentAvailability(
   db: Prisma.TransactionClient = prisma
 ) {
   const equipment = await db.equipment.findUnique({ where: { id: equipmentId } });
-  if (!equipment) throw new Error('Không tìm thấy thiết bị');
+  if (!equipment || !equipment.isActive) throw new Error('Thiết bị không tồn tại hoặc đã bị vô hiệu hóa');
 
   const where: Record<string, unknown> = {
     equipmentId,
@@ -78,7 +78,7 @@ export async function createBooking(data: {
   specialRequests?: string;
   alternativeOption?: string;
   equipmentItems?: Array<{ equipmentId: string; quantity: number }>;
-}) {
+}, requestedById: string) {
   const start = new Date(data.startTime);
   const end = new Date(data.endTime);
 
@@ -93,6 +93,14 @@ export async function createBooking(data: {
     equipmentIds.add(item.equipmentId);
   }
   const booking = await serializableTransaction(async (tx) => {
+  const [event, facility] = await Promise.all([
+    tx.event.findUnique({ where: { id: data.eventId }, select: { id: true, createdById: true, deletedAt: true } }),
+    tx.facility.findUnique({ where: { id: data.facilityId } }),
+  ]);
+  if (!event || event.deletedAt) throw new Error('Không tìm thấy hồ sơ sự kiện đang hoạt động');
+  if (event.createdById !== requestedById) throw new Error('Bạn chỉ có thể đăng ký mượn CSVC cho hồ sơ của mình');
+  if (!facility || !facility.isActive) throw new Error('Cơ sở vật chất không tồn tại hoặc đã bị vô hiệu hóa');
+
   // Check facility availability
   const conflicts = await checkAvailability(data.facilityId, start, end, undefined, tx);
   if (conflicts.length > 0) {
@@ -103,8 +111,7 @@ export async function createBooking(data: {
   }
 
   // Check facility capacity
-  const facility = await tx.facility.findUnique({ where: { id: data.facilityId } });
-  if (facility && data.expectedAttendees && facility.capacity && data.expectedAttendees > facility.capacity) {
+  if (data.expectedAttendees && facility.capacity && data.expectedAttendees > facility.capacity) {
     throw new Error(`Số người tham dự (${data.expectedAttendees}) vượt quá sức chứa phòng (${facility.capacity})`);
   }
 
