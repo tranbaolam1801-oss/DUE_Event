@@ -16,6 +16,33 @@ export const bookingSchema = z.object({
   ).optional(),
 });
 
+const budgetItemSchema = z.object({
+  category: z.string().trim().min(1, 'Vui lòng chọn nhóm chi phí'),
+  itemName: z.string().trim().min(1, 'Vui lòng nhập tên khoản chi'),
+  quantity: z.number().int().positive('Số lượng phải là số nguyên lớn hơn 0'),
+  unitPrice: z.number().finite().nonnegative('Đơn giá phải là số không âm'),
+  notes: z.string().nullable().optional(),
+}).superRefine((item, context) => {
+  const lineTotal = item.quantity * item.unitPrice;
+  if (!Number.isFinite(lineTotal) || Math.abs(lineTotal) > Number.MAX_SAFE_INTEGER) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['unitPrice'],
+      message: 'Thành tiền vượt quá giới hạn số tiền hỗ trợ',
+    });
+  }
+});
+
+const budgetItemsSchema = z.array(budgetItemSchema).superRefine((items, context) => {
+  const total = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  if (!Number.isFinite(total) || Math.abs(total) > Number.MAX_SAFE_INTEGER) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Tổng dự toán vượt quá giới hạn số tiền hỗ trợ',
+    });
+  }
+});
+
 export const createEventSchema = z.object({
   booking: bookingSchema.nullable().optional(),
   title: z.string({ required_error: 'Vui lòng nhập tên sự kiện' }).trim().min(1, 'Vui lòng nhập tên sự kiện'),
@@ -35,13 +62,7 @@ export const createEventSchema = z.object({
   setupTime: z.string().datetime().optional(),
   teardownTime: z.string().datetime().optional(),
   preferredVenue: optionalText,
-  budgetItems: z.array(z.object({
-    category: z.string(),
-    itemName: z.string(),
-    quantity: z.number().finite(),
-    unitPrice: z.number().finite(),
-    notes: z.string().optional(),
-  })).optional(),
+  budgetItems: budgetItemsSchema.optional(),
   scheduleItems: z.array(z.object({
     timeSlot: z.string(),
     activity: z.string(),

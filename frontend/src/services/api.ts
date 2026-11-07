@@ -54,6 +54,17 @@ export function removeAuthToken(): void {
   sessionStorage.removeItem('eventflow_token');
 }
 
+async function fetchFileRequest(url: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, init);
+  } catch (error) {
+    const timedOut = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+    throw new Error(timedOut
+      ? 'Yêu cầu tải tệp quá thời gian cho phép. Hãy kiểm tra danh sách trước khi thử lại.'
+      : 'Không kết nối được máy chủ tải tệp.');
+  }
+}
+
 export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getAuthToken();
   const headers: Record<string, string> = {
@@ -164,7 +175,7 @@ export const api = {
     const qs = params ? '?' + new URLSearchParams(params).toString() : '';
     return request<{ success: boolean; events: any[]; pagination: { totalPages: number } }>(`/events${qs}`);
   },
-  getEventById: (id: string) => request<{ success: boolean; data: any }>(`/events/${id}`),
+  getEventById: (eventId: string) => request<{ success: boolean; data: any }>(`/events/${encodeURIComponent(eventId)}`),
   createEvent: (data: any, idempotencyKey?: string) =>
     request<{ success: boolean; data: any }>('/events', {
       method: 'POST',
@@ -186,12 +197,12 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
-  submitEvent: (id: string) =>
-    request<{ success: boolean; data: any; message: string }>(`/events/${id}/submit`, {
+  submitEvent: (eventId: string) =>
+    request<{ success: boolean; data: any; message: string }>(`/events/${encodeURIComponent(eventId)}/submit`, {
       method: 'POST',
     }),
-  reviewEvent: (id: string, action: string, comments?: string, reason?: string) =>
-    request<{ success: boolean; data: any; message: string }>(`/events/${id}/review`, {
+  reviewEvent: (eventId: string, action: string, comments?: string, reason?: string) =>
+    request<{ success: boolean; data: any; message: string }>(`/events/${encodeURIComponent(eventId)}/review`, {
       method: 'POST',
       body: JSON.stringify({ action, comments, reason }),
     }),
@@ -267,7 +278,7 @@ export const api = {
 
   // Settlement & Finance
   getSettlement: (eventId: string) =>
-    request<{ success: boolean; data: any }>(`/settlements/${eventId}`),
+    request<{ success: boolean; data: any }>(`/settlements/${encodeURIComponent(eventId)}`),
   createSettlement: (data: any) =>
     request<{ success: boolean; data: any }>('/settlements', {
       method: 'POST',
@@ -278,8 +289,8 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
-  submitSettlement: (id: string) =>
-    request<{ success: boolean; data: any; message: string }>(`/settlements/${id}/submit`, {
+  submitSettlement: (settlementId: string) =>
+    request<{ success: boolean; data: any; message: string }>(`/settlements/${encodeURIComponent(settlementId)}/submit`, {
       method: 'POST',
     }),
   reviewSettlement: (id: string, decision: 'APPROVED' | 'REVISION_REQUESTED' | 'REJECTED', notes?: string) =>
@@ -295,31 +306,71 @@ export const api = {
   uploadFinancialDocument: async (
     settlementId: string,
     document: { documentType: string; documentNumber?: string; amount?: number; description?: string },
-    file: File
+    file: File,
+    idempotencyKey: string
   ) => {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('idempotencyKey', idempotencyKey);
     for (const [key, value] of Object.entries(document)) {
       if (value !== undefined) formData.append(key, String(value));
     }
     const token = getAuthToken();
-    const response = await fetch(`${BASE_URL}/settlements/${settlementId}/documents/upload`, {
+    const response = await fetchFileRequest(`${BASE_URL}/settlements/${settlementId}/documents/upload`, {
       signal: AbortSignal.timeout(30000),
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     });
-    const data = await response.json();
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error('Máy chủ trả về phản hồi tải chứng từ không hợp lệ.');
+    }
     if (!response.ok) throw new Error(data.error || 'Tải chứng từ thất bại');
     if (!data.success || !data.data?.id) throw new Error('Máy chủ chưa xác nhận lưu metadata chứng từ');
     return data;
   },
+  viewFinancialDocument: async (settlementId: string, documentId: string) => {
+    const popup = window.open('', '_blank');
+    if (popup) popup.opener = null;
+    try {
+      const token = getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const response = await fetchFileRequest(
+        `${BASE_URL}/settlements/${settlementId}/documents/${documentId}/download?inline=true`,
+        { signal: AbortSignal.timeout(30000), headers }
+      );
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || 'Không xem được chứng từ quyết toán');
+      }
+      let url: string;
+      if (response.headers.get('content-type')?.includes('application/json')) {
+        const result = await response.json();
+        if (typeof result.url !== 'string') throw new Error('Máy chủ không trả liên kết xem chứng từ hợp lệ');
+        url = result.url;
+      } else {
+        url = URL.createObjectURL(await response.blob());
+      }
+      if (popup) popup.location.assign(url);
+      else window.location.assign(url);
+    } catch (error) {
+      popup?.close();
+      throw error;
+    }
+  },
   downloadFinancialDocument: async (settlementId: string, documentId: string, name: string) => {
-    const response = await fetch(`${BASE_URL}/settlements/${settlementId}/documents/${documentId}/download`, {
+    const response = await fetchFileRequest(`${BASE_URL}/settlements/${settlementId}/documents/${documentId}/download`, {
       signal: AbortSignal.timeout(30000),
       headers: { Authorization: `Bearer ${getAuthToken() || ''}` },
     });
-    if (!response.ok) throw new Error('Không tải được chứng từ quyết toán');
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      throw new Error(result.error || 'Không tải được chứng từ quyết toán');
+    }
     if (response.headers.get('content-type')?.includes('application/json')) {
       const result = await response.json();
       window.location.assign(result.url);

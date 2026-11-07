@@ -31,10 +31,4 @@ if (isProductionRuntime()) {
   if (!config.corsOrigin || config.corsOrigin.split(',').some((origin) => origin.trim() === '*')) {
     throw new Error('CORS_ORIGIN must explicitly list the frontend origins in production');
   }
-  if (process.env.STORAGE_DRIVER !== 'supabase' ||
-    !process.env.SUPABASE_URL ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    !process.env.SUPABASE_STORAGE_BUCKET) {
-    throw new Error('Production requires Supabase Storage configuration and a private bucket');
-  }
 }

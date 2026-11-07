@@ -36,6 +36,7 @@ export const EventDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { getEventById, transitionEvent, confirmBooking, rejectBooking, deleteEvent, saving, refresh, showToast } = useEvents();
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmittingDocuments, setIsSubmittingDocuments] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const { currentUser } = useAuth();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -154,21 +155,29 @@ export const EventDetailPage: React.FC = () => {
 
   // Handle Workflow Decision Execution
   const handleConfirmDecision = async () => {
+    if (saving || isUploading || isSubmittingDocuments) return;
     if (modalAction.requireComment && !decisionComment.trim()) {
       setCommentError('Vui lòng nhập lý do / ý kiến phản hồi cụ thể');
       return;
     }
-    const success = await transitionEvent(
-      event.id,
-      modalAction.actionName,
-      modalAction.targetStatus,
-      decisionComment.trim(),
-      decisionComment.trim()
-    );
-    if (!success) return;
-    setModalAction({ ...modalAction, isOpen: false });
-    setDecisionComment('');
-    setCommentError('');
+    setIsSubmittingDocuments(true);
+    try {
+      const success = await transitionEvent(
+        event.id,
+        modalAction.actionName,
+        modalAction.targetStatus,
+        decisionComment.trim(),
+        decisionComment.trim()
+      );
+      if (!success) return;
+      setModalAction({ ...modalAction, isOpen: false });
+      setDecisionComment('');
+      setCommentError('');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Không xác minh được chứng từ đã lưu.', 'error');
+    } finally {
+      setIsSubmittingDocuments(false);
+    }
   };
 
   const totalBudget = (event.budgetItems || []).reduce((s, i) => s + (Number(i.totalPrice) || 0), 0);
@@ -561,7 +570,21 @@ export const EventDetailPage: React.FC = () => {
         {/* Tab 5: Attachments */}
         {activeTab === 'attachments' && (
           <div className="space-y-3.5 p-4 sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {event.status === 'FINANCE_DOCUMENTS_PENDING' && (
+            <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                Tệp ở đây không đồng bộ thành chứng từ tài chính. Có thể nộp quyết toán khi chưa có chứng từ và bổ sung sau tại mục “Chứng từ và hóa đơn”.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate('/settlements', { state: { eventId: event.id } })}
+                className="shrink-0 rounded-lg bg-amber-700 px-3 py-2 font-semibold text-white hover:bg-amber-800"
+              >
+                Mở hồ sơ quyết toán
+              </button>
+            </div>
+          )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-800">Tài liệu và Hồ sơ đính kèm</h3>
                 <p className="text-xs text-slate-500 mt-0.5">Các văn bản, dự toán, kế hoạch chi tiết hoặc hồ sơ liên quan</p>
@@ -733,6 +756,11 @@ export const EventDetailPage: React.FC = () => {
                 </div>
 
                 <h4 className="font-bold text-slate-800 uppercase text-xs pt-2">Chứng từ và Hóa đơn kèm theo</h4>
+                {(event.settlement?.documents || []).length === 0 && event.settlement?.status === 'SUBMITTED' && (
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-medium text-amber-800">
+                    Đã nộp quyết toán nhưng chưa đính kèm chứng từ. Có thể bổ sung tại mục Quyết toán; KHTC chưa thể phê duyệt khi thiếu chứng từ.
+                  </div>
+                )}
                 <div className="space-y-2">
                   {(event.settlement?.documents || []).map((doc) => (
                     <div key={doc.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">
@@ -934,15 +962,17 @@ export const EventDetailPage: React.FC = () => {
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button
                 onClick={() => setModalAction({ ...modalAction, isOpen: false })}
+                disabled={isSubmittingDocuments}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
               >
                 Hủy bỏ
               </button>
               <button
                 onClick={handleConfirmDecision}
+                disabled={saving || isUploading || isSubmittingDocuments}
                 className={`px-4 py-2 rounded-xl text-xs font-bold text-white cursor-pointer shadow-xs transition-all ${getActionStyle(modalAction.actionName)}`}
               >
-                Xác nhận thực hiện
+                {isSubmittingDocuments ? 'Đang kiểm tra và nộp...' : 'Xác nhận thực hiện'}
               </button>
             </div>
           </div>

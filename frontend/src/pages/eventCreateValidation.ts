@@ -160,13 +160,20 @@ export function validateScheduleStep(
 }
 
 export function validateBudgetItems(items: BudgetRow[]): EventFormErrors {
-  const invalid = items.some((item) =>
-    !item.itemName.trim() || !Number.isFinite(Number(item.quantity)) || Number(item.quantity) <= 0 ||
-    !Number.isFinite(Number(item.unitPrice)) || Number(item.unitPrice) < 0
+  const invalidLine = items.some((item) =>
+    !item.itemName.trim() || !Number.isSafeInteger(Number(item.quantity)) || Number(item.quantity) <= 0 ||
+    !Number.isFinite(Number(item.unitPrice)) || Number(item.unitPrice) < 0 ||
+    Number(item.unitPrice) > Number.MAX_SAFE_INTEGER ||
+    !Number.isFinite(Number(item.quantity) * Number(item.unitPrice)) ||
+    Math.abs(Number(item.quantity) * Number(item.unitPrice)) > Number.MAX_SAFE_INTEGER
   );
-  return invalid
-    ? { budget: 'Các khoản chi cần có tên rõ ràng, số lượng lớn hơn 0 và đơn giá là số không âm (VNĐ)' }
-    : {};
+  if (invalidLine) {
+    return { budget: 'Các khoản chi cần có tên rõ ràng, số lượng lớn hơn 0 và đơn giá là số không âm (VNĐ)' };
+  }
+  const total = items.reduce((sum, item) => sum + Number(item.quantity) * Number(item.unitPrice), 0);
+  return Number.isFinite(total) && Math.abs(total) <= Number.MAX_SAFE_INTEGER
+    ? {}
+    : { budget: 'Tổng dự toán vượt quá giới hạn số tiền hỗ trợ' };
 }
 
 export function validateBudgetSubmission(items: BudgetRow[], hasBudgetAttachment: boolean): EventFormErrors {

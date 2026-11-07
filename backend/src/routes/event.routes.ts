@@ -1,8 +1,8 @@
 import multer from 'multer';
 import { config } from '../config';
 
-import { removeAttachment, saveAttachment, resolveAttachment } from '../services/storage.service';
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.maxFileSize, files: 1 } });
+import { AttachmentError, removeAttachment, saveAttachment, resolveAttachment } from '../services/storage.service';
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.maxFileSize, files: 1, fields: 8, parts: 10, fieldSize: 16 * 1024 } });
 import prisma from '../config/database';
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
@@ -21,11 +21,31 @@ import {
   softDeleteEvent,
   restoreEvent,
 } from '../services/event.service';
-import { transitionState, getAvailableActions, WorkflowAuthorizationError } from '../services/workflow.service';
+import {
+  transitionState,
+  getAvailableActions,
+  WorkflowAuthorizationError,
+  WorkflowEventNotFoundError,
+} from '../services/workflow.service';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 
 const router = Router();
+
+function isRetryablePersistenceError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const code = 'code' in error && typeof error.code === 'string' ? error.code : '';
+  const message = 'message' in error && typeof error.message === 'string' ? error.message : '';
+  return ['P2024', 'P2028', 'P2034', 'P1001', 'P1002', 'P1008', 'P1017', 'P2037'].includes(code) ||
+    /transaction (?:not found|already closed)|interactive transaction.*(?:expired|timed out)/i.test(message);
+}
+
+function isPrismaError(error: unknown): boolean {
+  return error instanceof Error && (
+    error.name === 'PrismaClientInitializationError' ||
+    ('code' in error && typeof error.code === 'string' && /^P\d{4}$/.test(error.code))
+  );
+}
 
 // List events
 router.get('/', authenticate, async (req: Request, res: Response, next: NextFunction) => {
@@ -67,6 +87,10 @@ router.post('/', authenticate, validate(createEventSchema), async (req: Request,
   } catch (err: any) {
     if (err instanceof EventCreateIdempotencyConflictError) {
       res.status(409).json({ success: false, error: err.message });
+      return;
+    }
+    if (isRetryablePersistenceError(err)) {
+      next(err);
       return;
     }
     res.status(400).json({ success: false, error: err.message });
@@ -150,7 +174,7 @@ router.post('/:id/handover', authenticate, async (req: Request, res: Response) =
 router.get('/:id', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const event = await getEventById(id);
+    const event = await getEventById(id, req.user!.userId, req.user!.role);
     if (!event || event.deletedAt) {
       res.status(404).json({ success: false, error: 'Không tìm thấy hồ sơ' });
       return;
@@ -172,6 +196,10 @@ router.put('/:id', authenticate, validate(createEventSchema.partial().extend({ c
     const updated = await updateEvent(id, req.body, req.user!.userId, req.user!.role);
     res.json({ success: true, data: updated });
   } catch (err: any) {
+    if (isRetryablePersistenceError(err)) {
+      next(err);
+      return;
+    }
     const status = err instanceof EventEditAuthorizationError ? 403
       : err instanceof EventEditStatusError ? 409
         : err.message?.includes('đã được máy khác cập nhật') ? 409
@@ -217,7 +245,19 @@ router.post('/:id/review', authenticate, async (req: Request, res: Response, nex
       res.status(422).json({ success: false, error: err.message, data: err.issues });
       return;
     }
-    res.status(err instanceof WorkflowAuthorizationError ? 403 : 400).json({ success: false, error: err.message });
+    if (err instanceof WorkflowEventNotFoundError) {
+      res.status(404).json({ success: false, error: err.message });
+      return;
+    }
+    if (err instanceof WorkflowAuthorizationError) {
+      res.status(403).json({ success: false, error: err.message });
+      return;
+    }
+    if (isPrismaError(err)) {
+      next(err);
+      return;
+    }
+    res.status(400).json({ success: false, error: err.message });
   }
 });
 
@@ -225,7 +265,7 @@ router.post('/:id/review', authenticate, async (req: Request, res: Response, nex
 router.get('/:id/available-actions', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const event = await getEventById(id);
+    const event = await getEventById(id, req.user!.userId, req.user!.role);
     if (!event || event.deletedAt) {
       res.status(404).json({ success: false, error: 'Không tìm thấy hồ sơ' });
       return;
@@ -261,7 +301,7 @@ router.post('/:id/attachments', authenticate, async (req, res, next) => {
     }
     next();
   } catch (error) { next(error); }
-}, upload.single('file'), async (req: Request, res: Response) => {
+}, upload.single('file'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     if (!req.file) {
@@ -291,11 +331,19 @@ router.post('/:id/attachments', authenticate, async (req, res, next) => {
       });
       res.status(201).json({ success: true, data: attachment, message: 'Tải lên tài liệu thành công' });
     } catch (error) {
-      await removeAttachment(stored.filePath);
-      throw error;
+      try {
+        await removeAttachment(stored.filePath);
+      } catch (cleanupError) {
+        console.error('[UPLOAD_CLEANUP_FAILED]', JSON.stringify({
+          operation: 'event_attachment',
+          code: cleanupError instanceof AttachmentError ? cleanupError.code : 'UNKNOWN',
+        }));
+      }
+      next(error);
+      return;
     }
-  } catch (err: any) {
-    res.status(400).json({ success: false, error: err.message });
+  } catch (err) {
+    next(err);
   }
 });
 

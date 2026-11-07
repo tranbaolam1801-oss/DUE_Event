@@ -1,7 +1,11 @@
 import prisma from '../config/database';
 import { UserRole, EventStatus, DecisionType, ApprovalStage } from '../types';
 import { notifyEventStatusChange } from './notification.service';
-import { assertSettlementReadyForApproval, assertSettlementReadyForSubmission } from './settlement.service';
+import {
+  assertSettlementDocumentFilesExist,
+  assertSettlementReadyForApproval,
+  assertSettlementReadyForSubmission,
+} from './settlement.service';
 import { EventSubmissionValidationError, validateEventSubmission } from './eventSubmissionValidation';
 
 interface TransitionDef {
@@ -15,6 +19,13 @@ export class WorkflowAuthorizationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'WorkflowAuthorizationError';
+  }
+}
+
+export class WorkflowEventNotFoundError extends Error {
+  constructor() {
+    super('Không tìm thấy hồ sơ sự kiện');
+    this.name = 'WorkflowEventNotFoundError';
   }
 }
 
@@ -185,7 +196,7 @@ export async function transitionState(
       attachments: { select: { id: true, category: true, originalName: true } },
     },
   });
-  if (!event || event.deletedAt) throw new Error('Không tìm thấy hồ sơ');
+  if (!event || event.deletedAt) throw new WorkflowEventNotFoundError();
   if (userRole === UserRole.BTC && event.createdById !== userId) {
     throw new WorkflowAuthorizationError('Ban Tổ chức chỉ được thao tác với hồ sơ do mình sở hữu hoặc được phân công');
   }
@@ -266,6 +277,7 @@ export async function transitionState(
       throw new Error('Quyết toán chưa được KHTC phê duyệt');
     }
     assertSettlementReadyForApproval(settlement);
+    await assertSettlementDocumentFilesExist(settlement);
   }
 
   return executeTransition(event, transitionDef.to, action, userId, userRole, data);
@@ -284,6 +296,7 @@ async function executeTransition(
   const finalStatus = completesAfterSettlement ? EventStatus.COMPLETED : toStatus;
 
   const result = await prisma.$transaction(async (tx) => {
+    let submittedWithoutDocuments = false;
     // Update event status
     const updateData: Record<string, unknown> = { status: finalStatus, currentVersion: { increment: 1 } };
 
@@ -338,6 +351,7 @@ async function executeTransition(
       });
       if (!settlement) throw new Error('Không tìm thấy hồ sơ quyết toán');
       assertSettlementReadyForSubmission(settlement);
+      submittedWithoutDocuments = settlement.documents.length === 0;
       await tx.settlement.update({
         where: { id: settlement.id },
         data: { status: 'SUBMITTED', submittedAt: new Date(), submittedById: userId },
@@ -416,6 +430,10 @@ async function executeTransition(
     }
 
     // Create workflow history
+    const historyComments = [
+      data?.comments || data?.reason,
+      submittedWithoutDocuments ? 'Chưa đính kèm chứng từ; cần bổ sung trước khi KHTC phê duyệt' : undefined,
+    ].filter((comment): comment is string => Boolean(comment)).join(' — ') || undefined;
     await tx.workflowHistory.create({
       data: {
         eventId: event.id,
@@ -425,7 +443,7 @@ async function executeTransition(
         actorId: userId,
         actorName: user?.fullName,
         actorRole: userRole,
-        comments: data?.comments || data?.reason,
+        comments: historyComments,
       },
     });
     if (completesAfterSettlement) {

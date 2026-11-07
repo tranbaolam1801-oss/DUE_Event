@@ -6,6 +6,7 @@ import { generateEventCode } from '../utils/generateCode';
 import { createNotification } from './notification.service';
 import { EventSubmissionValidationError, validateEventSubmission } from './eventSubmissionValidation';
 import { canEditEvent, isEditableEventStatus } from './eventEditPolicy';
+import { canViewFinancialDocuments } from './financialDocumentAccess';
 
 export const eventInclude = {
       createdBy: {
@@ -60,6 +61,18 @@ export const eventInclude = {
       versions: { orderBy: { version: 'desc' } },
     } satisfies Prisma.EventInclude;
 
+function filterSettlementDocuments<T extends {
+  createdById: string;
+  settlements?: Array<{ documents: unknown[] }>;
+}>(event: T, userId: string, role: string): T {
+  if (canViewFinancialDocuments(role, userId, event.createdById)) return event;
+  if (!event.settlements) return event;
+  return {
+    ...event,
+    settlements: event.settlements.map((settlement) => ({ ...settlement, documents: [] })),
+  };
+}
+
 type PostgreSQLEventQuery = Prisma.EventFindManyArgs & { relationLoadStrategy: 'join' };
 type PostgreSQLEventDelegate = Omit<typeof prisma.event, 'findMany'> & {
   findMany(args: PostgreSQLEventQuery): ReturnType<typeof prisma.event.findMany>;
@@ -84,6 +97,20 @@ export class EventEditStatusError extends Error {
     super('Không thể chỉnh sửa hồ sơ ở trạng thái hiện tại');
     this.name = 'EventEditStatusError';
   }
+}
+
+function budgetItemsMatch(
+  existing: Array<{ category: string; itemName: string; quantity: number; unitPrice: number; notes: string | null }>,
+  incoming: Array<{ category: string; itemName: string; quantity: number; unitPrice: number; notes?: string | null }>
+): boolean {
+  return existing.length === incoming.length && existing.every((item, index) => {
+    const next = incoming[index];
+    return item.category === next.category &&
+      item.itemName === next.itemName &&
+      item.quantity === next.quantity &&
+      item.unitPrice === next.unitPrice &&
+      item.notes === (next.notes ?? null);
+  });
 }
 
 type EventBookingInput = {
@@ -169,7 +196,7 @@ export async function createEvent(data: {
     itemName: string;
     quantity: number;
     unitPrice: number;
-    notes?: string;
+    notes?: string | null;
   }>;
   scheduleItems?: Array<{
     timeSlot: string;
@@ -185,6 +212,10 @@ export async function createEvent(data: {
   const requestFingerprint = requestId
     ? createHash('sha256').update(JSON.stringify(data)).digest('hex')
     : undefined;
+  const actor = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { fullName: true, role: true },
+  });
 
   let event: { id: string };
   try {
@@ -324,14 +355,14 @@ export async function createEvent(data: {
         toStatus: EventStatus.DRAFT,
         action: 'CREATE',
         actorId: userId,
-        actorName: (await tx.user.findUnique({ where: { id: userId } }))?.fullName,
-        actorRole: (await tx.user.findUnique({ where: { id: userId } }))?.role,
+        actorName: actor?.fullName,
+        actorRole: actor?.role,
         comments: 'Tạo hồ sơ sự kiện mới',
       },
     });
 
     return created;
-    });
+    }, { maxWait: 5000, timeout: 10000 });
   } catch (error) {
     if (error instanceof EventCreateIdempotencyConflictError) throw error;
     const isUniqueConflict = !!error && typeof error === 'object' && 'code' in error && error.code === 'P2002';
@@ -346,7 +377,7 @@ export async function createEvent(data: {
     event = { id: committed.eventId };
   }
 
-  return getEventById(event.id);
+  return getEventById(event.id, userId);
 }
 
 export async function getEvents(filters: {
@@ -405,7 +436,7 @@ export async function getEvents(filters: {
   ]);
 
   return {
-    events,
+    events: events.map((event) => filterSettlementDocuments(event, userId, role)),
     pagination: {
       page,
       limit,
@@ -512,25 +543,28 @@ export async function restoreEvent(id: string, adminId: string, reason: string) 
   });
 }
 
-export async function getEventById(id: string) {
+export async function getEventById(id: string, userId = '', role = '') {
   const event = await prisma.event.findUnique({
     where: { id },
     include: eventInclude,
   });
 
-  return event;
+  return event ? filterSettlementDocuments(event, userId, role) : event;
 }
 
 export async function updateEvent(id: string, data: Record<string, unknown>, userId: string, userRole?: string) {
-  const event = await prisma.event.findUnique({
-    where: { id },
-    include: {
-      budgetItems: true,
-      scheduleItems: true,
-      resourceBookings: { include: { bookingItems: true } },
-      attachments: { select: { id: true, originalName: true, category: true, filePath: true } },
-    },
-  });
+  const [event, actor] = await Promise.all([
+    prisma.event.findUnique({
+      where: { id },
+      include: {
+        budgetItems: true,
+        scheduleItems: true,
+        resourceBookings: { include: { bookingItems: true } },
+        attachments: { select: { id: true, originalName: true, category: true, filePath: true } },
+      },
+    }),
+    prisma.user.findUnique({ where: { id: userId }, select: { fullName: true, role: true } }),
+  ]);
   if (!event || event.deletedAt) throw new Error('Không tìm thấy hồ sơ');
 
   if (userRole !== UserRole.ADMIN && !isEditableEventStatus(event.status)) {
@@ -565,28 +599,42 @@ export async function updateEvent(id: string, data: Record<string, unknown>, use
   for (const key of ['startDate', 'endDate', 'setupTime', 'teardownTime']) {
     if (data[key] !== undefined) patch[key] = data[key] ? new Date(data[key] as string) : null;
   }
+  const budgetItems = Array.isArray(data.budgetItems)
+    ? data.budgetItems as Array<{ category: string; itemName: string; quantity: number; unitPrice: number; notes?: string | null }>
+    : undefined;
+  const replaceBudgetItems = budgetItems !== undefined && !budgetItemsMatch(event.budgetItems, budgetItems);
   await prisma.$transaction(async tx => {
     const changed = await tx.event.updateMany({ where: { id, currentVersion: Number(data.expectedVersion ?? event.currentVersion), status: event.status }, data: { ...patch, currentVersion: { increment: 1 } } });
     if (!changed.count) throw new Error('Hồ sơ đã được máy khác cập nhật. Tải lại trang trước khi sửa tiếp.');
-    if (Array.isArray(data.budgetItems)) {
+    if (replaceBudgetItems && budgetItems) {
       await tx.budgetItem.deleteMany({ where: { eventId: id } });
-      await tx.budgetItem.createMany({ data: data.budgetItems.map((i: any) => ({ eventId: id, category: i.category, itemName: i.itemName, quantity: i.quantity, unitPrice: i.unitPrice, totalPrice: i.quantity * i.unitPrice, notes: i.notes })) });
+      if (budgetItems.length) {
+        await tx.budgetItem.createMany({ data: budgetItems.map((item) => ({
+          eventId: id,
+          category: item.category,
+          itemName: item.itemName,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          totalPrice: item.quantity * item.unitPrice,
+          notes: item.notes,
+        })) });
+      }
     }
     if (Array.isArray(data.scheduleItems)) {
       await tx.eventScheduleItem.deleteMany({ where: { eventId: id } });
       await tx.eventScheduleItem.createMany({ data: data.scheduleItems.map((i: any, index: number) => ({ eventId: id, timeSlot: i.timeSlot, activity: i.activity, responsible: i.responsible, notes: i.notes, sortOrder: index })) });
     }
     if (data.booking !== undefined) {
-      const currentBooking = await tx.resourceBooking.findFirst({
-        where: { eventId: id, status: { in: [...activeBookingStatuses, 'CONFLICT'] } },
-        orderBy: { updatedAt: 'desc' },
-      });
-
       if (data.booking === null) {
-        if (currentBooking) {
-          await tx.resourceBooking.update({ where: { id: currentBooking.id }, data: { status: 'REJECTED' } });
-        }
-      } else if (data.booking !== undefined) {
+        await tx.resourceBooking.updateMany({
+          where: { eventId: id, status: { in: [...activeBookingStatuses, 'CONFLICT'] } },
+          data: { status: 'REJECTED' },
+        });
+      } else {
+        const currentBooking = await tx.resourceBooking.findFirst({
+          where: { eventId: id, status: { in: [...activeBookingStatuses, 'CONFLICT'] } },
+          orderBy: { updatedAt: 'desc' },
+        });
         const booking = data.booking as EventBookingInput;
         await validateEventBooking(
           tx,
@@ -617,11 +665,17 @@ export async function updateEvent(id: string, data: Record<string, unknown>, use
             })),
           });
         }
-      } else if (currentBooking && (
-        data.expectedAttendees !== undefined ||
-        data.startDate !== undefined ||
-        data.endDate !== undefined
-      )) {
+      }
+    } else if (
+      data.expectedAttendees !== undefined ||
+      data.startDate !== undefined ||
+      data.endDate !== undefined
+    ) {
+      const currentBooking = await tx.resourceBooking.findFirst({
+        where: { eventId: id, status: { in: [...activeBookingStatuses, 'CONFLICT'] } },
+        orderBy: { updatedAt: 'desc' },
+      });
+      if (currentBooking) {
         await validateEventBooking(
           tx,
           {
@@ -636,8 +690,7 @@ export async function updateEvent(id: string, data: Record<string, unknown>, use
         );
       }
     }
-    const user = await tx.user.findUnique({ where: { id: userId } });
-    await tx.workflowHistory.create({ data: { eventId: id, fromStatus: event.status, toStatus: event.status, action: 'UPDATE', actorId: userId, actorName: user?.fullName, actorRole: user?.role, comments: String(data.changeNote || 'Cập nhật hồ sơ') } });
+    await tx.workflowHistory.create({ data: { eventId: id, fromStatus: event.status, toStatus: event.status, action: 'UPDATE', actorId: userId, actorName: actor?.fullName, actorRole: actor?.role, comments: String(data.changeNote || 'Cập nhật hồ sơ') } });
 
     await tx.eventVersion.updateMany({
       where: { eventId: id, isActive: true },
@@ -684,8 +737,8 @@ export async function updateEvent(id: string, data: Record<string, unknown>, use
         },
       });
     }
-  });
-  return getEventById(id);
+  }, { maxWait: 5000, timeout: 10000 });
+  return getEventById(id, userId, userRole || '');
 }
 
 export async function submitEvent(id: string, userId: string, userRole: string) {
@@ -712,7 +765,7 @@ export async function submitEvent(id: string, userId: string, userRole: string) 
         toStatus: EventStatus.FACULTY_REVIEW,
       },
     });
-    if (previousSubmission) return getEventById(id);
+    if (previousSubmission) return getEventById(id, userId, userRole);
   }
 
   // BTC or ADMIN can submit

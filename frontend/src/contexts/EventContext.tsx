@@ -156,11 +156,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!reason.trim()) throw new Error('Vui lòng nhập lý do khôi phục hồ sơ');
     await api.restoreEvent(id, reason.trim());
   }, 'Đã khôi phục hồ sơ thành công');
-  const transitionEvent = (id: string, _action: string, target: EventStatus, comments?: string, reason?: string, onError?: OperationErrorHandler) => run(async () => {
-    const current = (await api.getEventById(id)).data;
+  const transitionEvent = (eventId: string, _action: string, target: EventStatus, comments?: string, reason?: string, onError?: OperationErrorHandler) => run(async () => {
+    const current = (await api.getEventById(eventId)).data;
     const action = /^[A-Z_]+$/.test(_action) ? _action : workflowAction(current.status, target);
-    if (action === 'SUBMIT') await api.submitEvent(id);
-    else await api.reviewEvent(id, action, comments, reason);
+    if (action === 'SUBMIT') await api.submitEvent(eventId);
+    else await api.reviewEvent(eventId, action, comments, reason);
   }, 'Cập nhật trạng thái thành công', onError);
   const checkFacilityAvailability = (facilityId: string, start: string, end: string, exclude?: string) => {
     const conflictingEvents = events.filter(e =>

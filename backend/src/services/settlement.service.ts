@@ -1,4 +1,6 @@
 import prisma from '../config/database';
+import { assertAttachmentObjectExists } from './storage.service';
+import { EventStatus } from '../types';
 
 type SettlementItemInput = {
   id?: string;
@@ -52,13 +54,31 @@ export function assertSettlementReadyForApproval(settlement: {
 export function assertSettlementReadyForSubmission(settlement: {
   settlementDate: Date | null;
   items: Array<{ itemName: string }>;
-  documents: Array<unknown>;
+  documents?: Array<{ fileName?: string | null; filePath?: string | null; documentType?: string | null }>;
 }) {
   if (!settlement.settlementDate) throw new Error('Cần nhập ngày quyết toán trước khi nộp');
   if (!settlement.items.length || settlement.items.some((item) => !item.itemName.trim())) {
     throw new Error('Cần nhập ít nhất một khoản chi hợp lệ');
   }
-  if (!settlement.documents.length) throw new Error('Cần đính kèm ít nhất một chứng từ tài chính');
+}
+
+export function canUploadSettlementDocuments(settlementStatus: string, eventStatus: string): boolean {
+  return ['DRAFT', 'REVISION_REQUESTED', 'REJECTED'].includes(settlementStatus) ||
+    (settlementStatus === 'SUBMITTED' && eventStatus === EventStatus.FINANCE_REVIEW);
+}
+
+export async function assertSettlementDocumentFilesExist(settlement: {
+  documents: Array<{ fileName?: string | null; filePath?: string | null; documentType?: string | null }>;
+}) {
+  if (!settlement.documents.length) {
+    throw new Error('Chưa có chứng từ tài chính được lưu. Tệp trong mục “Hồ sơ đính kèm” không thay thế chứng từ tại “Quyết toán → Chứng từ và hóa đơn”.');
+  }
+  for (const document of settlement.documents) {
+    if (!document.filePath || !document.fileName || !document.documentType) {
+      throw new Error('Chứng từ tài chính chưa có tệp lưu bền vững. Hãy tải lại chứng từ trong mục “Quyết toán → Chứng từ và hóa đơn”.');
+    }
+    await assertAttachmentObjectExists(document.filePath);
+  }
 }
 
 export async function createSettlement(data: {
@@ -191,29 +211,47 @@ export async function updateSettlement(id: string, data: {
   });
 }
 
-export async function submitSettlement(id: string, userId: string) {
+export async function submitSettlement(id: string, userId: string, userRole: string) {
   const settlement = await prisma.settlement.findUnique({
     where: { id },
     include: { items: true, documents: true, event: true },
   });
   if (!settlement) throw new Error('Không tìm thấy quyết toán');
+  if (userRole === 'BTC' && settlement.event.createdById !== userId) {
+    throw new Error('Ban Tổ chức chỉ được nộp chứng từ cho hồ sơ do mình phụ trách');
+  }
+  if (!['BTC', 'ADMIN'].includes(userRole)) {
+    throw new Error('Không có quyền nộp chứng từ tài chính');
+  }
+  if (![EventStatus.FINANCE_DOCUMENTS_PENDING, EventStatus.FINANCE_REVISION_REQUESTED, EventStatus.PAYMENT_REJECTED].includes(settlement.event.status as EventStatus)) {
+    throw new Error('Hồ sơ chưa ở bước nộp hoặc nộp lại chứng từ tài chính');
+  }
+  if (!['DRAFT', 'REVISION_REQUESTED', 'REJECTED'].includes(settlement.status)) {
+    throw new Error('Hồ sơ quyết toán đã được nộp hoặc không còn ở trạng thái chỉnh sửa');
+  }
   assertSettlementReadyForSubmission(settlement);
 
   return prisma.$transaction(async (tx) => {
+    const changed = await tx.event.updateMany({
+      where: {
+        id: settlement.eventId,
+        status: settlement.event.status,
+        currentVersion: settlement.event.currentVersion,
+      },
+      data: {
+        status: 'FINANCE_REVIEW',
+        settlementStatus: 'SUBMITTED',
+        currentVersion: { increment: 1 },
+      },
+    });
+    if (!changed.count) throw new Error('Hồ sơ đã thay đổi trên máy khác. Hãy tải lại trước khi nộp.');
+
     const updated = await tx.settlement.update({
       where: { id },
       data: {
         status: 'SUBMITTED',
         submittedAt: new Date(),
         submittedById: userId,
-      },
-    });
-
-    await tx.event.update({
-      where: { id: settlement.eventId },
-      data: {
-        status: 'FINANCE_REVIEW',
-        settlementStatus: 'SUBMITTED',
       },
     });
 
@@ -224,8 +262,10 @@ export async function submitSettlement(id: string, userId: string) {
         toStatus: 'FINANCE_REVIEW',
         action: 'SUBMIT_DOCUMENTS',
         actorId: userId,
-        actorRole: 'BTC',
-        comments: 'Nộp bộ chứng từ và quyết toán tài chính',
+        actorRole: userRole,
+        comments: settlement.documents.length
+          ? 'Nộp quyết toán tài chính'
+          : 'Nộp quyết toán — Chưa đính kèm chứng từ; cần bổ sung trước khi KHTC phê duyệt',
       },
     });
 
@@ -245,7 +285,10 @@ export async function reviewSettlement(id: string, decision: 'APPROVED' | 'REVIS
   if (decision === 'APPROVED' && !['SUBMITTED', 'DRAFT'].includes(settlement.status)) {
     throw new Error('Hồ sơ quyết toán chưa được nộp cho KHTC');
   }
-  if (decision === 'APPROVED') assertSettlementReadyForApproval(settlement);
+  if (decision === 'APPROVED') {
+    assertSettlementReadyForApproval(settlement);
+    await assertSettlementDocumentFilesExist(settlement);
+  }
 
   const newStatus = decision === 'APPROVED' ? 'APPROVED' : decision === 'REVISION_REQUESTED' ? 'REVISION_REQUESTED' : 'REJECTED';
   const newEventStatus = decision === 'APPROVED' ? 'FINANCE_APPROVAL_PENDING' : decision === 'REVISION_REQUESTED' ? 'FINANCE_REVISION_REQUESTED' : 'PAYMENT_REJECTED';
@@ -310,6 +353,8 @@ export async function addFinancialDocument(settlementId: string, data: {
 }
 
 export async function uploadFinancialDocument(settlementId: string, data: {
+  id?: string;
+  uploaderId: string;
   documentType: string;
   documentNumber?: string;
   amount?: number;
@@ -317,18 +362,40 @@ export async function uploadFinancialDocument(settlementId: string, data: {
   fileName: string;
   filePath: string;
 }) {
-  return prisma.financialDocument.create({
-    data: {
-      settlementId,
-      documentType: data.documentType,
-      documentNumber: data.documentNumber,
-      amount: data.amount,
-      description: data.description,
-      fileName: data.fileName,
-      filePath: data.filePath,
-      isVerified: false,
-    },
-  });
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const document = await tx.financialDocument.create({
+        data: {
+          id: data.id,
+          settlementId,
+          documentType: data.documentType,
+          documentNumber: data.documentNumber,
+          amount: data.amount,
+          description: data.description,
+          fileName: data.fileName,
+          filePath: data.filePath,
+          isVerified: false,
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          userId: data.uploaderId,
+          action: 'UPLOAD_FINANCIAL_DOCUMENT',
+          entityType: 'FinancialDocument',
+          entityId: document.id,
+          newValue: JSON.stringify({ settlementId, fileName: data.fileName }),
+        },
+      });
+      return document;
+    });
+  } catch (error) {
+    const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
+    if (code !== 'P2002' || !data.id) throw error;
+
+    const existing = await prisma.financialDocument.findUnique({ where: { id: data.id } });
+    if (existing?.settlementId === settlementId && existing.filePath === data.filePath) return existing;
+    throw new Error('Mã yêu cầu tải chứng từ đã được sử dụng cho nội dung khác.');
+  }
 }
 
 export async function verifyFinancialDocument(documentId: string, isVerified: boolean) {

@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, Check, CheckCircle2, Download, FileText, Plus } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { CalendarDays, Check, CheckCircle2, Download, Eye, FileText, Plus } from 'lucide-react';
 import { useEvents } from '../contexts/EventContext';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency, formatDate, statusLabels } from '../utils/helpers';
@@ -26,14 +27,18 @@ const settlementEventStatuses = new Set([
   'SETTLED',
   'COMPLETED',
 ]);
+const MAX_UPLOAD_BYTES = 4_000_000;
+const allowedDocumentExtensions = new Set(['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx', '.xls', '.xlsx']);
 
 export const SettlementPage: React.FC = () => {
   const { events, saveSettlement, transitionEvent, refresh, showToast, saving } = useEvents();
   const { currentUser } = useAuth();
+  const location = useLocation();
+  const requestedEventId = (location.state as { eventId?: string } | null)?.eventId;
   const settlementEvents = events.filter((event) => (
     settlementEventStatuses.has(event.status) || Boolean(event.settlement)
   ));
-  const [selectedEventId, setSelectedEventId] = useState('');
+  const [selectedEventId, setSelectedEventId] = useState(requestedEventId || '');
   const selectedEvent = events.find((event) => event.id === selectedEventId);
   const [items, setItems] = useState<SettlementItem[]>([]);
   const [settlementDate, setSettlementDate] = useState('');
@@ -44,6 +49,9 @@ export const SettlementPage: React.FC = () => {
   const [documentDescription, setDocumentDescription] = useState('');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [documentSaving, setDocumentSaving] = useState(false);
+  const documentInput = useRef<HTMLInputElement>(null);
+  const documentUploadRequestId = useRef<string | null>(null);
+  const [documentSnapshot, setDocumentSnapshot] = useState<{ eventId: string; documents: FinancialDocument[] } | null>(null);
 
   useEffect(() => {
     if (!settlementEvents.some((event) => event.id === selectedEventId) && settlementEvents.length > 0) {
@@ -75,10 +83,18 @@ export const SettlementPage: React.FC = () => {
     selectedEvent &&
     editableSettlementStatuses.includes(settlement?.status || 'DRAFT') &&
     !['COMPLETED', 'CANCELLED'].includes(selectedEvent.status) &&
-    ['BTC', 'KHTC', 'ADMIN'].includes(currentUser.role)
+    ['BTC', 'ADMIN'].includes(currentUser.role)
   );
   const canReview = currentUser.role === 'KHTC' || currentUser.role === 'ADMIN';
-  const documents = settlement?.documents || [];
+  const documents = documentSnapshot?.eventId === selectedEventId
+    ? documentSnapshot.documents
+    : settlement?.documents || [];
+  const canUploadDocuments = Boolean(
+    selectedEvent &&
+    ['BTC', 'ADMIN'].includes(currentUser.role) &&
+    (canEdit || (settlement?.status === 'SUBMITTED' && selectedEvent.status === 'FINANCE_REVIEW'))
+  );
+  const documentsVerified = documents.length > 0 && documents.every((document) => document.isVerified);
 
   const handleSaveSettlement = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -119,27 +135,41 @@ export const SettlementPage: React.FC = () => {
     }
     setDocumentSaving(true);
     try {
-      const saved = await saveSettlement(selectedEvent.id, {
-        items: items.map((item) => ({ ...item, itemName: item.itemName.trim() })),
-        totalActual,
-        settlementDate,
-        notes: settlementNotes.trim(),
-      });
-      if (!saved) return;
+      const idempotencyKey = documentUploadRequestId.current || crypto.randomUUID();
+      documentUploadRequestId.current = idempotencyKey;
+      if (settlement?.status !== 'SUBMITTED') {
+        const saved = await saveSettlement(selectedEvent.id, {
+          items: items.map((item) => ({ ...item, itemName: item.itemName.trim() })),
+          totalActual,
+          settlementDate,
+          notes: settlementNotes.trim(),
+        });
+        if (!saved) return;
+      }
       const currentSettlement = (await api.getSettlement(selectedEvent.id)).data;
       if (!currentSettlement) throw new Error('Không tìm thấy hồ sơ quyết toán vừa lưu.');
-      await api.uploadFinancialDocument(currentSettlement.id, {
+      const uploadResult = await api.uploadFinancialDocument(currentSettlement.id, {
         documentType,
         documentNumber: documentNumber.trim() || undefined,
         amount: documentAmount === '' ? undefined : Number(documentAmount),
         description: documentDescription.trim() || undefined,
-      }, documentFile);
+      }, documentFile, idempotencyKey);
+      const refreshedSettlement = await api.getSettlement(selectedEvent.id);
+      const persistedDocuments = refreshedSettlement.data?.documents || [];
+      if (!persistedDocuments.some((document: FinancialDocument) =>
+        document.id === uploadResult.data.id && Boolean(document.filePath)
+      )) {
+        throw new Error('Máy chủ chưa xác nhận chứng từ có metadata và tệp đã lưu. Hãy tải lại danh sách trước khi nộp.');
+      }
+      setDocumentSnapshot({ eventId: selectedEvent.id, documents: persistedDocuments });
       await refresh();
       showToast('Đã tải chứng từ lên hồ sơ quyết toán.', 'success');
       setDocumentNumber('');
       setDocumentAmount('');
       setDocumentDescription('');
       setDocumentFile(null);
+      documentUploadRequestId.current = null;
+      if (documentInput.current) documentInput.current.value = '';
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Không tải được chứng từ.', 'error');
     } finally {
@@ -192,6 +222,15 @@ export const SettlementPage: React.FC = () => {
       );
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Không tải được chứng từ.', 'error');
+    }
+  };
+
+  const handleViewDocument = async (document: FinancialDocument) => {
+    if (!settlement) return;
+    try {
+      await api.viewFinancialDocument(settlement.id, document.id);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Không xem được chứng từ.', 'error');
     }
   };
 
@@ -383,7 +422,8 @@ export const SettlementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => void handleApproval()}
-                  disabled={saving}
+                  disabled={saving || !documentsVerified}
+                  title={!documentsVerified ? 'Cần có chứng từ và KHTC xác nhận hợp lệ trước khi phê duyệt.' : undefined}
                   className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
                   <Check className="h-4 w-4" />
@@ -391,6 +431,12 @@ export const SettlementPage: React.FC = () => {
                 </button>
               )}
             </div>
+
+            {settlement?.status === 'SUBMITTED' && documents.length === 0 && (
+              <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-medium text-amber-800">
+                Đã nộp quyết toán nhưng chưa đính kèm chứng từ. Ban Tổ chức có thể bổ sung tại đây; KHTC cần kiểm tra chứng từ trước khi phê duyệt.
+              </div>
+            )}
 
             {documents.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 py-8 text-center text-xs text-slate-400">
@@ -424,13 +470,22 @@ export const SettlementPage: React.FC = () => {
                         <td className="px-3 py-3 text-right">
                           <div className="flex justify-end gap-2">
                             {document.filePath && (
-                              <button
-                                type="button"
-                                onClick={() => void handleDownloadDocument(document)}
-                                className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700"
-                              >
-                                <Download className="h-3.5 w-3.5" /> Tải về
-                              </button>
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => void handleViewDocument(document)}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700"
+                                >
+                                  <Eye className="h-3.5 w-3.5" /> Xem
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDownloadDocument(document)}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-2.5 py-1.5 font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-700"
+                                >
+                                  <Download className="h-3.5 w-3.5" /> Tải về
+                                </button>
+                              </>
                             )}
                             {canReview && selectedEvent.status === 'FINANCE_REVIEW' && (
                               <button
@@ -451,7 +506,7 @@ export const SettlementPage: React.FC = () => {
               </div>
             )}
 
-            {canEdit && (
+            {canUploadDocuments && (
               <form onSubmit={handleAddDocument} className="grid grid-cols-1 items-end gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2 lg:grid-cols-6">
                 <label className="block min-w-0">
                   <span className="mb-1 block text-[11px] font-semibold text-slate-600">Loại chứng từ</span>
@@ -495,16 +550,47 @@ export const SettlementPage: React.FC = () => {
                 <label className="block min-w-0 sm:col-span-2 lg:col-span-3">
                   <span className="mb-1 block text-[11px] font-semibold text-slate-600">Tệp chứng từ</span>
                   <input
+                    ref={documentInput}
                     type="file"
                     accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx"
                     required
-                    onChange={(event) => setDocumentFile(event.target.files?.[0] || null)}
+                    disabled={documentSaving}
+                    onChange={(event) => {
+                      const file = event.target.files?.[0] || null;
+                      if (!file) {
+                        setDocumentFile(null);
+                        documentUploadRequestId.current = null;
+                        return;
+                      }
+                      const extension = `.${file.name.split('.').pop()?.toLowerCase() || ''}`;
+                      if (!allowedDocumentExtensions.has(extension)) {
+                        showToast('Định dạng không hợp lệ. Chỉ chấp nhận PDF, Word, Excel, PNG hoặc JPG.', 'error');
+                        event.target.value = '';
+                        setDocumentFile(null);
+                        documentUploadRequestId.current = null;
+                        return;
+                      }
+                      if (!file.size || file.size > MAX_UPLOAD_BYTES) {
+                        showToast('Tệp phải có dung lượng lớn hơn 0 và không vượt quá 4 MB trên Vercel.', 'error');
+                        event.target.value = '';
+                        setDocumentFile(null);
+                        documentUploadRequestId.current = null;
+                        return;
+                      }
+                      setDocumentFile(file);
+                      documentUploadRequestId.current = crypto.randomUUID();
+                    }}
                     className="block w-full min-w-0 rounded-lg border border-slate-200 bg-slate-50 p-2 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-blue-50 file:px-2 file:py-1 file:text-xs file:font-semibold file:text-blue-700"
                   />
+                  {documentFile && (
+                    <span className="mt-1 block break-all text-[10px] text-slate-500">
+                      {documentFile.name} · {(documentFile.size / 1024 / 1024).toFixed(2)} MB
+                    </span>
+                  )}
                 </label>
                 <button
                   type="submit"
-                  disabled={documentSaving || saving}
+                  disabled={documentSaving || saving || !documentFile}
                   className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:col-span-2 lg:col-span-3"
                 >
                   <FileText className="h-4 w-4" />
