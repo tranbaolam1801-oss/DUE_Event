@@ -60,6 +60,11 @@ export const eventInclude = {
       versions: { orderBy: { version: 'desc' } },
     } satisfies Prisma.EventInclude;
 
+type PostgreSQLEventQuery = Prisma.EventFindManyArgs & { relationLoadStrategy: 'join' };
+type PostgreSQLEventDelegate = Omit<typeof prisma.event, 'findMany'> & {
+  findMany(args: PostgreSQLEventQuery): ReturnType<typeof prisma.event.findMany>;
+};
+
 export class EventCreateIdempotencyConflictError extends Error {
   constructor() {
     super('Yêu cầu này đã lưu một bản nháp khác. Không tạo hồ sơ trùng; hãy tải lại hồ sơ đã lưu trước khi tiếp tục.');
@@ -375,14 +380,27 @@ export async function getEvents(filters: {
     ];
   }
 
+  const eventQuery = {
+    where,
+    include: eventInclude,
+    relationLoadStrategy: 'join',
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
+  } satisfies PostgreSQLEventQuery;
+  const eventsQuery = /^postgres(?:ql)?:/i.test(process.env.DATABASE_URL || '')
+    // The shared singleton uses PostgreSQL at runtime here, but its compile-time delegate type comes from SQLite.
+    ? (prisma.event as unknown as PostgreSQLEventDelegate).findMany(eventQuery)
+    : prisma.event.findMany({
+        where,
+        include: eventInclude,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      });
+
   const [events, total] = await Promise.all([
-    prisma.event.findMany({
-      where,
-      include: eventInclude,
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: limit,
-    }),
+    eventsQuery,
     prisma.event.count({ where }),
   ]);
 
